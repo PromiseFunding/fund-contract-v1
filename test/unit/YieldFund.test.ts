@@ -1,15 +1,18 @@
-const { assert, expect } = require("chai")
-const { BigNumber } = require("ethers")
-const { network, deployments, ethers } = require("hardhat")
-const { developmentChains } = require("../../helper-hardhat-config")
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { assert, expect } from "chai"
+import { BigNumber } from "ethers"
+import { network, deployments, ethers } from "hardhat"
+import { developmentChains } from "../../helper-hardhat-config"
+import { YieldFund } from "../../typechain-types/"
 
 !developmentChains.includes(network.name)
     ? describe.skip
     : describe("Nft Marketplace Unit Tests", function () {
-          const fundValue = BigNumber.from("1000000000000000000")
-          let yieldFundContract, yieldFund
+          let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
+          const fundValue: BigNumber = BigNumber.from("1000000000000000000")
+          let yieldFundContract: YieldFund, yieldFund: YieldFund
           beforeEach(async () => {
-              accounts = await ethers.getSigners() // could also do with getNamedAccounts
+              accounts = await ethers.getSigners()
               deployer = accounts[0]
               user = accounts[1]
               await deployments.fixture(["all"])
