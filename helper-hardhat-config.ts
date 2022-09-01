@@ -7,6 +7,9 @@ export interface networkConfigItem {
     callbackGasLimit?: string
     vrfCoordinatorV2?: string
     blockConfirmations?: number
+    assetAddress?: string
+    poolAddress?: string
+    assetName?: string
 }
 
 export interface networkConfigInfo {
@@ -24,6 +27,13 @@ export const networkConfig: networkConfigInfo = {
         callbackGasLimit: "500000", // 500,000 gas
         blockConfirmations: 6,
     },
+    5: {
+        name: "goerli",
+        blockConfirmations: 6,
+        assetAddress: "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49",
+        assetName: "TetherToken",
+        poolAddress: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
+    },
     1: {
         name: "mainnet",
         keepersUpdateInterval: "30",
@@ -31,6 +41,7 @@ export const networkConfig: networkConfigInfo = {
 }
 
 export const developmentChains = ["hardhat", "localhost"]
-export const VERIFICATION_BLOCK_CONFIRMATIONS = 6
+export const DEFAULT_ASSET_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+export const DEFAULT_POOL_ADDRESS = "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6"
 export const frontEndContractsFile =
     "../nextjs-smartcontract-lottery-fcc/constants/contractAddresses.json"

@@ -4,11 +4,11 @@
 import type {
   BaseContract,
   BigNumber,
+  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -21,11 +21,11 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "./common";
+} from "../common";
 
 export interface YieldFundInterface extends utils.Interface {
   functions: {
-    "fund()": FunctionFragment;
+    "fund(address,uint256)": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
@@ -49,7 +49,10 @@ export interface YieldFundInterface extends utils.Interface {
       | "withdrawFunds"
   ): FunctionFragment;
 
-  encodeFunctionData(functionFragment: "fund", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "fund",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
@@ -130,7 +133,9 @@ export interface YieldFund extends BaseContract {
 
   functions: {
     fund(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      sender: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     getFundAmount(
@@ -159,7 +164,9 @@ export interface YieldFund extends BaseContract {
   };
 
   fund(
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    sender: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   getFundAmount(
@@ -187,7 +194,11 @@ export interface YieldFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    fund(overrides?: CallOverrides): Promise<void>;
+    fund(
+      sender: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getFundAmount(
       funder: PromiseOrValue<string>,
@@ -216,7 +227,9 @@ export interface YieldFund extends BaseContract {
 
   estimateGas: {
     fund(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      sender: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     getFundAmount(
@@ -246,7 +259,9 @@ export interface YieldFund extends BaseContract {
 
   populateTransaction: {
     fund(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      sender: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getFundAmount(
