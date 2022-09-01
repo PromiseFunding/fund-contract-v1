@@ -32,17 +32,25 @@ developmentChains.includes(network.name)
               fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
           })
 
-          it("correctly fund adds a funder", async function () {
+          it("correctly fund adds a funder and correctly gets aTokens back", async function () {
               yieldFund = await yieldFundContract.connect(deployer)
+
+              const originalFundAmount: BigNumber = await yieldFund.getFundAmount(deployer.address)
+
               const approveTx = await assetToken.approve(yieldFund.address, fundValueWithDecimals)
               await approveTx.wait(1)
 
               const fundTx = await yieldFund.fund(deployer.address, fundValueWithDecimals)
               await fundTx.wait(1)
 
-              const fundAmount = await yieldFund.getFundAmount(deployer.address)
+              const fundAmount: BigNumber = await yieldFund.getFundAmount(deployer.address)
 
-              console.log(`fundAmount: ${fundAmount} | fundValue: ${fundAmount}`)
-              assert.equal(fundAmount.toString(), fundValueWithDecimals.toString())
+              console.log(
+                  `| originalFundAmount: ${originalFundAmount} | fundAmount: ${fundAmount} | fundValue: ${fundValueWithDecimals} |`
+              )
+              assert.equal(
+                  (fundAmount.toNumber() - originalFundAmount.toNumber()).toString(),
+                  fundValueWithDecimals.toString()
+              )
           })
       })
