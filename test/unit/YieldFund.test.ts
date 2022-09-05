@@ -21,11 +21,23 @@ import { YieldFund } from "../../typechain-types/"
               yieldFundContract = await ethers.getContract("YieldFund")
               yieldFund = yieldFundContract.connect(deployer)
           })
+          describe("Funding Tests", function () {
+              let fundAmount: BigNumber
+              this.beforeEach(async () => {
+                  yieldFund = yieldFundContract.connect(user)
+                  await yieldFund.fund(user.address, fundValue)
+                  fundAmount = await yieldFund.getFundAmount(user.address)
+              })
+              it("correctly adds a funder", async function () {
+                  assert.equal(fundAmount.toString(), fundValue.toString())
+              })
 
-          it("correctly adds a funder", async function () {
-              yieldFund = yieldFundContract.connect(user)
-              await yieldFund.fund(deployer.address, fundValue)
-              const fundAmount = await yieldFund.getFundAmount(user.address)
-              assert.equal(fundAmount.toString(), fundValue.toString())
+              it("doesn't allow a funder to withdraw more than they funded", async function () {
+                  yieldFund = yieldFundContract.connect(user)
+                  const higherFundAmount = fundAmount.add(1)
+                  await expect(
+                      yieldFund.withdrawFundsFromPool(higherFundAmount)
+                  ).to.be.revertedWith("YieldFund__WithdrawFundsGreaterThanBalance")
+              })
           })
       })

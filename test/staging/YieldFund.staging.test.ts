@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { assert } from "chai"
+import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, ethers } from "hardhat"
 import { developmentChains, networkConfig } from "../../helper-hardhat-config"
@@ -9,7 +9,7 @@ import * as fs from "fs"
 developmentChains.includes(network.name)
     ? describe.skip
     : describe("YieldFund Staging Tests", function () {
-          let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
+          let accounts: SignerWithAddress[], deployer: SignerWithAddress
           const fundValue = 1
           let fundValueWithDecimals = BigNumber.from("1")
           let decimals: number
@@ -31,26 +31,70 @@ developmentChains.includes(network.name)
               decimals = await assetToken.decimals()
               fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
           })
+          describe("Funding and Withdrawal", function () {
+              let fundAmount: BigNumber, originalFundAmount: BigNumber
 
-          it("correctly fund adds a funder and correctly gets aTokens back", async function () {
-              yieldFund = await yieldFundContract.connect(deployer)
+              it("correctly fund adds a funder and correctly gets aTokens back", async function () {
+                  yieldFund = await yieldFundContract.connect(deployer)
 
-              const originalFundAmount: BigNumber = await yieldFund.getFundAmount(deployer.address)
+                  originalFundAmount = await yieldFund.getFundAmount(deployer.address)
 
-              const approveTx = await assetToken.approve(yieldFund.address, fundValueWithDecimals)
-              await approveTx.wait(1)
+                  const approveTx = await assetToken.approve(
+                      yieldFund.address,
+                      fundValueWithDecimals
+                  )
+                  await approveTx.wait(1)
 
-              const fundTx = await yieldFund.fund(deployer.address, fundValueWithDecimals)
-              await fundTx.wait(1)
+                  const fundTx = await yieldFund.fund(deployer.address, fundValueWithDecimals)
+                  await fundTx.wait(1)
 
-              const fundAmount: BigNumber = await yieldFund.getFundAmount(deployer.address)
-
-              console.log(
-                  `| originalFundAmount: ${originalFundAmount} | fundAmount: ${fundAmount} | fundValue: ${fundValueWithDecimals} |`
-              )
-              assert.equal(
-                  (fundAmount.toNumber() - originalFundAmount.toNumber()).toString(),
-                  fundValueWithDecimals.toString()
-              )
+                  fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  console.log(
+                      `| initial funds: ${originalFundAmount} | fund value: ${fundValueWithDecimals} | final funds: ${fundAmount} |`
+                  )
+                  assert.equal(
+                      (fundAmount.toNumber() - originalFundAmount.toNumber()).toString(),
+                      fundValueWithDecimals.toString()
+                  )
+              })
+              it("fails when you fund 0 tokens", async function () {
+                  await expect(yieldFund.fund(deployer.address, 0)).to.be.revertedWith(
+                      "FundAmountMustBeAboveZero"
+                  )
+              })
+              it("fails when a funder tries to withdraw more than they funded", async function () {
+                  yieldFund = yieldFundContract.connect(deployer)
+                  fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  const higherFundAmount = fundAmount.add(1)
+                  await expect(yieldFund.withdrawFundsFromPool(higherFundAmount)).to.be.reverted
+              })
+              it("correctly withdraws the funders tokens", async function () {
+                  yieldFund = yieldFundContract.connect(deployer)
+                  fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  const originalBalance = (
+                      await assetToken.balanceOf(await deployer.address)
+                  ).toNumber()
+                  const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
+                  await withdrawTx.wait(1)
+                  const afterFundAmount = await yieldFund.getFundAmount(deployer.address)
+                  const balance = (await assetToken.balanceOf(await deployer.address)).toNumber()
+                  console.log(balance)
+                  // Ensure the balance in the contract is now zero
+                  assert.equal(afterFundAmount.toNumber(), 0)
+                  // ensure the user's wallet is replenished
+                  assert.equal(balance, fundAmount.toNumber() + originalBalance)
+              })
+              //   it("emits an event after listing an item", async function () {
+              //       expect(await yieldFund.fund(deployer.address, fundValueWithDecimals)).to.emit(
+              //           yieldFund,
+              //           "FunderAdded"
+              //       )
+              //   })
+              //   it("emits an event after withdrawing", async function () {
+              //       expect(await yieldFund.withdrawFundsFromPool(fundAmount)).to.emit(
+              //           yieldFund,
+              //           "FundsWithdrawn"
+              //       )
+              //   })
           })
       })

@@ -23,6 +23,8 @@ const GOERLI_RPC_URL =
     process.env.GOERLI_RPC_URL || "https://eth-kovan.alchemyapi.io/v2/your-api-key"
 const POLYGON_MAINNET_RPC_URL =
     process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/your-api-key"
+const POLYGON_MUMBAI_RPC_URL =
+    process.env.POLYGON_MUMBAI_RPC_URL || "https://polygon-mumbai.alchemyapi.io/v2/your-api-key"
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 // optional
 
@@ -36,6 +38,9 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             chainId: 31337,
+            // forking: {
+            //     url: GOERLI_RPC_URL,
+            // },
         },
         localhost: {
             chainId: 31337,
@@ -46,7 +51,7 @@ const config: HardhatUserConfig = {
             saveDeployments: true,
             chainId: 5,
             gas: 2100000,
-            gasPrice: 8000000000
+            gasPrice: 8000000000,
         },
         rinkeby: {
             url: RINKEBY_RPC_URL,
@@ -62,6 +67,12 @@ const config: HardhatUserConfig = {
         },
         polygon: {
             url: POLYGON_MAINNET_RPC_URL,
+            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+            saveDeployments: true,
+            chainId: 137,
+        },
+        mumbai: {
+            url: POLYGON_MUMBAI_RPC_URL,
             accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
             saveDeployments: true,
             chainId: 137,

@@ -2,10 +2,17 @@
 
 pragma solidity ^0.8.10;
 
-// errors
 import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+error YieldFund__FundAmountMustBeAboveZero();
+error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
+
+/// @title YieldFund
+/// @author Silas Lenihan
+/// @notice Use contract at your own risk, it is still in development
+/// @dev Not all functions are fully tested yet
+/// @custom:experimental This is an experimental contract.
 contract YieldFund {
     // Type Declarations
     // State variables
@@ -13,10 +20,24 @@ contract YieldFund {
     address public i_assetAddress;
     address public i_poolAddress;
     mapping(address => uint256) public s_funders;
+    uint256 public s_totalFunded;
     uint256 public immutable i_lockTime;
 
     // Constants
     // Events
+    event FunderAdded(
+        address indexed funder,
+        address indexed owner,
+        address indexed assetAddress,
+        uint256 amount
+    );
+
+    event FundsWithdrawn(
+        address indexed funder,
+        address indexed owner,
+        address indexed assetAddress,
+        uint256 amount
+    );
 
     constructor(
         uint256 lockTime,
@@ -29,32 +50,54 @@ contract YieldFund {
         i_poolAddress = poolAddress;
     }
 
+    /// @notice Fund the contract with a token, returns aTokens from LP to contract
+    /// @dev Possibly a way to make it more gas efficient with different variables
+    /// @param sender the funder that is supplying the tokens to the contract
+    /// @param amount the amount to be funded to the contract
     function fund(address sender, uint256 amount) public {
+        if (amount <= 0) {
+            revert YieldFund__FundAmountMustBeAboveZero();
+        }
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(sender, address(this), amount);
+        // // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
         approveOtherContract(IERC20(i_assetAddress), i_poolAddress);
         IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
+        s_totalFunded = s_totalFunded + amount;
         s_funders[sender] = s_funders[sender] + amount;
+        emit FunderAdded(sender, i_owner, i_assetAddress, amount);
     }
 
+    /// @notice Approve a recipient to spend the supplied token
+    /// @param token the ERC20 token being supplied
+    /// @param recipient the address of the contract being approved to spend
     function approveOtherContract(IERC20 token, address recipient) public {
         token.approve(recipient, 1e18);
     }
 
-    function withdrawFunds() public {
-        /* ----- NOTES FOR LATER: -----
-         * address payable addr4 = payable(addr1);
-         * https://solidity-by-example.org/payable/
-         * https://docs.aave.com/developers/v/1.0/developing-on-aave/the-protocol/atokens#redeem
-         * IERC20(tokenAddress).balanceOf(address(this))
-         *  ---------------------------- */
+    /// @notice Funder withdraws tokens up to the amount they supplied from the LP
+    /// @param amount The amount being withdrawn
+    function withdrawFundsFromPool(uint256 amount) public {
+        if (amount > s_funders[msg.sender]) {
+            revert YieldFund__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender]);
+        }
+        // Before actual transfer to deter reentrancy (I think)
+        s_funders[msg.sender] -= amount;
+        // Redeem tokens and send them directly to the funder
+        IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
+        emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
+    /// @notice Get the fund amount of a given address
+    /// @param funder the funder whose balance is being checked
+    /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
         return s_funders[funder];
     }
 
+    /// @notice Get the owner of the contract
+    /// @return The address of the contract's owner
     function getOwner() public view returns (address) {
         return i_owner;
     }
