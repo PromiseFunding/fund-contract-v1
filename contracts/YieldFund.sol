@@ -4,9 +4,12 @@ pragma solidity ^0.8.10;
 
 import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 error YieldFund__FundAmountMustBeAboveZero();
 error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
+error YieldFund__NotOwner();
+error YieldFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
 
 /// @title YieldFund
 /// @author Silas Lenihan
@@ -39,6 +42,13 @@ contract YieldFund {
         uint256 amount
     );
 
+    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
+
+    modifier onlyOwner() {
+        if (msg.sender != i_owner) revert YieldFund__NotOwner();
+        _;
+    }
+
     constructor(
         uint256 lockTime,
         address assetAddress,
@@ -55,9 +65,13 @@ contract YieldFund {
     /// @param sender the funder that is supplying the tokens to the contract
     /// @param amount the amount to be funded to the contract
     function fund(address sender, uint256 amount) public {
-        if (amount <= 0) {
+        console.log("amount: ", amount);
+
+        if (amount == 0) {
+            console.log("I'm here!");
             revert YieldFund__FundAmountMustBeAboveZero();
         }
+
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(sender, address(this), amount);
         // // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
@@ -83,10 +97,28 @@ contract YieldFund {
             revert YieldFund__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender]);
         }
         // Before actual transfer to deter reentrancy (I think)
+        // TODO: Make sure this is safe from underflow
+        // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_funders[msg.sender] -= amount;
+        s_totalFunded -= amount;
         // Redeem tokens and send them directly to the funder
         IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
+    }
+
+    function withdrawProceeds(uint256 amount) public onlyOwner {
+        // # of aTokens in this contract - s_totalFunded
+        uint256 aTokenBalance = IERC20(i_assetAddress).balanceOf(address(this));
+        uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
+
+        if (amount > availableToWithdraw) {
+            console.log(block.timestamp);
+            revert YieldFund__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
+        }
+
+        // Redeem tokens and send them directly to the funder
+        IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
+        emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
     }
 
     /// @notice Get the fund amount of a given address

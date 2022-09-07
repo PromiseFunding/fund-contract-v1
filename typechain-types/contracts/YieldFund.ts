@@ -40,6 +40,7 @@ export interface YieldFundInterface extends utils.Interface {
     "s_funders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
     "withdrawFundsFromPool(uint256)": FunctionFragment;
+    "withdrawProceeds(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -55,6 +56,7 @@ export interface YieldFundInterface extends utils.Interface {
       | "s_funders"
       | "s_totalFunded"
       | "withdrawFundsFromPool"
+      | "withdrawProceeds"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -95,6 +97,10 @@ export interface YieldFundInterface extends utils.Interface {
     functionFragment: "withdrawFundsFromPool",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawProceeds",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "approveOtherContract",
@@ -125,14 +131,20 @@ export interface YieldFundInterface extends utils.Interface {
     functionFragment: "withdrawFundsFromPool",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawProceeds",
+    data: BytesLike
+  ): Result;
 
   events: {
     "FunderAdded(address,address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,address,address,uint256)": EventFragment;
+    "ProceedsWithdrawn(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "FunderAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProceedsWithdrawn"): EventFragment;
 }
 
 export interface FunderAddedEventObject {
@@ -160,6 +172,19 @@ export type FundsWithdrawnEvent = TypedEvent<
 >;
 
 export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
+
+export interface ProceedsWithdrawnEventObject {
+  owner: string;
+  assetAddress: string;
+  amount: BigNumber;
+}
+export type ProceedsWithdrawnEvent = TypedEvent<
+  [string, string, BigNumber],
+  ProceedsWithdrawnEventObject
+>;
+
+export type ProceedsWithdrawnEventFilter =
+  TypedEventFilter<ProceedsWithdrawnEvent>;
 
 export interface YieldFund extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -226,6 +251,11 @@ export interface YieldFund extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    withdrawProceeds(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   approveOtherContract(
@@ -263,6 +293,11 @@ export interface YieldFund extends BaseContract {
   s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
 
   withdrawFundsFromPool(
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  withdrawProceeds(
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -306,6 +341,11 @@ export interface YieldFund extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawProceeds(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -334,6 +374,17 @@ export interface YieldFund extends BaseContract {
       assetAddress?: PromiseOrValue<string> | null,
       amount?: null
     ): FundsWithdrawnEventFilter;
+
+    "ProceedsWithdrawn(address,address,uint256)"(
+      owner?: PromiseOrValue<string> | null,
+      assetAddress?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ProceedsWithdrawnEventFilter;
+    ProceedsWithdrawn(
+      owner?: PromiseOrValue<string> | null,
+      assetAddress?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ProceedsWithdrawnEventFilter;
   };
 
   estimateGas: {
@@ -375,6 +426,11 @@ export interface YieldFund extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    withdrawProceeds(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -413,6 +469,11 @@ export interface YieldFund extends BaseContract {
     s_totalFunded(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdrawFundsFromPool(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

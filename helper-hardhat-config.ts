@@ -10,6 +10,7 @@ export interface networkConfigItem {
     assetAddress?: string
     poolAddress?: string
     assetName?: string
+    poolAddressProvider?: string
 }
 
 export interface networkConfigInfo {
