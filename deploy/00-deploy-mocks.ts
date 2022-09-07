@@ -12,7 +12,7 @@ const deployMocks: DeployFunction = async function (hre: HardhatRuntimeEnvironme
     const { deployments, getNamedAccounts, network, ethers } = hre
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
-    const chainId = network.config.chainId
+    const chainId = network.config.chainId || 31337
 
     const args = []
     if (developmentChains.includes(network.name)) {
