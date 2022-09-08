@@ -22,6 +22,8 @@ export const networkConfig: networkConfigInfo = {
         name: "localhost",
         callbackGasLimit: "500000", // 500,000 gas
         blockConfirmations: 1,
+        poolAddress: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+        assetAddress: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
     },
     4: {
         name: "rinkeby",

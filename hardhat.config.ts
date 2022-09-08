@@ -28,6 +28,7 @@ const POLYGON_MAINNET_RPC_URL =
 const POLYGON_MUMBAI_RPC_URL =
     process.env.POLYGON_MUMBAI_RPC_URL || "https://polygon-mumbai.alchemyapi.io/v2/your-api-key"
 const PRIVATE_KEY = process.env.PRIVATE_KEY
+const SECONDARY_PRIVATE_KEY = process.env.SECONDARY_PRIVATE_KEY
 // optional
 
 // Your API key for Etherscan, obtain one at https://etherscan.io/
@@ -45,7 +46,15 @@ const config: HardhatUserConfig = {
             // },
         },
         localhost: {
+            url: "http://127.0.0.1:8545/",
             chainId: 31337,
+            accounts:
+                PRIVATE_KEY !== undefined && SECONDARY_PRIVATE_KEY !== undefined
+                    ? [PRIVATE_KEY, SECONDARY_PRIVATE_KEY]
+                    : [],
+            saveDeployments: true,
+            gas: 2100000,
+            gasPrice: 8000000000,
         },
         goerli: {
             url: GOERLI_RPC_URL,

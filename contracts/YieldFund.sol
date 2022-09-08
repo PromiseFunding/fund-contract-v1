@@ -65,10 +65,7 @@ contract YieldFund {
     /// @param sender the funder that is supplying the tokens to the contract
     /// @param amount the amount to be funded to the contract
     function fund(address sender, uint256 amount) public {
-        console.log("amount: ", amount);
-
         if (amount == 0) {
-            console.log("I'm here!");
             revert YieldFund__FundAmountMustBeAboveZero();
         }
 
