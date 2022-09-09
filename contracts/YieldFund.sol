@@ -10,19 +10,26 @@ error YieldFund__FundAmountMustBeAboveZero();
 error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
 error YieldFund__NotOwner();
 error YieldFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
+error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 
 /// @title YieldFund
-/// @author Silas Lenihan
+/// @author Silas Lenihan and Dylan Paul
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
 contract YieldFund {
+
+    struct Funder{
+        uint256 amount;
+        uint256 entryTime;
+    }
+
     // Type Declarations
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
     address public i_poolAddress;
-    mapping(address => uint256) public s_funders;
+    mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
     uint256 public immutable i_lockTime;
 
@@ -60,6 +67,7 @@ contract YieldFund {
         i_poolAddress = poolAddress;
     }
 
+
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param sender the funder that is supplying the tokens to the contract
@@ -75,8 +83,16 @@ contract YieldFund {
         approveOtherContract(IERC20(i_assetAddress), i_poolAddress);
         IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
+        //set entryTime if first time depositing
+        if (s_funders[sender].amount == 0) {
+            s_funders[sender].entryTime = block.timestamp;
+        }
+
+        //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
-        s_funders[sender] = s_funders[sender] + amount;
+        s_funders[sender].amount = s_funders[sender].amount + amount;
+
+        
         emit FunderAdded(sender, i_owner, i_assetAddress, amount);
     }
 
@@ -90,13 +106,18 @@ contract YieldFund {
     /// @notice Funder withdraws tokens up to the amount they supplied from the LP
     /// @param amount The amount being withdrawn
     function withdrawFundsFromPool(uint256 amount) public {
-        if (amount > s_funders[msg.sender]) {
-            revert YieldFund__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender]);
+        if (amount > s_funders[msg.sender].amount) {
+            revert YieldFund__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender].amount);
+        }
+
+        //checks if locktime has expired for depositor
+        if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime){
+            revert YieldFund__FundsStillTimeLocked(s_funders[msg.sender].entryTime, i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime));
         }
         // Before actual transfer to deter reentrancy (I think)
         // TODO: Make sure this is safe from underflow
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
-        s_funders[msg.sender] -= amount;
+        s_funders[msg.sender].amount -= amount;
         s_totalFunded -= amount;
         // Redeem tokens and send them directly to the funder
         IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
@@ -109,7 +130,6 @@ contract YieldFund {
         uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
 
         if (amount > availableToWithdraw) {
-            console.log(block.timestamp);
             revert YieldFund__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
         }
 
@@ -122,7 +142,7 @@ contract YieldFund {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        return s_funders[funder];
+        return s_funders[funder].amount;
     }
 
     /// @notice Get the owner of the contract
