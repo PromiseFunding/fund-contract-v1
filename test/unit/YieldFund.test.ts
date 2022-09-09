@@ -44,9 +44,9 @@ import * as fs from "fs"
                       fundValueWithDecimals
                   )
                   await approveTx.wait(1)
-                  await yieldFund.fund(user.address, fundValue)
+                  await yieldFund.fund(user.address, fundValueWithDecimals)
                   fundAmount = await yieldFund.getFundAmount(user.address)
-                  assert.equal(fundAmount.toString(), fundValue.toString())
+                  assert.equal(fundAmount.toString(), fundValueWithDecimals.toString())
               })
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = yieldFundContract.connect(user)
