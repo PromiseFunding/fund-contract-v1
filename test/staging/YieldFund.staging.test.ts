@@ -57,24 +57,6 @@ developmentChains.includes(network.name)
                       fundValueWithDecimals.toString()
                   )
               })
-              it("fails when you fund 0 tokens", async function () {
-                  const tx = await yieldFund.fund(deployer.address, 0)
-                  const txReceipt = await tx.wait(1)
-                  console.log(txReceipt)
-                    // await expect().to.be.revertedWithCustomError(
-                    //     yieldFund,
-                    //     "YieldFund__FundAmountMustBeAboveZero"
-                    // )
-              })
-              //locktime testing in unit
-              it("fails when a funder tries to withdraw more than they funded", async function () {
-                  yieldFund = yieldFundContract.connect(deployer)
-                  fundAmount = await yieldFund.getFundAmount(deployer.address)
-                  const higherFundAmount = fundAmount.add(1)
-                  await expect(
-                      yieldFund.withdrawFundsFromPool(higherFundAmount)
-                  ).to.be.revertedWith("WithdrawFundsGreaterThanBalance")
-              })
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = yieldFundContract.connect(deployer)
                   fundAmount = await yieldFund.getFundAmount(deployer.address)
@@ -91,17 +73,5 @@ developmentChains.includes(network.name)
                   // ensure the user's wallet is replenished
                   assert.equal(balance, fundAmount.toNumber() + originalBalance)
               })
-              //   it("emits an event after listing an item", async function () {
-              //       expect(await yieldFund.fund(deployer.address, fundValueWithDecimals)).to.emit(
-              //           yieldFund,
-              //           "FunderAdded"
-              //       )
-              //   })
-              //   it("emits an event after withdrawing", async function () {
-              //       expect(await yieldFund.withdrawFundsFromPool(fundAmount)).to.emit(
-              //           yieldFund,
-              //           "FundsWithdrawn"
-              //       )
-              //   })
           })
       })

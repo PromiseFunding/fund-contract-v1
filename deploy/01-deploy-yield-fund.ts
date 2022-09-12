@@ -16,8 +16,10 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
     const poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
 
+    const locktime = chainId === 31337 ? 360000 : 0
+
     log("----------------------------------------------------")
-    const args = [360000, assetAddress, poolAddress]
+    const args = [locktime, assetAddress, poolAddress]
     const yieldFund = await deploy("YieldFund", {
         from: deployer,
         args: args,

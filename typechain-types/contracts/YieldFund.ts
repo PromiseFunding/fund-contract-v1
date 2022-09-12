@@ -31,9 +31,12 @@ export interface YieldFundInterface extends utils.Interface {
   functions: {
     "approveOtherContract(address,address)": FunctionFragment;
     "fund(address,uint256)": FunctionFragment;
+    "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
+    "getPoolAddress()": FunctionFragment;
     "getTimeLeft(address)": FunctionFragment;
+    "getTimeLock()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
     "i_lockTime()": FunctionFragment;
     "i_owner()": FunctionFragment;
@@ -48,9 +51,12 @@ export interface YieldFundInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "approveOtherContract"
       | "fund"
+      | "getAssetAddress"
       | "getFundAmount"
       | "getOwner"
+      | "getPoolAddress"
       | "getTimeLeft"
+      | "getTimeLock"
       | "i_assetAddress"
       | "i_lockTime"
       | "i_owner"
@@ -70,13 +76,25 @@ export interface YieldFundInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getAssetAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "getPoolAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getTimeLeft",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTimeLock",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "i_assetAddress",
@@ -114,12 +132,24 @@ export interface YieldFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getAssetAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getFundAmount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getPoolAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getTimeLeft",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTimeLock",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -235,6 +265,8 @@ export interface YieldFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -242,10 +274,14 @@ export interface YieldFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
+    getPoolAddress(overrides?: CallOverrides): Promise<[string]>;
+
     getTimeLeft(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getTimeLock(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
@@ -287,6 +323,8 @@ export interface YieldFund extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  getAssetAddress(overrides?: CallOverrides): Promise<string>;
+
   getFundAmount(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -294,10 +332,14 @@ export interface YieldFund extends BaseContract {
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
+  getPoolAddress(overrides?: CallOverrides): Promise<string>;
+
   getTimeLeft(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
@@ -339,6 +381,8 @@ export interface YieldFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getAssetAddress(overrides?: CallOverrides): Promise<string>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -346,10 +390,14 @@ export interface YieldFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
+    getPoolAddress(overrides?: CallOverrides): Promise<string>;
+
     getTimeLeft(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
@@ -431,6 +479,8 @@ export interface YieldFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -438,10 +488,14 @@ export interface YieldFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getPoolAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     getTimeLeft(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -482,6 +536,8 @@ export interface YieldFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    getAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -489,10 +545,14 @@ export interface YieldFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getPoolAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getTimeLeft(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getTimeLock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

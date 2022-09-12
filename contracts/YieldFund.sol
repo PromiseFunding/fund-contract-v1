@@ -139,11 +139,31 @@ contract YieldFund {
         emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
     }
 
+    /** Getter Functions */
+
     /// @notice Get the fund amount of a given address
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
         return s_funders[funder].amount;
+    }
+
+    /// @notice Gets the time lock of this contract
+    /// @return locktime 
+    function getTimeLock() public view returns (uint256) {
+        return i_lockTime;
+    }
+
+    /// @notice Gets the pool address of this contract
+    /// @return poolAddress
+    function getPoolAddress() public view returns (address) {
+        return i_poolAddress;
+    }
+
+    /// @notice Gets the asset address of this contract
+    /// @return assetAddress
+    function getAssetAddress() public view returns (address) {
+        return i_assetAddress;
     }
 
     /// @notice Get the time left before allowed to withdraw funds for of a given address
