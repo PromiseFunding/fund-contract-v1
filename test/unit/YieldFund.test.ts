@@ -2,7 +2,12 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
-import { developmentChains, networkConfig, DEFAULT_ASSET_ADDRESS, DEFAULT_POOL_ADDRESS,} from "../../helper-hardhat-config"
+import {
+    developmentChains,
+    networkConfig,
+    DEFAULT_ASSET_ADDRESS,
+    DEFAULT_POOL_ADDRESS,
+} from "../../helper-hardhat-config"
 import { YieldFund } from "../../typechain-types/"
 import * as fs from "fs"
 
@@ -12,6 +17,8 @@ import * as fs from "fs"
           let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
           const fundValue = 1
           let yieldFundContract: YieldFund, yieldFund: YieldFund, assetToken: any
+          let fundAmount: BigNumber, originalFundAmount: BigNumber
+          let timeLeft: BigNumber
           let fundValueWithDecimals = BigNumber.from("1")
           let decimals: number
           const chainId = network.config.chainId || 31337
@@ -35,28 +42,32 @@ import * as fs from "fs"
           })
 
           describe("constructor", function () {
-            const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
-            const poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
-            it("initializes the time lock correctly", async () => {
-                yieldFund = await yieldFundContract.connect(user)
-                const response = await yieldFund.getTimeLock()
-                assert.equal(response.toNumber(), 360000)
-            })
-            it("initializes the pool address correctly", async () => {
-                yieldFund = await yieldFundContract.connect(user)
-                const response = await yieldFund.getPoolAddress()
-                assert.equal(response.toString().toLowerCase(), poolAddress.toString().toLowerCase())
-            })
-            it("initializes the asset address correctly", async () => {
-                yieldFund = await yieldFundContract.connect(user)
-                const response = await yieldFund.getAssetAddress()
-                assert.equal(response.toString().toLowerCase(), assetAddress.toString().toLowerCase())
-            })
+              const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
+              const poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
+              it("initializes the time lock correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getTimeLock()
+                  assert.equal(response.toNumber(), 360000)
+              })
+              it("initializes the pool address correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getPoolAddress()
+                  assert.equal(
+                      response.toString().toLowerCase(),
+                      poolAddress.toString().toLowerCase()
+                  )
+              })
+              it("initializes the asset address correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getAssetAddress()
+                  assert.equal(
+                      response.toString().toLowerCase(),
+                      assetAddress.toString().toLowerCase()
+                  )
+              })
           })
 
           describe("Funding Tests", function () {
-              let fundAmount: BigNumber, originalFundAmount: BigNumber
-              let timeLeft: BigNumber
               it("correctly adds a funder", async function () {
                   yieldFund = await yieldFundContract.connect(user)
                   console.log(yieldFund.address)
@@ -108,7 +119,6 @@ import * as fs from "fs"
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
-                  //timeLeft = await yieldFund.getTimeLeft(user.address)
                   //should revert after deploying bc constructor has certain locktime put in it already
                   await expect(
                       yieldFund.withdrawFundsFromPool(fundAmount)
@@ -165,22 +175,51 @@ import * as fs from "fs"
                   )
               })
               it("correctly withdraws proceeds", async function () {
-                yieldFund = yieldFundContract.connect(user)
-                await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
-                    yieldFund,
-                    "YieldFund__NotOwner"
-                )
-            })
+                  yieldFund = yieldFundContract.connect(user)
+                  await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
+                      yieldFund,
+                      "YieldFund__NotOwner"
+                  )
+              })
           })
 
-          //Getter functions
-        //   describe("Getter Tests", function () {
-        //     it("fails when a non owner tries to withdraw proceeds", async function () {
-        //         yieldFund = yieldFundContract.connect(user)
-        //         await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
-        //             yieldFund,
-        //             "YieldFund__NotOwner"
-        //         )
-        //     })
-        // })
+          describe("Event tests", function () {
+              it("emits an event after funding", async function () {
+                  yieldFund = await yieldFundContract.connect(user)
+
+                  const approveTx = await assetToken.approve(
+                      yieldFund.address,
+                      fundValueWithDecimals
+                  )
+                  await approveTx.wait(1)
+                  await expect(await yieldFund.fund(user.address, fundValueWithDecimals)).to.emit(
+                      yieldFund,
+                      "FunderAdded"
+                  )
+              })
+              it("emits an event after withdrawing", async function () {
+                  yieldFund = await yieldFundContract.connect(user)
+
+                  originalFundAmount = await yieldFund.getFundAmount(user.address)
+
+                  const approveTx = await assetToken.approve(
+                      yieldFund.address,
+                      fundValueWithDecimals
+                  )
+                  await approveTx.wait(1)
+
+                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  await fundTx.wait(1)
+
+                  fundAmount = await yieldFund.getFundAmount(user.address)
+
+                  timeLeft = await yieldFund.getTimeLeft(user.address)
+                  await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                  await expect(yieldFund.withdrawFundsFromPool(fundAmount)).to.emit(
+                      yieldFund,
+                      "FundsWithdrawn"
+                  )
+              })
+          })
       })
