@@ -145,9 +145,17 @@ contract YieldFund {
         return s_funders[funder].amount;
     }
 
+    /// @notice Get the time left before allowed to withdraw funds for of a given address
+    /// @param funder the funder whose balance is being checked
+    /// @return The uint256 representing the amount of time the funder has left
+    function getTimeLeft(address funder) public view returns (uint256) {
+        return i_lockTime - (block.timestamp - s_funders[funder].entryTime);
+    }
+
     /// @notice Get the owner of the contract
     /// @return The address of the contract's owner
     function getOwner() public view returns (address) {
         return i_owner;
     }
+
 }
