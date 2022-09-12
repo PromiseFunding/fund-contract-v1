@@ -8,7 +8,7 @@ import * as fs from "fs"
 
 !developmentChains.includes(network.name)
     ? describe.skip
-    : describe("YieldFund Unit Tests", async function () {
+    : describe("YieldFund Unit Tests", function () {
           let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
           const fundValue = 1
           let yieldFundContract: YieldFund, yieldFund: YieldFund, assetToken: any
@@ -36,7 +36,7 @@ import * as fs from "fs"
 
           describe("Funding Tests", function () {
               let fundAmount: BigNumber, originalFundAmount: BigNumber
-
+              let timeLeft: BigNumber
               it("correctly adds a funder", async function () {
                   yieldFund = await yieldFundContract.connect(user)
                   console.log(yieldFund.address)
@@ -61,6 +61,42 @@ import * as fs from "fs"
                       fundValueWithDecimals.toString()
                   )
               })
+              it("fails when a funder tries to withdraw more than they funded", async function () {
+                  yieldFund = yieldFundContract.connect(user)
+                  fundAmount = await yieldFund.getFundAmount(user.address)
+                  const higherFundAmount = fundAmount.add(1)
+                  await expect(
+                      yieldFund.withdrawFundsFromPool(higherFundAmount)
+                  ).to.be.revertedWithCustomError(
+                      yieldFund,
+                      "YieldFund__WithdrawFundsGreaterThanBalance"
+                  )
+              })
+              it("fails when a funder tries to withdraw before time lock ends", async function () {
+                  yieldFund = await yieldFundContract.connect(user)
+                  console.log(yieldFund.address)
+
+                  originalFundAmount = await yieldFund.getFundAmount(user.address)
+
+                  const approveTx = await assetToken.approve(
+                      yieldFund.address,
+                      fundValueWithDecimals
+                  )
+                  await approveTx.wait(1)
+
+                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  await fundTx.wait(1)
+
+                  fundAmount = await yieldFund.getFundAmount(user.address)
+                  //timeLeft = await yieldFund.getTimeLeft(user.address)
+                  //should revert after deploying bc constructor has certain locktime put in it already
+                  await expect(
+                      yieldFund.withdrawFundsFromPool(fundAmount)
+                  ).to.be.revertedWithCustomError(yieldFund, "YieldFund__FundsStillTimeLocked")
+              })
+
+              //add test by increasing evmtime so that the locktime was expired
+
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = await yieldFundContract.connect(user)
                   console.log(yieldFund.address)
@@ -77,13 +113,15 @@ import * as fs from "fs"
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
-
-                  yieldFund = yieldFundContract.connect(user)
-                  fundAmount = await yieldFund.getFundAmount(user.address)
                   const originalBalance = (
                       await assetToken.balanceOf(await user.address)
                   ).toNumber()
                   console.log(fundAmount.toString())
+
+                  //should increase time of chain to test if withdraw works
+                  timeLeft = await yieldFund.getTimeLeft(user.address)
+                  await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
                   await withdrawTx.wait(1)
                   const afterFundAmount = await yieldFund.getFundAmount(user.address)
