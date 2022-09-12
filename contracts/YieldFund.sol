@@ -112,6 +112,7 @@ contract YieldFund {
 
         //checks if locktime has expired for depositor
         if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime){
+            //TODO: check if errors need to be detailed as they are below... most likely not important for us
             revert YieldFund__FundsStillTimeLocked(s_funders[msg.sender].entryTime, i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime));
         }
         // Before actual transfer to deter reentrancy (I think)

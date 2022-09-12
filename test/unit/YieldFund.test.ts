@@ -36,7 +36,6 @@ import * as fs from "fs"
 
           describe("Funding Tests", function () {
               let fundAmount: BigNumber, originalFundAmount: BigNumber
-
               let timeLeft: BigNumber
               it("correctly adds a funder", async function () {
                   yieldFund = await yieldFundContract.connect(user)
@@ -68,16 +67,29 @@ import * as fs from "fs"
                    const higherFundAmount = fundAmount.add(1)
                    await expect(
                     yieldFund.withdrawFundsFromPool(higherFundAmount)
-                    ).to.be.revertedWith("WithdrawFundsGreaterThanBalance")
+                    ).to.be.revertedWithCustomError(yieldFund, "YieldFund__WithdrawFundsGreaterThanBalance")
               })
               it("fails when a funder tries to withdraw before time lock ends", async function () {
-                   yieldFund = yieldFundContract.connect(user)
+                   yieldFund = await yieldFundContract.connect(user)
+                   console.log(yieldFund.address)
+
+                   originalFundAmount = await yieldFund.getFundAmount(user.address)
+
+                   const approveTx = await assetToken.approve(
+                       yieldFund.address,
+                       fundValueWithDecimals
+                   )
+                   await approveTx.wait(1)
+
+                   const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                   await fundTx.wait(1)
+
+                   fundAmount = await yieldFund.getFundAmount(user.address)
                    //timeLeft = await yieldFund.getTimeLeft(user.address)
                    //should revert after deploying bc constructor has certain locktime put in it already
-                   fundAmount = await yieldFund.getFundAmount(user.address)
                    await expect(
                     yieldFund.withdrawFundsFromPool(fundAmount)
-                    ).to.be.revertedWith("YieldFund__FundsStillTimeLocked")
+                    ).to.be.revertedWithCustomError(yieldFund, "YieldFund__FundsStillTimeLocked")
               })
 
               
@@ -100,13 +112,15 @@ import * as fs from "fs"
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
-
-                  yieldFund = yieldFundContract.connect(user)
-                  fundAmount = await yieldFund.getFundAmount(user.address)
                   const originalBalance = (
                       await assetToken.balanceOf(await user.address)
                   ).toNumber()
                   console.log(fundAmount.toString())
+
+                  //should increase time of chain to test if withdraw works
+                  timeLeft = await yieldFund.getTimeLeft(user.address)
+                  await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
                   await withdrawTx.wait(1)
                   const afterFundAmount = await yieldFund.getFundAmount(user.address)
