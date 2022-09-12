@@ -57,21 +57,6 @@ developmentChains.includes(network.name)
                       fundValueWithDecimals.toString()
                   )
               })
-              it("fails when you fund 0 tokens", async function () {
-                    await expect(yieldFund.fund(deployer.address, 0)).to.be.revertedWithCustomError(
-                        yieldFund,
-                        "YieldFund__FundAmountMustBeAboveZero"
-                    )
-              })
-              //locktime testing in unit
-              it("fails when a funder tries to withdraw more than they funded", async function () {
-                  yieldFund = yieldFundContract.connect(deployer)
-                  fundAmount = await yieldFund.getFundAmount(deployer.address)
-                  const higherFundAmount = fundAmount.add(1)
-                  await expect(
-                      yieldFund.withdrawFundsFromPool(higherFundAmount)
-                  ).to.be.revertedWithCustomError(yieldFund, "YieldFund__WithdrawFundsGreaterThanBalance")
-              })
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = yieldFundContract.connect(deployer)
                   fundAmount = await yieldFund.getFundAmount(deployer.address)
