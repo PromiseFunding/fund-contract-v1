@@ -18,8 +18,7 @@ error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
 contract YieldFund {
-
-    struct Funder{
+    struct Funder {
         uint256 amount;
         uint256 entryTime;
     }
@@ -67,7 +66,6 @@ contract YieldFund {
         i_poolAddress = poolAddress;
     }
 
-
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param sender the funder that is supplying the tokens to the contract
@@ -92,7 +90,6 @@ contract YieldFund {
         s_totalFunded = s_totalFunded + amount;
         s_funders[sender].amount = s_funders[sender].amount + amount;
 
-        
         emit FunderAdded(sender, i_owner, i_assetAddress, amount);
     }
 
@@ -111,9 +108,12 @@ contract YieldFund {
         }
 
         //checks if locktime has expired for depositor
-        if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime){
+        if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime) {
             //TODO: check if errors need to be detailed as they are below... most likely not important for us
-            revert YieldFund__FundsStillTimeLocked(s_funders[msg.sender].entryTime, i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime));
+            revert YieldFund__FundsStillTimeLocked(
+                s_funders[msg.sender].entryTime,
+                i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime)
+            );
         }
         // Before actual transfer to deter reentrancy (I think)
         // TODO: Make sure this is safe from underflow
@@ -158,5 +158,4 @@ contract YieldFund {
     function getOwner() public view returns (address) {
         return i_owner;
     }
-
 }
