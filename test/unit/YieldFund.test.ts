@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
-import { developmentChains, networkConfig } from "../../helper-hardhat-config"
+import { developmentChains, networkConfig, DEFAULT_ASSET_ADDRESS, DEFAULT_POOL_ADDRESS,} from "../../helper-hardhat-config"
 import { YieldFund } from "../../typechain-types/"
 import * as fs from "fs"
 
@@ -32,6 +32,26 @@ import * as fs from "fs"
               assetToken = await assetTokenContract.connect(user)
               decimals = await assetToken.decimals()
               fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
+          })
+
+          describe("constructor", function () {
+            const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
+            const poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
+            it("initializes the time lock correctly", async () => {
+                yieldFund = await yieldFundContract.connect(user)
+                const response = await yieldFund.getTimeLock()
+                assert.equal(response.toNumber(), 360000)
+            })
+            it("initializes the pool address correctly", async () => {
+                yieldFund = await yieldFundContract.connect(user)
+                const response = await yieldFund.getPoolAddress()
+                assert.equal(response.toString().toLowerCase(), poolAddress.toString().toLowerCase())
+            })
+            it("initializes the asset address correctly", async () => {
+                yieldFund = await yieldFundContract.connect(user)
+                const response = await yieldFund.getAssetAddress()
+                assert.equal(response.toString().toLowerCase(), assetAddress.toString().toLowerCase())
+            })
           })
 
           describe("Funding Tests", function () {
@@ -94,12 +114,8 @@ import * as fs from "fs"
                       yieldFund.withdrawFundsFromPool(fundAmount)
                   ).to.be.revertedWithCustomError(yieldFund, "YieldFund__FundsStillTimeLocked")
               })
-
-              //add test by increasing evmtime so that the locktime was expired
-
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = await yieldFundContract.connect(user)
-                  console.log(yieldFund.address)
 
                   originalFundAmount = await yieldFund.getFundAmount(user.address)
 
@@ -139,6 +155,7 @@ import * as fs from "fs"
                   )
               })
           })
+
           describe("Owner Tests", function () {
               it("fails when a non owner tries to withdraw proceeds", async function () {
                   yieldFund = yieldFundContract.connect(user)
@@ -147,5 +164,23 @@ import * as fs from "fs"
                       "YieldFund__NotOwner"
                   )
               })
+              it("correctly withdraws proceeds", async function () {
+                yieldFund = yieldFundContract.connect(user)
+                await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
+                    yieldFund,
+                    "YieldFund__NotOwner"
+                )
+            })
           })
+
+          //Getter functions
+        //   describe("Getter Tests", function () {
+        //     it("fails when a non owner tries to withdraw proceeds", async function () {
+        //         yieldFund = yieldFundContract.connect(user)
+        //         await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
+        //             yieldFund,
+        //             "YieldFund__NotOwner"
+        //         )
+        //     })
+        // })
       })
