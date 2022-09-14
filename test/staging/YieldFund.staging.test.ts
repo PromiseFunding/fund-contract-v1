@@ -45,7 +45,7 @@ developmentChains.includes(network.name)
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(deployer.address, fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(deployer.address)

@@ -80,7 +80,7 @@ import * as fs from "fs"
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
@@ -115,7 +115,7 @@ import * as fs from "fs"
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
@@ -135,7 +135,7 @@ import * as fs from "fs"
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
@@ -159,7 +159,7 @@ import * as fs from "fs"
               })
               it("fails with a fund value of zero", async function () {
                   yieldFund = yieldFundContract.connect(user)
-                  await expect(yieldFund.fund(user.address, 0)).to.be.revertedWithCustomError(
+                  await expect(yieldFund.fund(0)).to.be.revertedWithCustomError(
                       yieldFund,
                       "YieldFund__FundAmountMustBeAboveZero"
                   )
@@ -192,7 +192,7 @@ import * as fs from "fs"
                       fundValueWithDecimals
                   )
                   await approveTx.wait(1)
-                  await expect(await yieldFund.fund(user.address, fundValueWithDecimals)).to.emit(
+                  await expect(await yieldFund.fund(fundValueWithDecimals)).to.emit(
                       yieldFund,
                       "FunderAdded"
                   )
@@ -208,7 +208,7 @@ import * as fs from "fs"
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(user.address, fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)

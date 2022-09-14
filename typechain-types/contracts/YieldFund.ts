@@ -30,7 +30,7 @@ import type {
 export interface YieldFundInterface extends utils.Interface {
   functions: {
     "approveOtherContract(address,address)": FunctionFragment;
-    "fund(address,uint256)": FunctionFragment;
+    "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
@@ -73,7 +73,7 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "fund",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
@@ -260,7 +260,6 @@ export interface YieldFund extends BaseContract {
     ): Promise<ContractTransaction>;
 
     fund(
-      sender: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -318,7 +317,6 @@ export interface YieldFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   fund(
-    sender: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -376,7 +374,6 @@ export interface YieldFund extends BaseContract {
     ): Promise<void>;
 
     fund(
-      sender: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -474,7 +471,6 @@ export interface YieldFund extends BaseContract {
     ): Promise<BigNumber>;
 
     fund(
-      sender: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -531,7 +527,6 @@ export interface YieldFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     fund(
-      sender: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

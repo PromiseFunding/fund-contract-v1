@@ -68,29 +68,28 @@ contract YieldFund {
 
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
     /// @dev Possibly a way to make it more gas efficient with different variables
-    /// @param sender the funder that is supplying the tokens to the contract
     /// @param amount the amount to be funded to the contract
-    function fund(address sender, uint256 amount) public {
+    function fund(uint256 amount) public {
         if (amount == 0) {
             revert YieldFund__FundAmountMustBeAboveZero();
         }
 
         // Set initial amount for funder
-        IERC20(i_assetAddress).transferFrom(sender, address(this), amount);
+        IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
         approveOtherContract(IERC20(i_assetAddress), i_poolAddress);
         IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
         //set entryTime if first time depositing
-        if (s_funders[sender].amount == 0) {
-            s_funders[sender].entryTime = block.timestamp;
+        if (s_funders[msg.sender].amount == 0) {
+            s_funders[msg.sender].entryTime = block.timestamp;
         }
 
         //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
-        s_funders[sender].amount = s_funders[sender].amount + amount;
+        s_funders[msg.sender].amount = s_funders[msg.sender].amount + amount;
 
-        emit FunderAdded(sender, i_owner, i_assetAddress, amount);
+        emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
 
     /// @notice Approve a recipient to spend the supplied token
