@@ -200,7 +200,9 @@ Project Link: [https://github.com/YieldMe/fund-contract-v1](https://github.com/Y
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
+## Common Problems
+When Running locally
+```Error: cannot get the transaction for YieldFund's previous deployment, please check your node synced status.```
 
 <!-- ACKNOWLEDGMENTS -->
 <!-- ## Acknowledgments

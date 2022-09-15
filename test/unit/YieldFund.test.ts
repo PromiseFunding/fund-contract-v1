@@ -171,7 +171,7 @@ import * as fs from "fs"
                       "YieldFund__NotOwner"
                   )
               })
-              it("correctly withdraws proceeds", async function () {
+              it("fails when a non owner tries to withdraw proceeds", async function () {
                   yieldFund = yieldFundContract.connect(user)
                   await expect(yieldFund.withdrawProceeds(1)).to.be.revertedWithCustomError(
                       yieldFund,
