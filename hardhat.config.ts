@@ -53,7 +53,6 @@ const config: HardhatUserConfig = {
                 PRIVATE_KEY !== undefined && SECONDARY_PRIVATE_KEY !== undefined
                     ? [PRIVATE_KEY, SECONDARY_PRIVATE_KEY]
                     : [],
-            saveDeployments: true,
             gas: 2100000,
             gasPrice: 8000000000,
         },

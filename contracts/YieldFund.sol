@@ -5,6 +5,7 @@ pragma solidity ^0.8.10;
 import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
+import {IYieldFund} from "./interfaces/IYieldFund.sol";
 
 error YieldFund__FundAmountMustBeAboveZero();
 error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
@@ -17,7 +18,7 @@ error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract YieldFund {
+contract YieldFund is IYieldFund {
     // Type Declarations
     struct Funder {
         uint256 amount;
@@ -34,19 +35,6 @@ contract YieldFund {
 
     // Constants
     // Events
-    event FunderAdded(
-        address indexed funder,
-        address indexed owner,
-        address indexed assetAddress,
-        uint256 amount
-    );
-
-    event FundsWithdrawn(
-        address indexed funder,
-        address indexed owner,
-        address indexed assetAddress,
-        uint256 amount
-    );
 
     event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
 

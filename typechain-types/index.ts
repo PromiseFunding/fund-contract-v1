@@ -18,6 +18,8 @@ export type { IERC20Metadata } from "./@openzeppelin/contracts/token/ERC20/exten
 export { IERC20Metadata__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata__factory";
 export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
 export { IERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/IERC20__factory";
+export type { IYieldFund } from "./contracts/interfaces/IYieldFund";
+export { IYieldFund__factory } from "./factories/contracts/interfaces/IYieldFund__factory";
 export type { MockAToken } from "./contracts/mocks/MockAToken";
 export { MockAToken__factory } from "./factories/contracts/mocks/MockAToken__factory";
 export type { MockERC20Token } from "./contracts/mocks/MockERC20Token";
