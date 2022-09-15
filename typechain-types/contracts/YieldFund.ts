@@ -29,7 +29,7 @@ import type {
 
 export interface YieldFundInterface extends utils.Interface {
   functions: {
-    "approveOtherContract(address,address)": FunctionFragment;
+    "approveTransfer(address,address,uint256)": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
@@ -37,6 +37,7 @@ export interface YieldFundInterface extends utils.Interface {
     "getPoolAddress()": FunctionFragment;
     "getTimeLeft(address)": FunctionFragment;
     "getTimeLock()": FunctionFragment;
+    "i_aaveTokenAddress()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
     "i_lockTime()": FunctionFragment;
     "i_owner()": FunctionFragment;
@@ -49,7 +50,7 @@ export interface YieldFundInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "approveOtherContract"
+      | "approveTransfer"
       | "fund"
       | "getAssetAddress"
       | "getFundAmount"
@@ -57,6 +58,7 @@ export interface YieldFundInterface extends utils.Interface {
       | "getPoolAddress"
       | "getTimeLeft"
       | "getTimeLock"
+      | "i_aaveTokenAddress"
       | "i_assetAddress"
       | "i_lockTime"
       | "i_owner"
@@ -68,8 +70,12 @@ export interface YieldFundInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "approveOtherContract",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    functionFragment: "approveTransfer",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "fund",
@@ -94,6 +100,10 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTimeLock",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "i_aaveTokenAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -127,7 +137,7 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "approveOtherContract",
+    functionFragment: "approveTransfer",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
@@ -150,6 +160,10 @@ export interface YieldFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLock",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_aaveTokenAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -253,9 +267,10 @@ export interface YieldFund extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -281,6 +296,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<[BigNumber]>;
 
     getTimeLock(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<[string]>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
@@ -310,9 +327,10 @@ export interface YieldFund extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  approveOtherContract(
+  approveTransfer(
     token: PromiseOrValue<string>,
     recipient: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -338,6 +356,8 @@ export interface YieldFund extends BaseContract {
   ): Promise<BigNumber>;
 
   getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+
+  i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
@@ -367,9 +387,10 @@ export interface YieldFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -395,6 +416,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<BigNumber>;
 
     getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
@@ -464,9 +487,10 @@ export interface YieldFund extends BaseContract {
   };
 
   estimateGas: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -492,6 +516,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<BigNumber>;
 
     getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -520,9 +546,10 @@ export interface YieldFund extends BaseContract {
   };
 
   populateTransaction: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -548,6 +575,10 @@ export interface YieldFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getTimeLock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    i_aaveTokenAddress(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

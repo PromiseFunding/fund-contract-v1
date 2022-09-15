@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { assert, expect } from "chai"
+import { assert } from "chai"
 import { BigNumber } from "ethers"
 import { network, ethers } from "hardhat"
 import { developmentChains, networkConfig } from "../../helper-hardhat-config"
@@ -67,7 +67,6 @@ developmentChains.includes(network.name)
                   await withdrawTx.wait(1)
                   const afterFundAmount = await yieldFund.getFundAmount(deployer.address)
                   const balance = (await assetToken.balanceOf(await deployer.address)).toNumber()
-                  console.log(balance)
                   // Ensure the balance in the contract is now zero
                   assert.equal(afterFundAmount.toNumber(), 0)
                   // ensure the user's wallet is replenished
