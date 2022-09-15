@@ -18,12 +18,11 @@ error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
 contract YieldFund {
+    // Type Declarations
     struct Funder {
         uint256 amount;
         uint256 entryTime;
     }
-
-    // Type Declarations
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
@@ -73,11 +72,10 @@ contract YieldFund {
         if (amount == 0) {
             revert YieldFund__FundAmountMustBeAboveZero();
         }
-
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
-        // // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
-        approveOtherContract(IERC20(i_assetAddress), i_poolAddress);
+        // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
+        approveTransfer(IERC20(i_assetAddress), i_poolAddress, amount);
         IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
         //set entryTime if first time depositing
@@ -95,8 +93,12 @@ contract YieldFund {
     /// @notice Approve a recipient to spend the supplied token
     /// @param token the ERC20 token being supplied
     /// @param recipient the address of the contract being approved to spend
-    function approveOtherContract(IERC20 token, address recipient) public {
-        token.approve(recipient, 1e18);
+    function approveTransfer(
+        IERC20 token,
+        address recipient,
+        uint256 amount
+    ) public {
+        token.approve(recipient, amount);
     }
 
     /// @notice Funder withdraws tokens up to the amount they supplied from the LP
@@ -148,7 +150,7 @@ contract YieldFund {
     }
 
     /// @notice Gets the time lock of this contract
-    /// @return locktime 
+    /// @return locktime
     function getTimeLock() public view returns (uint256) {
         return i_lockTime;
     }

@@ -3,7 +3,6 @@ import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
 import {
-    developmentChains,
     networkConfig,
     DEFAULT_ASSET_ADDRESS,
     DEFAULT_POOL_ADDRESS,
@@ -11,16 +10,18 @@ import {
 import { YieldFund } from "../../typechain-types/"
 import * as fs from "fs"
 
-!developmentChains.includes(network.name)
+// These tests are built for the AAVE Sandbox Enivornment
+!(network.name == "localhost")
     ? describe.skip
     : describe("YieldFund Unit Tests", function () {
           let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
           const fundValue = 1
           let yieldFundContract: YieldFund, yieldFund: YieldFund, assetToken: any
-          let fundAmount: BigNumber, originalFundAmount: BigNumber
-          let timeLeft: BigNumber
           let fundValueWithDecimals = BigNumber.from("1")
-          let decimals: number
+          let decimals: number,
+              fundAmount: BigNumber,
+              originalFundAmount: BigNumber,
+              timeLeft: BigNumber
           const chainId = network.config.chainId || 31337
 
           beforeEach(async function () {
@@ -38,7 +39,7 @@ import * as fs from "fs"
               )
               assetToken = await assetTokenContract.connect(user)
               decimals = await assetToken.decimals()
-              fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
+              //   fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
           })
 
           describe("constructor", function () {
@@ -70,7 +71,6 @@ import * as fs from "fs"
           describe("Funding Tests", function () {
               it("correctly adds a funder", async function () {
                   yieldFund = await yieldFundContract.connect(user)
-                  console.log(yieldFund.address)
 
                   originalFundAmount = await yieldFund.getFundAmount(user.address)
 
@@ -105,7 +105,6 @@ import * as fs from "fs"
               })
               it("fails when a funder tries to withdraw before time lock ends", async function () {
                   yieldFund = await yieldFundContract.connect(user)
-                  console.log(yieldFund.address)
 
                   originalFundAmount = await yieldFund.getFundAmount(user.address)
 
@@ -142,12 +141,10 @@ import * as fs from "fs"
                   const originalBalance = (
                       await assetToken.balanceOf(await user.address)
                   ).toNumber()
-                  console.log(fundAmount.toString())
 
                   //should increase time of chain to test if withdraw works
                   timeLeft = await yieldFund.getTimeLeft(user.address)
                   await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
-
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
                   await withdrawTx.wait(1)
                   const afterFundAmount = await yieldFund.getFundAmount(user.address)

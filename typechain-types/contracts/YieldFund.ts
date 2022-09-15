@@ -29,7 +29,7 @@ import type {
 
 export interface YieldFundInterface extends utils.Interface {
   functions: {
-    "approveOtherContract(address,address)": FunctionFragment;
+    "approveTransfer(address,address,uint256)": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
@@ -49,7 +49,7 @@ export interface YieldFundInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "approveOtherContract"
+      | "approveTransfer"
       | "fund"
       | "getAssetAddress"
       | "getFundAmount"
@@ -68,8 +68,12 @@ export interface YieldFundInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "approveOtherContract",
-    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+    functionFragment: "approveTransfer",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "fund",
@@ -127,7 +131,7 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "approveOtherContract",
+    functionFragment: "approveTransfer",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
@@ -253,9 +257,10 @@ export interface YieldFund extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -310,9 +315,10 @@ export interface YieldFund extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  approveOtherContract(
+  approveTransfer(
     token: PromiseOrValue<string>,
     recipient: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -367,9 +373,10 @@ export interface YieldFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -464,9 +471,10 @@ export interface YieldFund extends BaseContract {
   };
 
   estimateGas: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -520,9 +528,10 @@ export interface YieldFund extends BaseContract {
   };
 
   populateTransaction: {
-    approveOtherContract(
+    approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

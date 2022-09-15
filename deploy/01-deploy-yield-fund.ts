@@ -1,8 +1,6 @@
-import { network, ethers } from "hardhat"
 import { DeployFunction } from "hardhat-deploy/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import {
-    developmentChains,
     networkConfig,
     DEFAULT_ASSET_ADDRESS,
     DEFAULT_POOL_ADDRESS,
@@ -13,10 +11,18 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId || 31337
-    const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
-    const poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
-
+    let assetAddress, poolAddress
     const locktime = chainId === 31337 ? 360000 : 0
+
+    if (network.name == "hardhat") {
+        const token = await ethers.getContract("MockERC20Token", deployer)
+        assetAddress = token.address
+        const pool = await ethers.getContract("MockPool", deployer)
+        poolAddress = pool.address
+    } else {
+        assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
+        poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
+    }
 
     log("----------------------------------------------------")
     const args = [locktime, assetAddress, poolAddress]

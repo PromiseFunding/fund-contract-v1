@@ -44,6 +44,7 @@ const config: HardhatUserConfig = {
             // forking: {
             //     url: GOERLI_RPC_URL,
             // },
+            saveDeployments:true,
         },
         localhost: {
             url: "http://127.0.0.1:8545/",
