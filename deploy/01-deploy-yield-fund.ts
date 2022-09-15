@@ -4,6 +4,7 @@ import {
     networkConfig,
     DEFAULT_ASSET_ADDRESS,
     DEFAULT_POOL_ADDRESS,
+    DEFAULT_AAVE_TOKEN_ADDRESS,
 } from "../helper-hardhat-config"
 
 const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -11,7 +12,7 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
     const chainId = network.config.chainId || 31337
-    let assetAddress, poolAddress
+    let assetAddress, aaveTokenAddress, poolAddress
     const locktime = chainId === 31337 ? 360000 : 0
 
     if (network.name == "hardhat") {
@@ -19,13 +20,16 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
         assetAddress = token.address
         const pool = await ethers.getContract("MockPool", deployer)
         poolAddress = pool.address
+        const aToken = await ethers.getContract("MockAToken", deployer)
+        aaveTokenAddress = aToken.address
     } else {
         assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
+        aaveTokenAddress = networkConfig[chainId].aaveTokenAddress || DEFAULT_AAVE_TOKEN_ADDRESS
         poolAddress = networkConfig[chainId].poolAddress || DEFAULT_POOL_ADDRESS
     }
 
     log("----------------------------------------------------")
-    const args = [locktime, assetAddress, poolAddress]
+    const args = [locktime, assetAddress, aaveTokenAddress, poolAddress]
     const yieldFund = await deploy("YieldFund", {
         from: deployer,
         args: args,

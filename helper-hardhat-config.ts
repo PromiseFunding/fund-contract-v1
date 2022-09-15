@@ -11,6 +11,7 @@ export interface networkConfigItem {
     poolAddress?: string
     assetName?: string
     poolAddressProvider?: string
+    aaveTokenAddress?: string
 }
 
 export interface networkConfigInfo {
@@ -36,6 +37,7 @@ export const networkConfig: networkConfigInfo = {
         assetAddress: "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49",
         assetName: "TetherToken",
         poolAddress: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
+        aaveTokenAddress: "0x73258E6fb96ecAc8a979826d503B45803a382d68",
     },
     1: {
         name: "mainnet",
@@ -45,6 +47,7 @@ export const networkConfig: networkConfigInfo = {
 
 export const developmentChains = ["hardhat", "localhost"]
 export const DEFAULT_ASSET_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+export const DEFAULT_AAVE_TOKEN_ADDRESS = "0x73258E6fb96ecAc8a979826d503B45803a382d68"
 export const DEFAULT_POOL_ADDRESS = "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6"
 export const frontEndContractsFile = "../fund-me-frontend-v1/constants/contractAddresses.json"
 export const frontEndAbiLocation = "../fund-me-frontend-v1/constants/"

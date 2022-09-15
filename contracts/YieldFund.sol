@@ -26,6 +26,7 @@ contract YieldFund {
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
+    address public i_aaveTokenAddress;
     address public i_poolAddress;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
@@ -57,11 +58,13 @@ contract YieldFund {
     constructor(
         uint256 lockTime,
         address assetAddress,
+        address aaveTokenAddress,
         address poolAddress
     ) {
         i_lockTime = lockTime;
         i_owner = payable(msg.sender);
         i_assetAddress = assetAddress;
+        i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
     }
 
@@ -128,7 +131,7 @@ contract YieldFund {
 
     function withdrawProceeds(uint256 amount) public onlyOwner {
         // # of aTokens in this contract - s_totalFunded
-        uint256 aTokenBalance = IERC20(i_assetAddress).balanceOf(address(this));
+        uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
         uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
 
         if (amount > availableToWithdraw) {

@@ -37,6 +37,7 @@ export interface YieldFundInterface extends utils.Interface {
     "getPoolAddress()": FunctionFragment;
     "getTimeLeft(address)": FunctionFragment;
     "getTimeLock()": FunctionFragment;
+    "i_aaveTokenAddress()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
     "i_lockTime()": FunctionFragment;
     "i_owner()": FunctionFragment;
@@ -57,6 +58,7 @@ export interface YieldFundInterface extends utils.Interface {
       | "getPoolAddress"
       | "getTimeLeft"
       | "getTimeLock"
+      | "i_aaveTokenAddress"
       | "i_assetAddress"
       | "i_lockTime"
       | "i_owner"
@@ -98,6 +100,10 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTimeLock",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "i_aaveTokenAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -154,6 +160,10 @@ export interface YieldFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLock",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_aaveTokenAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -287,6 +297,8 @@ export interface YieldFund extends BaseContract {
 
     getTimeLock(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<[string]>;
+
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
     i_lockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -345,6 +357,8 @@ export interface YieldFund extends BaseContract {
 
   getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
 
+  i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
+
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
   i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
@@ -402,6 +416,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<BigNumber>;
 
     getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
@@ -501,6 +517,8 @@ export interface YieldFund extends BaseContract {
 
     getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
 
+    i_aaveTokenAddress(overrides?: CallOverrides): Promise<BigNumber>;
+
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
@@ -557,6 +575,10 @@ export interface YieldFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getTimeLock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    i_aaveTokenAddress(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

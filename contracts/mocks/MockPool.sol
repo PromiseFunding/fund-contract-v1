@@ -11,6 +11,7 @@ error MockPool__WithdrawTooMuch();
 
 contract MockPool is IPool {
     mapping(address => uint256) public s_funders;
+    uint256 public totalFunded;
     address public i_aaveAssetAddress = address(0);
     address public i_assetAddress;
     address public i_owner;
@@ -51,6 +52,7 @@ contract MockPool is IPool {
         IERC20(i_aaveAssetAddress).transferFrom(address(this), msg.sender, amount);
         // Alter Mapping
         s_funders[onBehalfOf] += amount;
+        totalFunded += amount;
     }
 
     function withdraw(
@@ -70,6 +72,7 @@ contract MockPool is IPool {
         MockAToken(asset).transferFrom(address(this), to, amount);
         // Alter mapping
         s_funders[msg.sender] -= amount;
+        totalFunded -= amount;
     }
 
     function setAssetAddress() public {
@@ -78,9 +81,11 @@ contract MockPool is IPool {
         }
     }
 
-    // This is a mock function to 
-    function payoutInterest(address to) public onlyOwner () {
-
+    // This is a mock function to fake the payout of interest to a pool
+    function payoutInterest(address to) public onlyOwner {
+        uint256 payout = totalFunded / 100;
+        approveTransfer(IERC20(i_aaveAssetAddress), address(this), payout);
+        IERC20(i_aaveAssetAddress).transferFrom(address(this), to, payout);
     }
 
     function approveTransfer(

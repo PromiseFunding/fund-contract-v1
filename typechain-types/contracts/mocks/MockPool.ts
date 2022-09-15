@@ -168,6 +168,7 @@ export interface MockPoolInterface extends utils.Interface {
     "supply(address,uint256,address,uint16)": FunctionFragment;
     "supplyWithPermit(address,uint256,address,uint16,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "swapBorrowRateMode(address,uint256)": FunctionFragment;
+    "totalFunded()": FunctionFragment;
     "updateBridgeProtocolFee(uint256)": FunctionFragment;
     "updateFlashloanPremiums(uint128,uint128)": FunctionFragment;
     "withdraw(address,uint256,address)": FunctionFragment;
@@ -222,6 +223,7 @@ export interface MockPoolInterface extends utils.Interface {
       | "supply"
       | "supplyWithPermit"
       | "swapBorrowRateMode"
+      | "totalFunded"
       | "updateBridgeProtocolFee"
       | "updateFlashloanPremiums"
       | "withdraw"
@@ -506,6 +508,10 @@ export interface MockPoolInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalFunded",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateBridgeProtocolFee",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -687,6 +693,10 @@ export interface MockPoolInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "swapBorrowRateMode",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalFunded",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1269,6 +1279,8 @@ export interface MockPool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1570,6 +1582,8 @@ export interface MockPool extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
   updateBridgeProtocolFee(
     bridgeProtocolFee: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1870,6 +1884,8 @@ export interface MockPool extends BaseContract {
       interestRateMode: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
@@ -2378,6 +2394,8 @@ export interface MockPool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2682,6 +2700,8 @@ export interface MockPool extends BaseContract {
       interestRateMode: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    totalFunded(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
