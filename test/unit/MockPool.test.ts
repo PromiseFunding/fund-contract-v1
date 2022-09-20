@@ -127,6 +127,8 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                       postInterestBalance.sub(preInterestBalance).toString(),
                       userFundVal.div(100).toString()
                   )
+                  const withdrawableProceeds = await yieldFund.getWithdrawableProceeds()
+                  assert.equal(withdrawableProceeds.toString(), proceeds.toString())
                   // withdraw proceeds
                   yieldFund = yieldFundContract.connect(deployer)
                   const prePayoutBalance = await assetToken.balanceOf(deployer.address)

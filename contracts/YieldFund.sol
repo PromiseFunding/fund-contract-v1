@@ -170,4 +170,11 @@ contract YieldFund is IYieldFund {
     function getOwner() public view returns (address) {
         return i_owner;
     }
+
+    /// @notice Get the amount of proceeds that the owner can withdraw
+    /// @return The amount of withdrawable proceeds
+    function getWithdrawableProceeds() public view returns (uint256) {
+        uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
+        return aTokenBalance - s_totalFunded;
+    }
 }
