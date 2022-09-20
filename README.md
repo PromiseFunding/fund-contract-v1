@@ -144,6 +144,9 @@ hh deploy --network {network}
 hh test --network {network}s
 ```
 
+### Notes about testing:
+
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
