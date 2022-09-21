@@ -32,6 +32,7 @@ export interface YieldFundInterface extends utils.Interface {
     "approveTransfer(address,address,uint256)": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
+    "getBlockTime()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getPoolAddress()": FunctionFragment;
@@ -54,6 +55,7 @@ export interface YieldFundInterface extends utils.Interface {
       | "approveTransfer"
       | "fund"
       | "getAssetAddress"
+      | "getBlockTime"
       | "getFundAmount"
       | "getOwner"
       | "getPoolAddress"
@@ -85,6 +87,10 @@ export interface YieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getBlockTime",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -149,6 +155,10 @@ export interface YieldFundInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getAssetAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getBlockTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -291,6 +301,8 @@ export interface YieldFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -353,6 +365,8 @@ export interface YieldFund extends BaseContract {
 
   getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
+  getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
+
   getFundAmount(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -414,6 +428,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<void>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<string>;
+
+    getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     getFundAmount(
       funder: PromiseOrValue<string>,
@@ -517,6 +533,8 @@ export interface YieldFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -577,6 +595,8 @@ export interface YieldFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getBlockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getFundAmount(
       funder: PromiseOrValue<string>,
