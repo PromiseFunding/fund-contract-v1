@@ -21,7 +21,9 @@ import * as fs from "fs"
           let decimals: number,
               fundAmount: BigNumber,
               originalFundAmount: BigNumber,
-              timeLeft: BigNumber
+              timeLeft: BigNumber,
+              timeLocked: BigNumber,
+              blocktime: BigNumber
           const chainId = network.config.chainId || 31337
 
           beforeEach(async function () {
@@ -125,8 +127,11 @@ import * as fs from "fs"
               })
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = await yieldFundContract.connect(user)
+                  timeLeft = await yieldFund.getTimeLeft(user.address)
+                  console.log(timeLeft.toNumber())
 
                   originalFundAmount = await yieldFund.getFundAmount(user.address)
+                  console.log(originalFundAmount.toNumber())
 
                   const approveTx = await assetToken.approve(
                       yieldFund.address,
@@ -138,13 +143,26 @@ import * as fs from "fs"
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(user.address)
+                  console.log(fundAmount.toNumber())
                   const originalBalance = (
                       await assetToken.balanceOf(await user.address)
                   ).toNumber()
 
                   //should increase time of chain to test if withdraw works
+                  //   timeLocked = await yieldFund.getTimeLock()
+                  //   console.log(timeLocked.toNumber())
                   timeLeft = await yieldFund.getTimeLeft(user.address)
-                  await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+                  blocktime = await yieldFund.getBlockTime()
+                  //   console.log(blocktime.toNumber())
+                  //   console.log(timeLeft.toNumber())
+                  await network.provider.send("evm_setNextBlockTimestamp", [
+                      blocktime.toNumber() + timeLeft.toNumber() + 1,
+                  ])
+                  await network.provider.send("evm_mine")
+                  //   blocktime = await yieldFund.getBlockTime()
+                  //   console.log(blocktime.toNumber())
+                  //   timeLeft = await yieldFund.getTimeLeft(user.address)
+                  //   console.log(timeLeft.toNumber())
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
                   await withdrawTx.wait(1)
                   const afterFundAmount = await yieldFund.getFundAmount(user.address)

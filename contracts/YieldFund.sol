@@ -54,6 +54,7 @@ contract YieldFund is IYieldFund {
         i_assetAddress = assetAddress;
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
+        s_totalFunded = 0;
     }
 
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
@@ -137,9 +138,11 @@ contract YieldFund is IYieldFund {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        return s_funders[funder].amount;
+        if (s_funders[funder].amount != 0) {
+            return s_funders[funder].amount;
+        }
+        return 0;
     }
-
     /// @notice Gets the time lock of this contract
     /// @return locktime
     function getTimeLock() public view returns (uint256) {
@@ -161,8 +164,17 @@ contract YieldFund is IYieldFund {
     /// @notice Get the time left before allowed to withdraw funds for of a given address
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 representing the amount of time the funder has left
-    function getTimeLeft(address funder) public view returns (uint256) {
-        return i_lockTime - (block.timestamp - s_funders[funder].entryTime);
+    function getTimeLeft(address funder) public view returns (uint) {
+        if (i_lockTime <= (block.timestamp - (s_funders[funder].entryTime))) {
+            return 0;
+        }
+        return ((i_lockTime) - (block.timestamp - (s_funders[funder].entryTime)));
+        
+    }
+
+    /// @notice Gets the block time... Useing this function for testing purposes. Can be removed later
+    function getBlockTime() public view returns (uint256) {
+        return block.timestamp;
     }
 
     /// @notice Get the owner of the contract
