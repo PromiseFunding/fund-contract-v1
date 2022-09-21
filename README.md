@@ -141,10 +141,30 @@ hh deploy --network {network}
 ```
 2. Run tests
 ```
-hh test --network {network}s
+hh test --network {network}
+```
+You can run the tests on three different networks at the moment. `goerli` which requires no additional setup other than deploying YieldFund to the network, `hardhat` which is similarly straightforward, but requires the deployment of mocks, and `localhost` which requires you launching the [aave-sandbox](https://github.com/aave/aave-sandbox/) forked environement.
+
+---
+## Mocks
+This contract comes with several Mocks which together simulate a Mock AAVE pool. This is extremely useful because it allows you to test the YieldFund protocol in an environment which you have complete control over. To best use the mocks, follow these steps:
+
+1. Deploy the test network.
+```
+hh node
+```
+#### This will deploy all three mock contracts, along with the YieldFund contract. It will supply the deployer (account #1) with mock USDT tokens. When you run the command, it will split out 20 accounts in the console, with the deployer being Account #0. To access this account's funds add the account's private key to your metamask.
+2. Run the frontend by following the instructions [here](https://github.com/YieldMe/fund-me-frontend-v1/blob/master/README.md).
+3. Using the deployer account that you added to metamask, deposit some USDT into the YieldFund contract.
+4. If you would like to withdraw from the fund, you must do so after the `lockTime` is complete. To bypass the locktime, run the following command:
+```
+hh run scripts/bypassLocktime.ts --network localhost
+```
+5. In the production version of YieldFund, yield will be generated via gaining interest from a Liquidity Pool. Since there is of course no borrowing party on these mocks, we have to simulate the interest payout in order to withdraw proceeds from YieldFund. We can do so by running:
+```
+hh run scripts/payout.ts --network localhost 
 ```
 
-### Notes about testing:
 
 
 
