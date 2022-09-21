@@ -23,6 +23,9 @@ const deployMocks: DeployFunction = async function (hre: HardhatRuntimeEnvironme
             args: [mockToken.address],
         })
         log("-----------------------------------")
+        const tokenContract = await ethers.getContract("MockERC20Token", deployer)
+        tokenContract.approve(deployer, 100000000000000)
+        tokenContract.transferFrom(deployer, mockPool.address, 100000000000000)
 
         log("Deploying MockAToken...")
         const args = [mockPool.address]

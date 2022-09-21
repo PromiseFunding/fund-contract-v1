@@ -76,6 +76,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   await fundTx.wait(1)
 
                   fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  console.log(fundAmount.toString())
 
                   const originalBalance = (
                       await assetToken.balanceOf(await deployer.address)
@@ -120,7 +121,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   fundAmount = await yieldFund.getFundAmount(user.address)
                   // run mock interest
                   const preInterestBalance = await aToken.balanceOf(yieldFund.address)
-                  await mockPoolContract.payoutInterest(yieldFund.address)
+                  await mockPoolContract.payoutInterest(yieldFund.address, deployer.address)
                   const postInterestBalance = await aToken.balanceOf(yieldFund.address)
                   const proceeds = postInterestBalance.sub(preInterestBalance)
                   assert.equal(
