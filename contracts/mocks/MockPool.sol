@@ -69,7 +69,7 @@ contract MockPool is IPool {
         MockAToken(i_aaveAssetAddress).burnTokens(msg.sender, amount);
         // transfer ERC20 tokens from contract
         approveTransfer(IERC20(asset), address(this), amount);
-        MockAToken(asset).transferFrom(address(this), to, amount);
+        IERC20(asset).transferFrom(address(this), to, amount);
         // Alter mapping
         s_funders[msg.sender] -= amount;
         totalFunded -= amount;
@@ -84,6 +84,8 @@ contract MockPool is IPool {
     // This is a mock function to fake the payout of interest to a pool
     function payoutInterest(address to) public onlyOwner {
         uint256 payout = totalFunded / 100;
+        totalFunded += payout;
+        s_funders[to] += payout;
         approveTransfer(IERC20(i_aaveAssetAddress), address(this), payout);
         IERC20(i_aaveAssetAddress).transferFrom(address(this), to, payout);
     }

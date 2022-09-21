@@ -27,9 +27,10 @@ async function updateContractAddresses() {
     const yieldFund = await ethers.getContract("YieldFund")
     const contractAddresses = JSON.parse(fs.readFileSync(frontEndContractsFile, "utf8"))
     if (chainId in contractAddresses) {
-        if (!contractAddresses[chainId]["YieldFund"].includes(yieldFund.address)) {
-            contractAddresses[chainId]["YieldFund"].push(yieldFund.address)
-        }
+        // if (!contractAddresses[chainId]["YieldFund"].includes(yieldFund.address)) {
+        //     contractAddresses[chainId]["YieldFund"].push(yieldFund.address)
+        // }
+        contractAddresses[chainId]["YieldFund"] = [yieldFund.address]
     } else {
         contractAddresses[chainId] = { YieldFund: [yieldFund.address] }
     }
