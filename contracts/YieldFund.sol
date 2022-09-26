@@ -35,9 +35,6 @@ contract YieldFund is IYieldFund {
 
     // Constants
     // Events
-
-    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
-
     modifier onlyOwner() {
         if (msg.sender != i_owner) revert YieldFund__NotOwner();
         _;
@@ -50,7 +47,7 @@ contract YieldFund is IYieldFund {
         address poolAddress
     ) {
         i_lockTime = lockTime;
-        i_owner = payable(msg.sender);
+        i_owner = payable(tx.origin);
         i_assetAddress = assetAddress;
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
@@ -143,6 +140,7 @@ contract YieldFund is IYieldFund {
         }
         return 0;
     }
+
     /// @notice Gets the time lock of this contract
     /// @return locktime
     function getTimeLock() public view returns (uint256) {
@@ -164,12 +162,11 @@ contract YieldFund is IYieldFund {
     /// @notice Get the time left before allowed to withdraw funds for of a given address
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 representing the amount of time the funder has left
-    function getTimeLeft(address funder) public view returns (uint) {
+    function getTimeLeft(address funder) public view returns (uint256) {
         if (i_lockTime <= (block.timestamp - (s_funders[funder].entryTime))) {
             return 0;
         }
         return ((i_lockTime) - (block.timestamp - (s_funders[funder].entryTime)));
-        
     }
 
     /// @notice Gets the block time... Useing this function for testing purposes. Can be removed later

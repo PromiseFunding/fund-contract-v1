@@ -3,4 +3,5 @@
 /* eslint-disable */
 export * as interfaces from "./interfaces";
 export * as mocks from "./mocks";
+export { FundFactory__factory } from "./FundFactory__factory";
 export { YieldFund__factory } from "./YieldFund__factory";

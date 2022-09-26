@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
             accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
             saveDeployments: true,
             chainId: 5,
-            gas: 2100000,
+            gas: 21000000,
             gasPrice: 8000000000,
         },
         rinkeby: {

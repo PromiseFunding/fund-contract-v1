@@ -15,24 +15,36 @@ const updateFrontEnd: DeployFunction = async function (hre: HardhatRuntimeEnviro
 }
 
 async function updateAbi() {
-    const yieldFund = await ethers.getContract("YieldFund")
+    const fundFactory = await ethers.getContract("FundFactory")
+    const yieldFundAddress = await fundFactory.getYieldFund(0)
+
+    const yieldFund = await ethers.getContractAt("YieldFund", yieldFundAddress)
     fs.writeFileSync(
         `${frontEndAbiLocation}YieldFund.json`,
         yieldFund.interface.format(ethers.utils.FormatTypes.json).toString()
+    )
+    fs.writeFileSync(
+        `${frontEndAbiLocation}FundFactory.json`,
+        fundFactory.interface.format(ethers.utils.FormatTypes.json).toString()
     )
 }
 
 async function updateContractAddresses() {
     const chainId = network.config.chainId!.toString()
-    const yieldFund = await ethers.getContract("YieldFund")
+    const fundFactory = await ethers.getContract("FundFactory")
+    const yieldFundAddress = await fundFactory.getYieldFund(0)
+
+    const yieldFund = await ethers.getContractAt("YieldFund", yieldFundAddress)
     const contractAddresses = JSON.parse(fs.readFileSync(frontEndContractsFile, "utf8"))
     if (chainId in contractAddresses) {
         // if (!contractAddresses[chainId]["YieldFund"].includes(yieldFund.address)) {
         //     contractAddresses[chainId]["YieldFund"].push(yieldFund.address)
         // }
         contractAddresses[chainId]["YieldFund"] = [yieldFund.address]
+        contractAddresses[chainId]["FundFactory"] = [fundFactory.address]
     } else {
         contractAddresses[chainId] = { YieldFund: [yieldFund.address] }
+        contractAddresses[chainId] = { FundFactory: [fundFactory.address] }
     }
     fs.writeFileSync(frontEndContractsFile, JSON.stringify(contractAddresses))
 }
