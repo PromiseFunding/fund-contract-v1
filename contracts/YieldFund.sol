@@ -6,6 +6,7 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 import {IYieldFund} from "./interfaces/IYieldFund.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 error YieldFund__FundAmountMustBeAboveZero();
 error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
@@ -18,7 +19,7 @@ error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract YieldFund is IYieldFund {
+contract YieldFund is IYieldFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256 amount;
@@ -35,10 +36,6 @@ contract YieldFund is IYieldFund {
 
     // Constants
     // Events
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) revert YieldFund__NotOwner();
-        _;
-    }
 
     constructor(
         uint256 lockTime,

@@ -30,17 +30,25 @@ import type {
 export interface FundFactoryInterface extends utils.Interface {
   functions: {
     "createYieldFund(uint256,address,address,address)": FunctionFragment;
+    "getAllYieldFunds()": FunctionFragment;
     "getYieldFund(uint256)": FunctionFragment;
     "i_owner()": FunctionFragment;
+    "owner()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "s_funds(uint256)": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "createYieldFund"
+      | "getAllYieldFunds"
       | "getYieldFund"
       | "i_owner"
+      | "owner"
+      | "renounceOwnership"
       | "s_funds"
+      | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -53,13 +61,26 @@ export interface FundFactoryInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "getAllYieldFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getYieldFund",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "i_owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "s_funds",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(
@@ -67,17 +88,32 @@ export interface FundFactoryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getAllYieldFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getYieldFund",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "s_funds", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Created(address,address,address)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Created"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
 
 export interface CreatedEventObject {
@@ -91,6 +127,18 @@ export type CreatedEvent = TypedEvent<
 >;
 
 export type CreatedEventFilter = TypedEventFilter<CreatedEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface FundFactory extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -127,6 +175,8 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    getAllYieldFunds(overrides?: CallOverrides): Promise<[string[]]>;
+
     getYieldFund(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -134,10 +184,21 @@ export interface FundFactory extends BaseContract {
 
     i_owner(overrides?: CallOverrides): Promise<[string]>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     s_funds(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   createYieldFund(
@@ -148,6 +209,8 @@ export interface FundFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  getAllYieldFunds(overrides?: CallOverrides): Promise<string[]>;
+
   getYieldFund(
     index: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -155,10 +218,21 @@ export interface FundFactory extends BaseContract {
 
   i_owner(overrides?: CallOverrides): Promise<string>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   s_funds(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     createYieldFund(
@@ -169,6 +243,8 @@ export interface FundFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    getAllYieldFunds(overrides?: CallOverrides): Promise<string[]>;
+
     getYieldFund(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -176,10 +252,19 @@ export interface FundFactory extends BaseContract {
 
     i_owner(overrides?: CallOverrides): Promise<string>;
 
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
     s_funds(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -193,6 +278,15 @@ export interface FundFactory extends BaseContract {
       assetAddress?: PromiseOrValue<string> | null,
       fundAddress?: PromiseOrValue<string> | null
     ): CreatedEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
   };
 
   estimateGas: {
@@ -204,6 +298,8 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    getAllYieldFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getYieldFund(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -211,9 +307,20 @@ export interface FundFactory extends BaseContract {
 
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     s_funds(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -226,6 +333,8 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    getAllYieldFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getYieldFund(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -233,9 +342,20 @@ export interface FundFactory extends BaseContract {
 
     i_owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     s_funds(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

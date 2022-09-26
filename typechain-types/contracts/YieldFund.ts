@@ -44,8 +44,11 @@ export interface YieldFundInterface extends utils.Interface {
     "i_lockTime()": FunctionFragment;
     "i_owner()": FunctionFragment;
     "i_poolAddress()": FunctionFragment;
+    "owner()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "s_funders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
     "withdrawFundsFromPool(uint256)": FunctionFragment;
     "withdrawProceeds(uint256)": FunctionFragment;
   };
@@ -67,8 +70,11 @@ export interface YieldFundInterface extends utils.Interface {
       | "i_lockTime"
       | "i_owner"
       | "i_poolAddress"
+      | "owner"
+      | "renounceOwnership"
       | "s_funders"
       | "s_totalFunded"
+      | "transferOwnership"
       | "withdrawFundsFromPool"
       | "withdrawProceeds"
   ): FunctionFragment;
@@ -131,6 +137,11 @@ export interface YieldFundInterface extends utils.Interface {
     functionFragment: "i_poolAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "s_funders",
     values: [PromiseOrValue<string>]
@@ -138,6 +149,10 @@ export interface YieldFundInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "s_totalFunded",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawFundsFromPool",
@@ -196,9 +211,18 @@ export interface YieldFundInterface extends utils.Interface {
     functionFragment: "i_poolAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "s_funders", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "s_totalFunded",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -213,11 +237,13 @@ export interface YieldFundInterface extends utils.Interface {
   events: {
     "FunderAdded(address,address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,address,address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "ProceedsWithdrawn(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "FunderAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProceedsWithdrawn"): EventFragment;
 }
 
@@ -246,6 +272,18 @@ export type FundsWithdrawnEvent = TypedEvent<
 >;
 
 export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface ProceedsWithdrawnEventObject {
   owner: string;
@@ -331,6 +369,12 @@ export interface YieldFund extends BaseContract {
 
     i_poolAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     s_funders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -339,6 +383,11 @@ export interface YieldFund extends BaseContract {
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     withdrawFundsFromPool(
       amount: PromiseOrValue<BigNumberish>,
@@ -395,6 +444,12 @@ export interface YieldFund extends BaseContract {
 
   i_poolAddress(overrides?: CallOverrides): Promise<string>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   s_funders(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -403,6 +458,11 @@ export interface YieldFund extends BaseContract {
   >;
 
   s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   withdrawFundsFromPool(
     amount: PromiseOrValue<BigNumberish>,
@@ -459,6 +519,10 @@ export interface YieldFund extends BaseContract {
 
     i_poolAddress(overrides?: CallOverrides): Promise<string>;
 
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
     s_funders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -467,6 +531,11 @@ export interface YieldFund extends BaseContract {
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     withdrawFundsFromPool(
       amount: PromiseOrValue<BigNumberish>,
@@ -505,6 +574,15 @@ export interface YieldFund extends BaseContract {
       assetAddress?: PromiseOrValue<string> | null,
       amount?: null
     ): FundsWithdrawnEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
 
     "ProceedsWithdrawn(address,address,uint256)"(
       owner?: PromiseOrValue<string> | null,
@@ -563,12 +641,23 @@ export interface YieldFund extends BaseContract {
 
     i_poolAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     s_funders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     withdrawFundsFromPool(
       amount: PromiseOrValue<BigNumberish>,
@@ -630,12 +719,23 @@ export interface YieldFund extends BaseContract {
 
     i_poolAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     s_funders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     s_totalFunded(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     withdrawFundsFromPool(
       amount: PromiseOrValue<BigNumberish>,

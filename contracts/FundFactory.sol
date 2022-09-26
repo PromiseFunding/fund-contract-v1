@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 
 import {YieldFund} from "./YieldFund.sol";
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 error FundFactory__CantHaveTwoFunds();
 
@@ -12,7 +13,7 @@ error FundFactory__CantHaveTwoFunds();
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract FundFactory {
+contract FundFactory is Ownable {
     // Events
     event Created(address indexed owner, address indexed assetAddress, address indexed fundAddress);
 
