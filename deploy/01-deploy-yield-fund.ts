@@ -48,26 +48,9 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     )
     await createFundTx.wait(1)
 
-    const filter = {
-        address: fundFactory.address,
-        topics: [utils.id("Created(address,address,address)")],
-    }
-    const provider = ethers.getDefaultProvider()
-    provider.on(filter, (owner, assetAddress, fundAddress) => {
-        console.log("hello")
-        console.log(owner, assetAddress, fundAddress)
-        resolve()
-    })
-
     const yieldFundAddress = await fundFactory.getYieldFund(0)
     console.log(`Yield Fund Address: ${yieldFundAddress}`)
 
-    // fundFactory.on("Created", (owner, assetAddress, fundAddress) => {
-    //     console.log("hello")
-    //     console.log(owner, assetAddress, fundAddress)
-    // })
-    const fundAddress = await createFundTx.wait(1)
-    // console.log(fundAddress)
     log("----------------------------------------------------")
 }
 
