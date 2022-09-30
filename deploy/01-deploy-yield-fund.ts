@@ -1,11 +1,13 @@
 import { DeployFunction } from "hardhat-deploy/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
+import { utils } from "ethers"
 import {
     networkConfig,
     DEFAULT_ASSET_ADDRESS,
     DEFAULT_POOL_ADDRESS,
     DEFAULT_AAVE_TOKEN_ADDRESS,
 } from "../helper-hardhat-config"
+import { resolve } from "path"
 
 const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts, network, ethers } = hre
@@ -29,13 +31,26 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     }
 
     log("----------------------------------------------------")
-    const args = [locktime, assetAddress, aaveTokenAddress, poolAddress]
-    const yieldFund = await deploy("YieldFund", {
+    await deploy("FundFactory", {
         from: deployer,
-        args: args,
+        args: [],
         log: true,
         waitConfirmations: networkConfig[chainId].blockConfirmations || 1,
     })
+
+    const fundFactory = await ethers.getContract("FundFactory")
+
+    const createFundTx = await fundFactory.createYieldFund(
+        locktime,
+        assetAddress,
+        aaveTokenAddress,
+        poolAddress
+    )
+    await createFundTx.wait(1)
+
+    const yieldFundAddress = await fundFactory.getYieldFund(0)
+    console.log(`Yield Fund Address: ${yieldFundAddress}`)
+
     log("----------------------------------------------------")
 }
 

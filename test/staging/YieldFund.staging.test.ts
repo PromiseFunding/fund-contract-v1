@@ -19,7 +19,9 @@ developmentChains.includes(network.name)
           beforeEach(async () => {
               accounts = await ethers.getSigners()
               deployer = accounts[0]
-              yieldFundContract = await ethers.getContract("YieldFund", deployer)
+              const fundFactory = await ethers.getContract("FundFactory")
+              const yieldFundAddress = await fundFactory.getYieldFund(0)
+              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
               yieldFund = yieldFundContract.connect(deployer)
               const abi = fs.readFileSync("./abis/erc20Abi.abi.json", "utf8")
               const assetTokenContract = new ethers.Contract(

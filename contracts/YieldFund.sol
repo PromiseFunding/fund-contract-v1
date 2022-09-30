@@ -6,6 +6,7 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 import {IYieldFund} from "./interfaces/IYieldFund.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 error YieldFund__FundAmountMustBeAboveZero();
 error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
@@ -18,7 +19,7 @@ error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract YieldFund is IYieldFund {
+contract YieldFund is IYieldFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256 amount;
@@ -36,13 +37,6 @@ contract YieldFund is IYieldFund {
     // Constants
     // Events
 
-    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
-
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) revert YieldFund__NotOwner();
-        _;
-    }
-
     constructor(
         uint256 lockTime,
         address assetAddress,
@@ -50,7 +44,8 @@ contract YieldFund is IYieldFund {
         address poolAddress
     ) {
         i_lockTime = lockTime;
-        i_owner = payable(msg.sender);
+        i_owner = payable(tx.origin);
+        transferOwnership(i_owner);
         i_assetAddress = assetAddress;
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
@@ -143,6 +138,7 @@ contract YieldFund is IYieldFund {
         }
         return 0;
     }
+
     /// @notice Gets the time lock of this contract
     /// @return locktime
     function getTimeLock() public view returns (uint256) {
@@ -164,12 +160,11 @@ contract YieldFund is IYieldFund {
     /// @notice Get the time left before allowed to withdraw funds for of a given address
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 representing the amount of time the funder has left
-    function getTimeLeft(address funder) public view returns (uint) {
+    function getTimeLeft(address funder) public view returns (uint256) {
         if (i_lockTime <= (block.timestamp - (s_funders[funder].entryTime))) {
             return 0;
         }
         return ((i_lockTime) - (block.timestamp - (s_funders[funder].entryTime)));
-        
     }
 
     /// @notice Gets the block time... Useing this function for testing purposes. Can be removed later

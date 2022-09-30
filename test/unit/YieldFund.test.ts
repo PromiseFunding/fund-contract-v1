@@ -31,7 +31,9 @@ import * as fs from "fs"
               deployer = accounts[0]
               user = accounts[1]
               await deployments.fixture(["all"])
-              yieldFundContract = await ethers.getContract("YieldFund")
+              const fundFactory = await ethers.getContract("FundFactory")
+              const yieldFundAddress = await fundFactory.getYieldFund(0)
+              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
               //   yieldFund = yieldFundContract.connect(deployer)
               const abi = fs.readFileSync("./abis/erc20Abi.abi.json", "utf8")
               const assetTokenContract = new ethers.Contract(

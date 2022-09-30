@@ -30,7 +30,9 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
               user = accounts[1]
               await deployments.fixture(["all"])
               mockPoolContract = await ethers.getContract("MockPool")
-              yieldFundContract = await ethers.getContract("YieldFund")
+              const fundFactory = await ethers.getContract("FundFactory")
+              const yieldFundAddress = await fundFactory.getYieldFund(0)
+              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
               yieldFund = yieldFundContract.connect(deployer)
               assetTokenContract = await ethers.getContract("MockERC20Token")
               assetToken = assetTokenContract.connect(deployer)
@@ -121,7 +123,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   fundAmount = await yieldFund.getFundAmount(user.address)
                   // run mock interest
                   const preInterestBalance = await aToken.balanceOf(yieldFund.address)
-                  await mockPoolContract.payoutInterest(yieldFund.address, deployer.address)
+                  await mockPoolContract.payoutInterest(yieldFund.address)
                   const postInterestBalance = await aToken.balanceOf(yieldFund.address)
                   const proceeds = postInterestBalance.sub(preInterestBalance)
                   assert.equal(

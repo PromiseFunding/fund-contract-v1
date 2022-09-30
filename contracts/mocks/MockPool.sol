@@ -3,26 +3,23 @@ pragma solidity ^0.8.10;
 
 import "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import {MockAToken} from "./MockAToken.sol";
 import "hardhat/console.sol";
 
 error MockPool__NotOwner();
 error MockPool__WithdrawTooMuch();
 
-contract MockPool is IPool {
+contract MockPool is IPool, Ownable {
     mapping(address => uint256) public s_funders;
     uint256 public totalFunded;
     address public i_aaveAssetAddress = address(0);
     address public i_assetAddress;
     address public i_owner;
 
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) revert MockPool__NotOwner();
-        _;
-    }
-
     constructor(address assetAddress) {
         i_owner = msg.sender;
+        transferOwnership(i_owner);
         i_assetAddress = assetAddress;
     }
 

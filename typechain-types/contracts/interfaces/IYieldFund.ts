@@ -135,10 +135,12 @@ export interface IYieldFundInterface extends utils.Interface {
   events: {
     "FunderAdded(address,address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,address,address,uint256)": EventFragment;
+    "ProceedsWithdrawn(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "FunderAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProceedsWithdrawn"): EventFragment;
 }
 
 export interface FunderAddedEventObject {
@@ -166,6 +168,19 @@ export type FundsWithdrawnEvent = TypedEvent<
 >;
 
 export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
+
+export interface ProceedsWithdrawnEventObject {
+  owner: string;
+  assetAddress: string;
+  amount: BigNumber;
+}
+export type ProceedsWithdrawnEvent = TypedEvent<
+  [string, string, BigNumber],
+  ProceedsWithdrawnEventObject
+>;
+
+export type ProceedsWithdrawnEventFilter =
+  TypedEventFilter<ProceedsWithdrawnEvent>;
 
 export interface IYieldFund extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -343,6 +358,17 @@ export interface IYieldFund extends BaseContract {
       assetAddress?: PromiseOrValue<string> | null,
       amount?: null
     ): FundsWithdrawnEventFilter;
+
+    "ProceedsWithdrawn(address,address,uint256)"(
+      owner?: PromiseOrValue<string> | null,
+      assetAddress?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ProceedsWithdrawnEventFilter;
+    ProceedsWithdrawn(
+      owner?: PromiseOrValue<string> | null,
+      assetAddress?: PromiseOrValue<string> | null,
+      amount?: null
+    ): ProceedsWithdrawnEventFilter;
   };
 
   estimateGas: {

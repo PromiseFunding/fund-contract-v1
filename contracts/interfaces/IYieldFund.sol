@@ -18,6 +18,8 @@ interface IYieldFund {
         uint256 amount
     );
 
+    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
+
     function fund(uint256 amount) external;
 
     function approveTransfer(

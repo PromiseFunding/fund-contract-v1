@@ -152,8 +152,10 @@ export interface MockPoolInterface extends utils.Interface {
     "liquidationCall(address,address,address,uint256,bool)": FunctionFragment;
     "mintToTreasury(address[])": FunctionFragment;
     "mintUnbacked(address,uint256,address,uint16)": FunctionFragment;
+    "owner()": FunctionFragment;
     "payoutInterest(address)": FunctionFragment;
     "rebalanceStableBorrowRate(address,address)": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
     "repay(address,uint256,uint256,address)": FunctionFragment;
     "repayWithATokens(address,uint256,uint256)": FunctionFragment;
     "repayWithPermit(address,uint256,uint256,address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
@@ -169,6 +171,7 @@ export interface MockPoolInterface extends utils.Interface {
     "supplyWithPermit(address,uint256,address,uint16,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "swapBorrowRateMode(address,uint256)": FunctionFragment;
     "totalFunded()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
     "updateBridgeProtocolFee(uint256)": FunctionFragment;
     "updateFlashloanPremiums(uint128,uint128)": FunctionFragment;
     "withdraw(address,uint256,address)": FunctionFragment;
@@ -207,8 +210,10 @@ export interface MockPoolInterface extends utils.Interface {
       | "liquidationCall"
       | "mintToTreasury"
       | "mintUnbacked"
+      | "owner"
       | "payoutInterest"
       | "rebalanceStableBorrowRate"
+      | "renounceOwnership"
       | "repay"
       | "repayWithATokens"
       | "repayWithPermit"
@@ -224,6 +229,7 @@ export interface MockPoolInterface extends utils.Interface {
       | "supplyWithPermit"
       | "swapBorrowRateMode"
       | "totalFunded"
+      | "transferOwnership"
       | "updateBridgeProtocolFee"
       | "updateFlashloanPremiums"
       | "withdraw"
@@ -407,6 +413,7 @@ export interface MockPoolInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>
     ]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "payoutInterest",
     values: [PromiseOrValue<string>]
@@ -414,6 +421,10 @@ export interface MockPoolInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "rebalanceStableBorrowRate",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "repay",
@@ -510,6 +521,10 @@ export interface MockPoolInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "totalFunded",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "updateBridgeProtocolFee",
@@ -640,12 +655,17 @@ export interface MockPoolInterface extends utils.Interface {
     functionFragment: "mintUnbacked",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "payoutInterest",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "rebalanceStableBorrowRate",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "repay", data: BytesLike): Result;
@@ -700,6 +720,10 @@ export interface MockPoolInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updateBridgeProtocolFee",
     data: BytesLike
   ): Result;
@@ -717,6 +741,7 @@ export interface MockPoolInterface extends utils.Interface {
     "LiquidationCall(address,address,address,uint256,uint256,address,bool)": EventFragment;
     "MintUnbacked(address,address,address,uint256,uint16)": EventFragment;
     "MintedToTreasury(address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "RebalanceStableBorrowRate(address,address)": EventFragment;
     "Repay(address,address,address,uint256,bool)": EventFragment;
     "ReserveDataUpdated(address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
@@ -737,6 +762,7 @@ export interface MockPoolInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LiquidationCall"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MintUnbacked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MintedToTreasury"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RebalanceStableBorrowRate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Repay"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReserveDataUpdated"): EventFragment;
@@ -850,6 +876,18 @@ export type MintedToTreasuryEvent = TypedEvent<
 
 export type MintedToTreasuryEventFilter =
   TypedEventFilter<MintedToTreasuryEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface RebalanceStableBorrowRateEventObject {
   reserve: string;
@@ -1171,6 +1209,8 @@ export interface MockPool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
     payoutInterest(
       to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1179,6 +1219,10 @@ export interface MockPool extends BaseContract {
     rebalanceStableBorrowRate(
       asset: PromiseOrValue<string>,
       user: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -1280,6 +1324,11 @@ export interface MockPool extends BaseContract {
     ): Promise<ContractTransaction>;
 
     totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
@@ -1474,6 +1523,8 @@ export interface MockPool extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
   payoutInterest(
     to: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1482,6 +1533,10 @@ export interface MockPool extends BaseContract {
   rebalanceStableBorrowRate(
     asset: PromiseOrValue<string>,
     user: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1583,6 +1638,11 @@ export interface MockPool extends BaseContract {
   ): Promise<ContractTransaction>;
 
   totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   updateBridgeProtocolFee(
     bridgeProtocolFee: PromiseOrValue<BigNumberish>,
@@ -1779,6 +1839,8 @@ export interface MockPool extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    owner(overrides?: CallOverrides): Promise<string>;
+
     payoutInterest(
       to: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1789,6 +1851,8 @@ export interface MockPool extends BaseContract {
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     repay(
       asset: PromiseOrValue<string>,
@@ -1886,6 +1950,11 @@ export interface MockPool extends BaseContract {
     ): Promise<void>;
 
     totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
@@ -2009,6 +2078,15 @@ export interface MockPool extends BaseContract {
       reserve?: PromiseOrValue<string> | null,
       amountMinted?: null
     ): MintedToTreasuryEventFilter;
+
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
 
     "RebalanceStableBorrowRate(address,address)"(
       reserve?: PromiseOrValue<string> | null,
@@ -2286,6 +2364,8 @@ export interface MockPool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
     payoutInterest(
       to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2294,6 +2374,10 @@ export interface MockPool extends BaseContract {
     rebalanceStableBorrowRate(
       asset: PromiseOrValue<string>,
       user: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -2395,6 +2479,11 @@ export interface MockPool extends BaseContract {
     ): Promise<BigNumber>;
 
     totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
@@ -2593,6 +2682,8 @@ export interface MockPool extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     payoutInterest(
       to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -2601,6 +2692,10 @@ export interface MockPool extends BaseContract {
     rebalanceStableBorrowRate(
       asset: PromiseOrValue<string>,
       user: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2702,6 +2797,11 @@ export interface MockPool extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     totalFunded(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     updateBridgeProtocolFee(
       bridgeProtocolFee: PromiseOrValue<BigNumberish>,
