@@ -13,6 +13,7 @@ contract MockAToken is ERC20, Ownable {
 
     constructor(address contractAddress) ERC20("Aave Ethereum USDT", "aEthUSDT") {
         i_owner = contractAddress;
+        transferOwnership(i_owner);
         _mint(contractAddress, 100000000000000000000000000000);
         MockPool(contractAddress).setAssetAddress();
     }

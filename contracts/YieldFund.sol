@@ -45,6 +45,7 @@ contract YieldFund is IYieldFund, Ownable {
     ) {
         i_lockTime = lockTime;
         i_owner = payable(tx.origin);
+        transferOwnership(i_owner);
         i_assetAddress = assetAddress;
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;

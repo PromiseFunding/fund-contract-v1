@@ -19,6 +19,7 @@ contract MockPool is IPool, Ownable {
 
     constructor(address assetAddress) {
         i_owner = msg.sender;
+        transferOwnership(i_owner);
         i_assetAddress = assetAddress;
     }
 

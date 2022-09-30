@@ -23,6 +23,7 @@ contract FundFactory is Ownable {
 
     constructor() {
         i_owner = msg.sender;
+        transferOwnership(i_owner);
     }
 
     /// @notice Create a new YieldFund
