@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { assert } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
-import { MockPool, YieldFund } from "../../typechain-types/"
+import { MockPool, YieldFundAAVE } from "../../typechain-types/"
 import { MockERC20Token } from "../../typechain-types/contracts/test"
 
 // These tests are built to run on the local hardhat network using the mocks
@@ -12,8 +12,8 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
           let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
           const fundValue = 1
           let mockPoolContract: MockPool,
-              yieldFundContract: YieldFund,
-              yieldFund: YieldFund,
+              yieldFundContract: YieldFundAAVE,
+              yieldFund: YieldFundAAVE,
               aToken: any,
               assetTokenContract: MockERC20Token,
               assetToken: MockERC20Token
@@ -31,8 +31,8 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
               await deployments.fixture(["all"])
               mockPoolContract = await ethers.getContract("MockPool")
               const fundFactory = await ethers.getContract("FundFactory")
-              const yieldFundAddress = await fundFactory.getYieldFund(0)
-              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
+              const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
+              yieldFundContract = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
               yieldFund = yieldFundContract.connect(deployer)
               assetTokenContract = await ethers.getContract("MockERC20Token")
               assetToken = assetTokenContract.connect(deployer)

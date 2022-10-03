@@ -8,18 +8,18 @@ import "hardhat/console.sol";
 import {IYieldFund} from "./interfaces/IYieldFund.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error YieldFund__FundAmountMustBeAboveZero();
-error YieldFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
-error YieldFund__NotOwner();
-error YieldFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
-error YieldFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
+error YieldFundAAVE__FundAmountMustBeAboveZero();
+error YieldFundAAVE__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
+error YieldFundAAVE__NotOwner();
+error YieldFundAAVE__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
+error YieldFundAAVE__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 
 /// @title YieldFund
 /// @author Silas Lenihan and Dylan Paul
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract YieldFund is IYieldFund, Ownable {
+contract YieldFundAAVE is IYieldFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256 amount;
@@ -57,7 +57,7 @@ contract YieldFund is IYieldFund, Ownable {
     /// @param amount the amount to be funded to the contract
     function fund(uint256 amount) public {
         if (amount == 0) {
-            revert YieldFund__FundAmountMustBeAboveZero();
+            revert YieldFundAAVE__FundAmountMustBeAboveZero();
         }
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
@@ -92,13 +92,13 @@ contract YieldFund is IYieldFund, Ownable {
     /// @param amount The amount being withdrawn
     function withdrawFundsFromPool(uint256 amount) public {
         if (amount > s_funders[msg.sender].amount) {
-            revert YieldFund__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender].amount);
+            revert YieldFundAAVE__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender].amount);
         }
 
         //checks if locktime has expired for depositor
         if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime) {
             //TODO: check if errors need to be detailed as they are below... most likely not important for us
-            revert YieldFund__FundsStillTimeLocked(
+            revert YieldFundAAVE__FundsStillTimeLocked(
                 s_funders[msg.sender].entryTime,
                 i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime)
             );
@@ -119,7 +119,7 @@ contract YieldFund is IYieldFund, Ownable {
         uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
 
         if (amount > availableToWithdraw) {
-            revert YieldFund__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
+            revert YieldFundAAVE__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
         }
 
         // Redeem tokens and send them directly to the funder

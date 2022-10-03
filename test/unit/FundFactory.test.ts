@@ -32,7 +32,7 @@ import { FundFactory } from "../../typechain-types/"
 
           it("Emits an event when creating a new contract", async function () {
               await expect(
-                  fundFactory.createYieldFund(locktime, assetAddress, aaveTokenAddress, poolAddress)
+                  fundFactory.createYieldFundAAVE(locktime, assetAddress, aaveTokenAddress, poolAddress)
               ).to.emit(fundFactory, "Created")
           })
       })

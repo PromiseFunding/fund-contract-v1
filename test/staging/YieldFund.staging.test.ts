@@ -3,7 +3,7 @@ import { assert } from "chai"
 import { BigNumber } from "ethers"
 import { network, ethers } from "hardhat"
 import { developmentChains, networkConfig } from "../../helper-hardhat-config"
-import { YieldFund } from "../../typechain-types/"
+import { YieldFundAAVE } from "../../typechain-types/"
 import * as fs from "fs"
 
 developmentChains.includes(network.name)
@@ -13,15 +13,15 @@ developmentChains.includes(network.name)
           const fundValue = 1
           let fundValueWithDecimals = BigNumber.from("1")
           let decimals: number
-          let yieldFundContract: YieldFund, yieldFund: YieldFund, assetToken: any
+          let yieldFundContract: YieldFundAAVE, yieldFund: YieldFundAAVE, assetToken: any
           const chainId = network.config.chainId || 31337
 
           beforeEach(async () => {
               accounts = await ethers.getSigners()
               deployer = accounts[0]
               const fundFactory = await ethers.getContract("FundFactory")
-              const yieldFundAddress = await fundFactory.getYieldFund(0)
-              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
+              const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
+              yieldFundContract = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
               yieldFund = yieldFundContract.connect(deployer)
               const abi = fs.readFileSync("./abis/erc20Abi.abi.json", "utf8")
               const assetTokenContract = new ethers.Contract(
