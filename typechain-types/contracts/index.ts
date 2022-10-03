@@ -7,3 +7,4 @@ import type * as mocks from "./mocks";
 export type { mocks };
 export type { FundFactory } from "./FundFactory";
 export type { YieldFund } from "./YieldFund";
+export type { YieldFundAAVE } from "./YieldFundAAVE";

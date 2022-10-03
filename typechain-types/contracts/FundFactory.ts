@@ -29,30 +29,30 @@ import type {
 
 export interface FundFactoryInterface extends utils.Interface {
   functions: {
-    "createYieldFund(uint256,address,address,address)": FunctionFragment;
-    "getAllYieldFunds()": FunctionFragment;
-    "getYieldFund(uint256)": FunctionFragment;
+    "createYieldFundAAVE(uint256,address,address,address)": FunctionFragment;
+    "getAllYieldFundsAAVE()": FunctionFragment;
+    "getYieldFundAAVE(uint256)": FunctionFragment;
     "i_owner()": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "s_funds(uint256)": FunctionFragment;
+    "s_funds_aave(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "createYieldFund"
-      | "getAllYieldFunds"
-      | "getYieldFund"
+      | "createYieldFundAAVE"
+      | "getAllYieldFundsAAVE"
+      | "getYieldFundAAVE"
       | "i_owner"
       | "owner"
       | "renounceOwnership"
-      | "s_funds"
+      | "s_funds_aave"
       | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "createYieldFund",
+    functionFragment: "createYieldFundAAVE",
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
@@ -61,11 +61,11 @@ export interface FundFactoryInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getAllYieldFunds",
+    functionFragment: "getAllYieldFundsAAVE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getYieldFund",
+    functionFragment: "getYieldFundAAVE",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "i_owner", values?: undefined): string;
@@ -75,7 +75,7 @@ export interface FundFactoryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "s_funds",
+    functionFragment: "s_funds_aave",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -84,15 +84,15 @@ export interface FundFactoryInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "createYieldFund",
+    functionFragment: "createYieldFundAAVE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getAllYieldFunds",
+    functionFragment: "getAllYieldFundsAAVE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getYieldFund",
+    functionFragment: "getYieldFundAAVE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
@@ -101,7 +101,10 @@ export interface FundFactoryInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "s_funds", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "s_funds_aave",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -167,7 +170,7 @@ export interface FundFactory extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    createYieldFund(
+    createYieldFundAAVE(
       lockTime: PromiseOrValue<BigNumberish>,
       assetAddress: PromiseOrValue<string>,
       aaveTokenAddress: PromiseOrValue<string>,
@@ -175,9 +178,9 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getAllYieldFunds(overrides?: CallOverrides): Promise<[string[]]>;
+    getAllYieldFundsAAVE(overrides?: CallOverrides): Promise<[string[]]>;
 
-    getYieldFund(
+    getYieldFundAAVE(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -190,7 +193,7 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    s_funds(
+    s_funds_aave(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
@@ -201,7 +204,7 @@ export interface FundFactory extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  createYieldFund(
+  createYieldFundAAVE(
     lockTime: PromiseOrValue<BigNumberish>,
     assetAddress: PromiseOrValue<string>,
     aaveTokenAddress: PromiseOrValue<string>,
@@ -209,9 +212,9 @@ export interface FundFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getAllYieldFunds(overrides?: CallOverrides): Promise<string[]>;
+  getAllYieldFundsAAVE(overrides?: CallOverrides): Promise<string[]>;
 
-  getYieldFund(
+  getYieldFundAAVE(
     index: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -224,7 +227,7 @@ export interface FundFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  s_funds(
+  s_funds_aave(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
@@ -235,7 +238,7 @@ export interface FundFactory extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    createYieldFund(
+    createYieldFundAAVE(
       lockTime: PromiseOrValue<BigNumberish>,
       assetAddress: PromiseOrValue<string>,
       aaveTokenAddress: PromiseOrValue<string>,
@@ -243,9 +246,9 @@ export interface FundFactory extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getAllYieldFunds(overrides?: CallOverrides): Promise<string[]>;
+    getAllYieldFundsAAVE(overrides?: CallOverrides): Promise<string[]>;
 
-    getYieldFund(
+    getYieldFundAAVE(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -256,7 +259,7 @@ export interface FundFactory extends BaseContract {
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    s_funds(
+    s_funds_aave(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
@@ -290,7 +293,7 @@ export interface FundFactory extends BaseContract {
   };
 
   estimateGas: {
-    createYieldFund(
+    createYieldFundAAVE(
       lockTime: PromiseOrValue<BigNumberish>,
       assetAddress: PromiseOrValue<string>,
       aaveTokenAddress: PromiseOrValue<string>,
@@ -298,9 +301,9 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getAllYieldFunds(overrides?: CallOverrides): Promise<BigNumber>;
+    getAllYieldFundsAAVE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getYieldFund(
+    getYieldFundAAVE(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -313,7 +316,7 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    s_funds(
+    s_funds_aave(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -325,7 +328,7 @@ export interface FundFactory extends BaseContract {
   };
 
   populateTransaction: {
-    createYieldFund(
+    createYieldFundAAVE(
       lockTime: PromiseOrValue<BigNumberish>,
       assetAddress: PromiseOrValue<string>,
       aaveTokenAddress: PromiseOrValue<string>,
@@ -333,9 +336,11 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getAllYieldFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getAllYieldFundsAAVE(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
-    getYieldFund(
+    getYieldFundAAVE(
       index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -348,7 +353,7 @@ export interface FundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    s_funds(
+    s_funds_aave(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

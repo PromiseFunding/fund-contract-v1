@@ -32,3 +32,5 @@ export type { MockPool } from "./contracts/mocks/MockPool";
 export { MockPool__factory } from "./factories/contracts/mocks/MockPool__factory";
 export type { YieldFund } from "./contracts/YieldFund";
 export { YieldFund__factory } from "./factories/contracts/YieldFund__factory";
+export type { YieldFundAAVE } from "./contracts/YieldFundAAVE";
+export { YieldFundAAVE__factory } from "./factories/contracts/YieldFundAAVE__factory";

@@ -7,7 +7,7 @@ import {
     DEFAULT_ASSET_ADDRESS,
     DEFAULT_POOL_ADDRESS,
 } from "../../helper-hardhat-config"
-import { YieldFund } from "../../typechain-types/"
+import { YieldFundAAVE } from "../../typechain-types/"
 import * as fs from "fs"
 
 // These tests are built for the AAVE Sandbox Enivornment
@@ -16,7 +16,7 @@ import * as fs from "fs"
     : describe("YieldFund Unit Tests", function () {
           let accounts: SignerWithAddress[], deployer: SignerWithAddress, user: SignerWithAddress
           const fundValue = 1
-          let yieldFundContract: YieldFund, yieldFund: YieldFund, assetToken: any
+          let yieldFundContract: YieldFundAAVE, yieldFund: YieldFundAAVE, assetToken: any
           let fundValueWithDecimals = BigNumber.from("1")
           let decimals: number,
               fundAmount: BigNumber,
@@ -32,8 +32,8 @@ import * as fs from "fs"
               user = accounts[1]
               await deployments.fixture(["all"])
               const fundFactory = await ethers.getContract("FundFactory")
-              const yieldFundAddress = await fundFactory.getYieldFund(0)
-              yieldFundContract = await ethers.getContractAt("YieldFund", yieldFundAddress)
+              const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
+              yieldFundContract = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
               //   yieldFund = yieldFundContract.connect(deployer)
               const abi = fs.readFileSync("./abis/erc20Abi.abi.json", "utf8")
               const assetTokenContract = new ethers.Contract(

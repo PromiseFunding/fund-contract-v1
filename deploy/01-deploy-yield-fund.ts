@@ -40,7 +40,7 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
 
     const fundFactory = await ethers.getContract("FundFactory")
 
-    const createFundTx = await fundFactory.createYieldFund(
+    const createFundTx = await fundFactory.createYieldFundAAVE(
         locktime,
         assetAddress,
         aaveTokenAddress,
@@ -48,7 +48,7 @@ const deployYieldFund: DeployFunction = async function (hre: HardhatRuntimeEnvir
     )
     await createFundTx.wait(1)
 
-    const yieldFundAddress = await fundFactory.getYieldFund(0)
+    const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
     console.log(`Yield Fund Address: ${yieldFundAddress}`)
 
     log("----------------------------------------------------")
