@@ -31,7 +31,7 @@ async function updateContractAddresses() {
     if (chainId in contractAddresses) {
         contractAddresses[chainId]["FundFactory"] = [fundFactory.address]
     } else {
-        contractAddresses[chainId]["FundFactory"] = [fundFactory.address]
+        contractAddresses[chainId] = [{ FundFactory: fundFactory.address }]
     }
     fs.writeFileSync(frontEndContractsFile, JSON.stringify(contractAddresses))
 }
