@@ -27,9 +27,10 @@ const POLYGON_MAINNET_RPC_URL =
     process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/your-api-key"
 const POLYGON_MUMBAI_RPC_URL =
     process.env.POLYGON_MUMBAI_RPC_URL || "https://polygon-mumbai.alchemyapi.io/v2/your-api-key"
+const ARBITRUM_GOERLI_RPC_URL =
+    process.env.ARBITRUM_GOERLI_RPC_URL || "https://arb-goerli.g.alchemy.com/v2/your-api-key"
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 const SECONDARY_PRIVATE_KEY = process.env.SECONDARY_PRIVATE_KEY
-// optional
 
 // Your API key for Etherscan, obtain one at https://etherscan.io/
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key"
@@ -41,19 +42,16 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             chainId: 31337,
-            saveDeployments:true,
+            saveDeployments: true,
         },
         localhost: {
             url: "http://127.0.0.1:8545/",
             chainId: 31337,
-            accounts:
-                // PRIVATE_KEY !== undefined && SECONDARY_PRIVATE_KEY !== undefined
-                //     ? [PRIVATE_KEY, SECONDARY_PRIVATE_KEY]
-                //     : [],
-                [
-                    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-                    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
-                ],
+            accounts: [
+                // The two first default accounts from running `hh node`
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+                "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+            ],
             gas: 2100000,
             gasPrice: 8000000000,
         },
@@ -88,6 +86,14 @@ const config: HardhatUserConfig = {
             accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
             saveDeployments: true,
             chainId: 137,
+        },
+        arbitrum_goerli: {
+            url: ARBITRUM_GOERLI_RPC_URL,
+            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+            saveDeployments: true,
+            chainId: 421613,
+            gas: 21000000,
+            gasPrice: 8000000000,
         },
     },
     etherscan: {

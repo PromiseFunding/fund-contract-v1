@@ -39,6 +39,14 @@ export const networkConfig: networkConfigInfo = {
         poolAddress: "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6",
         aaveTokenAddress: "0x73258E6fb96ecAc8a979826d503B45803a382d68",
     },
+    421613: {
+        name: "arbitrum_goerli",
+        blockConfirmations: 6,
+        assetAddress: "0xbAc565f93f3192D35E9106E67B9d5c9348bD9389",
+        assetName: "TetherToken",
+        poolAddress: "0x6Cbb4E8eC402E07fDF96DbbC6c752aCfB0eB6075",
+        aaveTokenAddress: "0x4c78955a00c4b2a623267eb68bec88DFCb4cb4C4",
+    },
     1: {
         name: "mainnet",
         keepersUpdateInterval: "30",

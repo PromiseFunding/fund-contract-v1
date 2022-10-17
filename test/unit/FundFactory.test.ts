@@ -1,6 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai"
-import { assert } from "console"
 import { network, deployments, ethers } from "hardhat"
 import { FundFactory } from "../../typechain-types/"
 
