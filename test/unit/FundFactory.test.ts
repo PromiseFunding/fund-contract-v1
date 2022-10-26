@@ -7,31 +7,31 @@ import { FundFactory } from "../../typechain-types/"
 !(network.name == "hardhat")
     ? describe.skip
     : describe("FundFactory Unit Tests", function () {
-          let accounts: SignerWithAddress[], deployer: SignerWithAddress
-          let locktime: number, assetAddress: string, aaveTokenAddress: string, poolAddress: string
+        let accounts: SignerWithAddress[], deployer: SignerWithAddress
+        let locktime: number, assetAddress: string, aaveTokenAddress: string, poolAddress: string
 
-          let fundFactoryContract: FundFactory, fundFactory: FundFactory
+        let fundFactoryContract: FundFactory, fundFactory: FundFactory
 
-          beforeEach(async function () {
-              accounts = await ethers.getSigners()
-              deployer = accounts[0]
-              await deployments.fixture(["all"])
+        beforeEach(async function () {
+            accounts = await ethers.getSigners()
+            deployer = accounts[0]
+            await deployments.fixture(["all"])
 
-              fundFactoryContract = await ethers.getContract("FundFactory")
-              fundFactory = await fundFactoryContract.connect(deployer)
-              const assetTokenContract = await ethers.getContract("MockERC20Token")
-              const aTokenContract = await ethers.getContract("MockAToken")
-              const poolContract = await ethers.getContract("MockPool")
+            fundFactoryContract = await ethers.getContract("FundFactory")
+            fundFactory = await fundFactoryContract.connect(deployer)
+            const assetTokenContract = await ethers.getContract("MockERC20Token")
+            const aTokenContract = await ethers.getContract("MockAToken")
+            const poolContract = await ethers.getContract("MockPool")
 
-              locktime = 0
-              assetAddress = assetTokenContract.address
-              aaveTokenAddress = aTokenContract.address
-              poolAddress = poolContract.address
-          })
+            locktime = 0
+            assetAddress = assetTokenContract.address
+            aaveTokenAddress = aTokenContract.address
+            poolAddress = poolContract.address
+        })
 
-          it("Emits an event when creating a new contract", async function () {
-              await expect(
-                  fundFactory.createYieldFundAAVE(locktime, assetAddress, aaveTokenAddress, poolAddress)
-              ).to.emit(fundFactory, "Created")
-          })
-      })
+        it("Emits an event when creating a new contract", async function () {
+            await expect(
+                fundFactory.createYieldFundAAVE(locktime, assetAddress, aaveTokenAddress, poolAddress)
+            ).to.emit(fundFactory, "Created")
+        })
+    })
