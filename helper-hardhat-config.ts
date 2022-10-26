@@ -25,6 +25,7 @@ export const networkConfig: networkConfigInfo = {
         blockConfirmations: 1,
         poolAddress: "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
         assetAddress: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+        aaveTokenAddress: "0x6ab707Aca953eDAeFBc4fD23bA73294241490620"
     },
     4: {
         name: "rinkeby",
