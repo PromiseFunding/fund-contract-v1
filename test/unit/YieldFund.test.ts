@@ -115,7 +115,7 @@ import * as fs from "fs"
                 await expect(
                     yieldFund.withdrawFundsFromPool(higherFundAmount)
                 ).to.be.revertedWith(
-                    "Withdraw Funds Greater Than Balance"
+                    "YieldFundAAVE__WithdrawFundsGreaterThanBalance"
                 )
             })
             it("fails when a funder tries to withdraw before time lock ends", async function () {

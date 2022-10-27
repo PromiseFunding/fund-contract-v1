@@ -6,6 +6,7 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 import {IYieldFund} from "./interfaces/IYieldFund.sol";
+import {GovernanceToken} from "./governance/GovernanceToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error YieldFundAAVE__FundAmountMustBeAboveZero();
@@ -30,6 +31,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     address public i_assetAddress;
     address public i_aaveTokenAddress;
     address public i_poolAddress;
+    GovernanceToken public i_governanceToken;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
     uint256 public immutable i_lockTime;
@@ -50,6 +52,8 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
         s_totalFunded = 0;
+        // GovernanceToken governanceToken = new GovernanceToken("GovernanceToken", "GTK");
+        // i_governanceToken = governanceToken;
     }
 
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
@@ -92,7 +96,10 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @param amount The amount being withdrawn
     function withdrawFundsFromPool(uint256 amount) public {
         if (amount > s_funders[msg.sender].amount) {
-            revert YieldFundAAVE__WithdrawFundsGreaterThanBalance(amount, s_funders[msg.sender].amount);
+            revert YieldFundAAVE__WithdrawFundsGreaterThanBalance(
+                amount,
+                s_funders[msg.sender].amount
+            );
         }
 
         //checks if locktime has expired for depositor

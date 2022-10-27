@@ -41,6 +41,7 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     "getWithdrawableProceeds()": FunctionFragment;
     "i_aaveTokenAddress()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
+    "i_governanceToken()": FunctionFragment;
     "i_lockTime()": FunctionFragment;
     "i_owner()": FunctionFragment;
     "i_poolAddress()": FunctionFragment;
@@ -67,6 +68,7 @@ export interface YieldFundAAVEInterface extends utils.Interface {
       | "getWithdrawableProceeds"
       | "i_aaveTokenAddress"
       | "i_assetAddress"
+      | "i_governanceToken"
       | "i_lockTime"
       | "i_owner"
       | "i_poolAddress"
@@ -126,6 +128,10 @@ export interface YieldFundAAVEInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "i_assetAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "i_governanceToken",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -203,6 +209,10 @@ export interface YieldFundAAVEInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "i_assetAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_governanceToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "i_lockTime", data: BytesLike): Result;
@@ -363,6 +373,8 @@ export interface YieldFundAAVE extends BaseContract {
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    i_governanceToken(overrides?: CallOverrides): Promise<[string]>;
+
     i_lockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     i_owner(overrides?: CallOverrides): Promise<[string]>;
@@ -438,6 +450,8 @@ export interface YieldFundAAVE extends BaseContract {
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
+  i_governanceToken(overrides?: CallOverrides): Promise<string>;
+
   i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
   i_owner(overrides?: CallOverrides): Promise<string>;
@@ -512,6 +526,8 @@ export interface YieldFundAAVE extends BaseContract {
     i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
+
+    i_governanceToken(overrides?: CallOverrides): Promise<string>;
 
     i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -635,6 +651,8 @@ export interface YieldFundAAVE extends BaseContract {
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    i_governanceToken(overrides?: CallOverrides): Promise<BigNumber>;
+
     i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -712,6 +730,8 @@ export interface YieldFundAAVE extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    i_governanceToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     i_lockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
