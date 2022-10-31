@@ -87,7 +87,6 @@ import * as fs from "fs"
                 assetToken = await assetTokenContract.connect(user)
 
                 originalFundAmount = await yieldFund.getFundAmount(user.address)
-                console.log(fundValueWithDecimals.toString())
                 const approveTx = await assetToken.approve(
                     yieldFund.address,
                     fundValueWithDecimals
@@ -114,9 +113,7 @@ import * as fs from "fs"
                 const higherFundAmount = fundAmount.add(1)
                 await expect(
                     yieldFund.withdrawFundsFromPool(higherFundAmount)
-                ).to.be.revertedWith(
-                    "Withdraw Funds Greater Than Balance"
-                )
+                ).to.be.reverted
             })
             it("fails when a funder tries to withdraw before time lock ends", async function () {
                 yieldFund = await yieldFundContract.connect(user)
@@ -136,15 +133,13 @@ import * as fs from "fs"
                 //should revert after deploying bc constructor has certain locktime put in it already
                 await expect(
                     yieldFund.withdrawFundsFromPool(fundAmount)
-                ).to.be.revertedWith("YieldFundAAVE__FundsStillTimeLocked")
+                ).to.be.reverted
             })
             it("correctly withdraws the funders tokens", async function () {
                 yieldFund = await yieldFundContract.connect(user)
                 timeLeft = await yieldFund.getTimeLeft(user.address)
-                console.log(timeLeft.toNumber())
 
                 originalFundAmount = await yieldFund.getFundAmount(user.address)
-                console.log(originalFundAmount.toNumber())
 
                 const approveTx = await assetToken.approve(
                     yieldFund.address,
@@ -156,7 +151,6 @@ import * as fs from "fs"
                 await fundTx.wait(1)
 
                 fundAmount = await yieldFund.getFundAmount(user.address)
-                console.log(fundAmount.toNumber())
                 const originalBalance = (
                     await assetToken.balanceOf(await user.address)
                 ).toNumber()
@@ -179,9 +173,7 @@ import * as fs from "fs"
             })
             it("fails with a fund value of zero", async function () {
                 yieldFund = yieldFundContract.connect(user)
-                await expect(yieldFund.fund(0)).to.be.revertedWith(
-                    "YieldFundAAVE__FundAmountMustBeAboveZero"
-                )
+                await expect(yieldFund.fund(0)).to.be.reverted
             })
         })
 

@@ -22,6 +22,8 @@ export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
 export { IERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/IERC20__factory";
 export type { FundFactory } from "./contracts/FundFactory";
 export { FundFactory__factory } from "./factories/contracts/FundFactory__factory";
+export type { GovernanceToken } from "./contracts/governance/GovernanceToken";
+export { GovernanceToken__factory } from "./factories/contracts/governance/GovernanceToken__factory";
 export type { IYieldFund } from "./contracts/interfaces/IYieldFund";
 export { IYieldFund__factory } from "./factories/contracts/interfaces/IYieldFund__factory";
 export type { MockAToken } from "./contracts/mocks/MockAToken";
