@@ -27,7 +27,7 @@ import type {
   PromiseOrValue,
 } from "../common";
 
-export interface YieldFundAAVEInterface extends utils.Interface {
+export interface PromiseFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
     "fund(uint256)": FunctionFragment;
@@ -35,22 +35,19 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     "getBlockTime()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
-    "getPoolAddress()": FunctionFragment;
-    "getTimeLeft(address)": FunctionFragment;
-    "getTimeLock()": FunctionFragment;
+    "getState()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
-    "i_aaveTokenAddress()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
-    "i_lockTime()": FunctionFragment;
+    "i_governanceToken()": FunctionFragment;
     "i_owner()": FunctionFragment;
-    "i_poolAddress()": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "s_funders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
+    "setState(uint8)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "withdrawFundsFromPool(uint256)": FunctionFragment;
     "withdrawProceeds(uint256)": FunctionFragment;
+    "withdrawProceedsFunder(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -61,22 +58,19 @@ export interface YieldFundAAVEInterface extends utils.Interface {
       | "getBlockTime"
       | "getFundAmount"
       | "getOwner"
-      | "getPoolAddress"
-      | "getTimeLeft"
-      | "getTimeLock"
+      | "getState"
       | "getWithdrawableProceeds"
-      | "i_aaveTokenAddress"
       | "i_assetAddress"
-      | "i_lockTime"
+      | "i_governanceToken"
       | "i_owner"
-      | "i_poolAddress"
       | "owner"
       | "renounceOwnership"
       | "s_funders"
       | "s_totalFunded"
+      | "setState"
       | "transferOwnership"
-      | "withdrawFundsFromPool"
       | "withdrawProceeds"
+      | "withdrawProceedsFunder"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -104,24 +98,9 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getPoolAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getTimeLeft",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getTimeLock",
-    values?: undefined
-  ): string;
+  encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getWithdrawableProceeds",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "i_aaveTokenAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -129,14 +108,10 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "i_lockTime",
+    functionFragment: "i_governanceToken",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "i_owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "i_poolAddress",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -151,15 +126,19 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setState",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "withdrawFundsFromPool",
+    functionFragment: "withdrawProceeds",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "withdrawProceeds",
+    functionFragment: "withdrawProceedsFunder",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
 
@@ -181,36 +160,20 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getPoolAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTimeLeft",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTimeLock",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getWithdrawableProceeds",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "i_aaveTokenAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "i_assetAddress",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "i_lockTime", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "i_poolAddress",
+    functionFragment: "i_governanceToken",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -221,16 +184,17 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     functionFragment: "s_totalFunded",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setState", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "withdrawFundsFromPool",
+    functionFragment: "withdrawProceeds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "withdrawProceeds",
+    functionFragment: "withdrawProceedsFunder",
     data: BytesLike
   ): Result;
 
@@ -298,12 +262,12 @@ export type ProceedsWithdrawnEvent = TypedEvent<
 export type ProceedsWithdrawnEventFilter =
   TypedEventFilter<ProceedsWithdrawnEvent>;
 
-export interface YieldFundAAVE extends BaseContract {
+export interface PromiseFund extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: YieldFundAAVEInterface;
+  interface: PromiseFundInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -348,26 +312,15 @@ export interface YieldFundAAVE extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
-    getPoolAddress(overrides?: CallOverrides): Promise<[string]>;
-
-    getTimeLeft(
-      funder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    getTimeLock(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getState(overrides?: CallOverrides): Promise<[number]>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    i_aaveTokenAddress(overrides?: CallOverrides): Promise<[string]>;
-
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
-    i_lockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
+    i_governanceToken(overrides?: CallOverrides): Promise<[string]>;
 
     i_owner(overrides?: CallOverrides): Promise<[string]>;
-
-    i_poolAddress(overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -379,22 +332,31 @@ export interface YieldFundAAVE extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber] & { amount: BigNumber; entryTime: BigNumber }
+      [BigNumber, BigNumber, BigNumber] & {
+        amount: BigNumber;
+        entryTime: BigNumber;
+        votes: BigNumber;
+      }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    setState(
+      state: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    withdrawFundsFromPool(
+    withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    withdrawProceeds(
+    withdrawProceedsFunder(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -423,26 +385,15 @@ export interface YieldFundAAVE extends BaseContract {
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
-  getPoolAddress(overrides?: CallOverrides): Promise<string>;
-
-  getTimeLeft(
-    funder: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+  getState(overrides?: CallOverrides): Promise<number>;
 
   getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
-  i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
-
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
-  i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
+  i_governanceToken(overrides?: CallOverrides): Promise<string>;
 
   i_owner(overrides?: CallOverrides): Promise<string>;
-
-  i_poolAddress(overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -454,22 +405,31 @@ export interface YieldFundAAVE extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber] & { amount: BigNumber; entryTime: BigNumber }
+    [BigNumber, BigNumber, BigNumber] & {
+      amount: BigNumber;
+      entryTime: BigNumber;
+      votes: BigNumber;
+    }
   >;
 
   s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+  setState(
+    state: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawFundsFromPool(
+  withdrawProceeds(
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawProceeds(
+  withdrawProceedsFunder(
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -498,26 +458,15 @@ export interface YieldFundAAVE extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
-    getPoolAddress(overrides?: CallOverrides): Promise<string>;
-
-    getTimeLeft(
-      funder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+    getState(overrides?: CallOverrides): Promise<number>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
-    i_aaveTokenAddress(overrides?: CallOverrides): Promise<string>;
-
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
-    i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
+    i_governanceToken(overrides?: CallOverrides): Promise<string>;
 
     i_owner(overrides?: CallOverrides): Promise<string>;
-
-    i_poolAddress(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -527,22 +476,31 @@ export interface YieldFundAAVE extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber] & { amount: BigNumber; entryTime: BigNumber }
+      [BigNumber, BigNumber, BigNumber] & {
+        amount: BigNumber;
+        entryTime: BigNumber;
+        votes: BigNumber;
+      }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
+    setState(
+      state: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawFundsFromPool(
+    withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawProceeds(
+    withdrawProceedsFunder(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -620,26 +578,15 @@ export interface YieldFundAAVE extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getPoolAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTimeLeft(
-      funder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getTimeLock(overrides?: CallOverrides): Promise<BigNumber>;
+    getState(overrides?: CallOverrides): Promise<BigNumber>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
-    i_aaveTokenAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    i_lockTime(overrides?: CallOverrides): Promise<BigNumber>;
+    i_governanceToken(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    i_poolAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -654,17 +601,22 @@ export interface YieldFundAAVE extends BaseContract {
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setState(
+      state: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    withdrawFundsFromPool(
+    withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    withdrawProceeds(
+    withdrawProceedsFunder(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -694,30 +646,17 @@ export interface YieldFundAAVE extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getPoolAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTimeLeft(
-      funder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getTimeLock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getWithdrawableProceeds(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    i_aaveTokenAddress(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    i_lockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    i_governanceToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     i_owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    i_poolAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -732,17 +671,22 @@ export interface YieldFundAAVE extends BaseContract {
 
     s_totalFunded(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    setState(
+      state: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    withdrawFundsFromPool(
+    withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    withdrawProceeds(
+    withdrawProceedsFunder(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
