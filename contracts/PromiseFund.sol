@@ -14,6 +14,7 @@ error PromiseFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 ba
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
+error PromiseFund__NotFundingPeriod();
 
 /// @title PromiseFund
 /// @author Silas Lenihan and Dylan Paul
@@ -50,6 +51,9 @@ contract PromiseFund is IFund, Ownable {
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
     function fund(uint256 amount) public {
+        if (s_withdrawState != WithdrawState.PENDING) {
+            revert PromiseFund__NotFundingPeriod();
+        }
         if (amount == 0) {
             revert PromiseFund__FundAmountMustBeAboveZero();
         }
