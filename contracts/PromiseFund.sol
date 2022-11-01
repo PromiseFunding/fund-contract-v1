@@ -2,68 +2,64 @@
 
 pragma solidity ^0.8.10;
 
-import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
-import {IYieldFund} from "./interfaces/IYieldFund.sol";
+import {IFund} from "./interfaces/IFund.sol";
+import {GovernanceToken} from "./governance/GovernanceToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error YieldFundAAVE__FundAmountMustBeAboveZero();
-error YieldFundAAVE__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
-error YieldFundAAVE__NotOwner();
-error YieldFundAAVE__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
-error YieldFundAAVE__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
+error PromiseFund__FundAmountMustBeAboveZero();
+error PromiseFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
+error PromiseFund__NotOwner();
+error PromiseFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
+error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
+error PromiseFund__CantWithdrawFunder();
+error PromiseFund__CantWithdrawOwner();
 
-/// @title YieldFund
+/// @title PromiseFund
 /// @author Silas Lenihan and Dylan Paul
 /// @notice Use contract at your own risk, it is still in development
 /// @dev Not all functions are fully tested yet
 /// @custom:experimental This is an experimental contract.
-contract YieldFundAAVE is IYieldFund, Ownable {
+contract PromiseFund is IFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256 amount;
         uint256 entryTime;
+        uint256 votes;
     }
+
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
-    address public i_aaveTokenAddress;
-    address public i_poolAddress;
+    GovernanceToken public i_governanceToken;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
-    uint256 public immutable i_lockTime;
+    WithdrawState private s_withdrawState;
 
     // Constants
     // Events
 
-    constructor(
-        uint256 lockTime,
-        address assetAddress,
-        address aaveTokenAddress,
-        address poolAddress
-    ) {
-        i_lockTime = lockTime;
+    constructor(address assetAddress) {
         i_owner = payable(tx.origin);
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
-        i_aaveTokenAddress = aaveTokenAddress;
-        i_poolAddress = poolAddress;
         s_totalFunded = 0;
+        s_withdrawState = WithdrawState.PENDING;
+        GovernanceToken governanceToken = new GovernanceToken("GovernanceToken", "GTK");
+        i_governanceToken = governanceToken;
     }
 
-    /// @notice Fund the contract with a token, returns aTokens from LP to contract
+    /// @notice Fund the contract with a token
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
     function fund(uint256 amount) public {
         if (amount == 0) {
-            revert YieldFundAAVE__FundAmountMustBeAboveZero();
+            revert PromiseFund__FundAmountMustBeAboveZero();
         }
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
-        approveTransfer(IERC20(i_assetAddress), i_poolAddress, amount);
-        IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
         //set entryTime if first time depositing
         if (s_funders[msg.sender].amount == 0) {
@@ -73,6 +69,8 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
         s_funders[msg.sender].amount = s_funders[msg.sender].amount + amount;
+        // Set the number of votes to 1 for now. Will be weighted in the future.
+        s_funders[msg.sender].votes = 1;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -90,43 +88,47 @@ contract YieldFundAAVE is IYieldFund, Ownable {
 
     /// @notice Funder withdraws tokens up to the amount they supplied from the LP
     /// @param amount The amount being withdrawn
-    function withdrawFundsFromPool(uint256 amount) public {
+    function withdrawProceedsFunder(uint256 amount) public {
+        if (s_withdrawState != WithdrawState.FUNDER_WITHDRAW) {
+            revert PromiseFund__CantWithdrawFunder();
+        }
         if (amount > s_funders[msg.sender].amount) {
-            revert YieldFundAAVE__WithdrawFundsGreaterThanBalance(
+            revert PromiseFund__WithdrawFundsGreaterThanBalance(
                 amount,
                 s_funders[msg.sender].amount
             );
         }
-
-        //checks if locktime has expired for depositor
-        if ((block.timestamp - s_funders[msg.sender].entryTime) < i_lockTime) {
-            //TODO: check if errors need to be detailed as they are below... most likely not important for us
-            revert YieldFundAAVE__FundsStillTimeLocked(
-                s_funders[msg.sender].entryTime,
-                i_lockTime - (block.timestamp - s_funders[msg.sender].entryTime)
-            );
-        }
         // Before actual transfer to deter reentrancy (I think)
-        // TODO: Make sure this is safe from underflow
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_funders[msg.sender].amount -= amount;
         s_totalFunded -= amount;
-        // Redeem tokens and send them directly to the funder
-        IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
+
+        approveTransfer(IERC20(i_assetAddress), address(this), amount);
+        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
+
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
-    function withdrawProceeds(uint256 amount) public onlyOwner {
-        // # of aTokens in this contract - s_totalFunded
-        uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
-        uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
+    /// @notice THIS FUNCTION IS PURELY FOR TESTING PURPOSES
+    /// @dev CHANGE THE STATE WITH THIS TEST FUNCTION MANUALLY. DO NOT ALLOW THIS IN PRODUCTION
+    function setState(WithdrawState state) public {
+        s_withdrawState = state;
+    }
 
-        if (amount > availableToWithdraw) {
-            revert YieldFundAAVE__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
+    function withdrawProceeds(uint256 amount) public onlyOwner {
+        if (s_withdrawState != WithdrawState.OWNER_WITHDRAW) {
+            revert PromiseFund__CantWithdrawOwner();
         }
 
+        if (amount > s_totalFunded) {
+            revert PromiseFund__WithdrawProceedsGreaterThanBalance(amount, s_totalFunded);
+        }
+        s_totalFunded -= amount;
+
         // Redeem tokens and send them directly to the funder
-        IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
+        approveTransfer(IERC20(i_assetAddress), address(this), amount);
+        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
+
         emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
     }
 
@@ -142,32 +144,10 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         return 0;
     }
 
-    /// @notice Gets the time lock of this contract
-    /// @return locktime
-    function getTimeLock() public view returns (uint256) {
-        return i_lockTime;
-    }
-
-    /// @notice Gets the pool address of this contract
-    /// @return poolAddress
-    function getPoolAddress() public view returns (address) {
-        return i_poolAddress;
-    }
-
     /// @notice Gets the asset address of this contract
     /// @return assetAddress
     function getAssetAddress() public view returns (address) {
         return i_assetAddress;
-    }
-
-    /// @notice Get the time left before allowed to withdraw funds for of a given address
-    /// @param funder the funder whose balance is being checked
-    /// @return The uint256 representing the amount of time the funder has left
-    function getTimeLeft(address funder) public view returns (uint256) {
-        if (i_lockTime <= (block.timestamp - (s_funders[funder].entryTime))) {
-            return 0;
-        }
-        return ((i_lockTime) - (block.timestamp - (s_funders[funder].entryTime)));
     }
 
     /// @notice Gets the block time... Useing this function for testing purposes. Can be removed later
@@ -181,10 +161,24 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         return i_owner;
     }
 
+    function getState() public view returns (WithdrawState) {
+        return s_withdrawState;
+    }
+
     /// @notice Get the amount of proceeds that the owner can withdraw
     /// @return The amount of withdrawable proceeds
     function getWithdrawableProceeds() public view returns (uint256) {
-        uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
-        return aTokenBalance - s_totalFunded;
+        if (s_withdrawState == WithdrawState.OWNER_WITHDRAW) {
+            return s_totalFunded;
+        }
+        return 0;
+    }
+
+    function getGovernanceToken() public view returns (GovernanceToken) {
+        return i_governanceToken;
+    }
+
+    function getTotalFunds() public view returns (uint256) {
+        return s_totalFunded;
     }
 }
