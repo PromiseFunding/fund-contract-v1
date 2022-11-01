@@ -116,13 +116,14 @@ contract PromiseFund is IFund, Ownable {
     }
 
     function withdrawProceeds(uint256 amount) public onlyOwner {
-        if (amount > s_totalFunded) {
-            revert PromiseFund__WithdrawProceedsGreaterThanBalance(amount, s_totalFunded);
-        }
-
         if (s_withdrawState != WithdrawState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
         }
+
+        if (amount > s_totalFunded) {
+            revert PromiseFund__WithdrawProceedsGreaterThanBalance(amount, s_totalFunded);
+        }
+        s_totalFunded -= amount;
 
         // Redeem tokens and send them directly to the funder
         approveTransfer(IERC20(i_assetAddress), address(this), amount);
@@ -171,5 +172,13 @@ contract PromiseFund is IFund, Ownable {
             return s_totalFunded;
         }
         return 0;
+    }
+
+    function getGovernanceToken() public view returns (GovernanceToken) {
+        return i_governanceToken;
+    }
+
+    function getTotalFunds() public view returns (uint256) {
+        return s_totalFunded;
     }
 }

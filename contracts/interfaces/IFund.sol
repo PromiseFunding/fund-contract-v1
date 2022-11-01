@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {GovernanceToken} from "../governance/GovernanceToken.sol";
 
 interface IFund {
     enum WithdrawState {
@@ -45,4 +46,8 @@ interface IFund {
     function getOwner() external view returns (address);
 
     function getState() external view returns (WithdrawState);
+
+    function getGovernanceToken() external view returns (GovernanceToken);
+
+    function getTotalFunds() external view returns (uint256);
 }

@@ -94,7 +94,6 @@ import * as fs from "fs"
                 await approveTx.wait(1)
                 const balance = await assetToken.balanceOf(user.address)
                 const allowance = await assetToken.allowance(user.address, yieldFund.address)
-                console.log(`balance: ${balance}, allowance: ${allowance}`)
                 const fundTx = await yieldFund.fund(fundValueWithDecimals)
                 await fundTx.wait(1)
 

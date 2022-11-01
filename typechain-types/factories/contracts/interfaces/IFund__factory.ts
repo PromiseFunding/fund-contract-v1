@@ -167,6 +167,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getGovernanceToken",
+    outputs: [
+      {
+        internalType: "contract GovernanceToken",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getOwner",
     outputs: [
       {
@@ -186,6 +199,19 @@ const _abi = [
         internalType: "enum IFund.WithdrawState",
         name: "",
         type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getTotalFunds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",

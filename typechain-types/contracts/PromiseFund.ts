@@ -34,8 +34,10 @@ export interface PromiseFundInterface extends utils.Interface {
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getGovernanceToken()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
+    "getTotalFunds()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
     "i_governanceToken()": FunctionFragment;
@@ -57,8 +59,10 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getAssetAddress"
       | "getBlockTime"
       | "getFundAmount"
+      | "getGovernanceToken"
       | "getOwner"
       | "getState"
+      | "getTotalFunds"
       | "getWithdrawableProceeds"
       | "i_assetAddress"
       | "i_governanceToken"
@@ -97,8 +101,16 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getGovernanceToken",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getTotalFunds",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getWithdrawableProceeds",
     values?: undefined
@@ -159,8 +171,16 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGovernanceToken",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalFunds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getWithdrawableProceeds",
     data: BytesLike
@@ -310,9 +330,13 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<[string]>;
+
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -383,9 +407,13 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getGovernanceToken(overrides?: CallOverrides): Promise<string>;
+
   getOwner(overrides?: CallOverrides): Promise<string>;
 
   getState(overrides?: CallOverrides): Promise<number>;
+
+  getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -456,9 +484,13 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<string>;
+
     getOwner(overrides?: CallOverrides): Promise<string>;
 
     getState(overrides?: CallOverrides): Promise<number>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -576,9 +608,13 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -644,9 +680,15 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getGovernanceToken(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getWithdrawableProceeds(
       overrides?: CallOverrides

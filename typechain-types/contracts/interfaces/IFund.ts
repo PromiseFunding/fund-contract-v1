@@ -33,8 +33,10 @@ export interface IFundInterface extends utils.Interface {
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getGovernanceToken()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
+    "getTotalFunds()": FunctionFragment;
     "withdrawProceeds(uint256)": FunctionFragment;
     "withdrawProceedsFunder(uint256)": FunctionFragment;
   };
@@ -45,8 +47,10 @@ export interface IFundInterface extends utils.Interface {
       | "fund"
       | "getAssetAddress"
       | "getFundAmount"
+      | "getGovernanceToken"
       | "getOwner"
       | "getState"
+      | "getTotalFunds"
       | "withdrawProceeds"
       | "withdrawProceedsFunder"
   ): FunctionFragment;
@@ -71,8 +75,16 @@ export interface IFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getGovernanceToken",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getTotalFunds",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceeds",
     values: [PromiseOrValue<BigNumberish>]
@@ -95,8 +107,16 @@ export interface IFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getGovernanceToken",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getTotalFunds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "withdrawProceeds",
     data: BytesLike
@@ -202,9 +222,13 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<[string]>;
+
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -236,9 +260,13 @@ export interface IFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getGovernanceToken(overrides?: CallOverrides): Promise<string>;
+
   getOwner(overrides?: CallOverrides): Promise<string>;
 
   getState(overrides?: CallOverrides): Promise<number>;
+
+  getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   withdrawProceeds(
     amount: PromiseOrValue<BigNumberish>,
@@ -270,9 +298,13 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<string>;
+
     getOwner(overrides?: CallOverrides): Promise<string>;
 
     getState(overrides?: CallOverrides): Promise<number>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -344,9 +376,13 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getGovernanceToken(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -379,9 +415,15 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getGovernanceToken(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
