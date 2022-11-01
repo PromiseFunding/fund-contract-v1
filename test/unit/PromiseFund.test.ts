@@ -112,6 +112,16 @@ import { PromiseFund } from "../../typechain-types/"
                     promiseFund.withdrawProceedsFunder(1)
                 ).to.be.revertedWith("PromiseFund__WithdrawFundsGreaterThanBalance")
             })
+            it("fails when a funder tries to fund when the state isn't pending", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                const changeTx = await promiseFund.setState(3)
+
+                await changeTx.wait(1)
+                await expect(
+                    promiseFund.fund(fundValueWithDecimals)
+                ).to.be.revertedWith("PromiseFund__NotFundingPeriod")
+            })
             it("correctly allows the owner to withdraw proceeds in the correct state", async function () {
                 promiseFund = promiseFundContract.connect(user)
                 assetToken = assetTokenContract.connect(user)
