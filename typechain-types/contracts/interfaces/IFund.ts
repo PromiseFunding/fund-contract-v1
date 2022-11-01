@@ -33,7 +33,6 @@ export interface IFundInterface extends utils.Interface {
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
-    "getGovernanceToken()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTotalFunds()": FunctionFragment;
@@ -47,7 +46,6 @@ export interface IFundInterface extends utils.Interface {
       | "fund"
       | "getAssetAddress"
       | "getFundAmount"
-      | "getGovernanceToken"
       | "getOwner"
       | "getState"
       | "getTotalFunds"
@@ -75,10 +73,6 @@ export interface IFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "getGovernanceToken",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
@@ -105,10 +99,6 @@ export interface IFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFundAmount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getGovernanceToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
@@ -222,8 +212,6 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getGovernanceToken(overrides?: CallOverrides): Promise<[string]>;
-
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
@@ -260,8 +248,6 @@ export interface IFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getGovernanceToken(overrides?: CallOverrides): Promise<string>;
-
   getOwner(overrides?: CallOverrides): Promise<string>;
 
   getState(overrides?: CallOverrides): Promise<number>;
@@ -297,8 +283,6 @@ export interface IFund extends BaseContract {
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getGovernanceToken(overrides?: CallOverrides): Promise<string>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -376,8 +360,6 @@ export interface IFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getGovernanceToken(overrides?: CallOverrides): Promise<BigNumber>;
-
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
@@ -412,10 +394,6 @@ export interface IFund extends BaseContract {
 
     getFundAmount(
       funder: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getGovernanceToken(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

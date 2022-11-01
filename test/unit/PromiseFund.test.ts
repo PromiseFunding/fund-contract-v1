@@ -49,10 +49,6 @@ import { PromiseFund } from "../../typechain-types/"
                 const state = await promiseFund.getState()
                 assert.equal(state, 0)
             })
-            it("creates a new governance token", async function () {
-                const governanceToken = await promiseFund.getGovernanceToken()
-                assert(governanceToken)
-            })
         })
         describe("Funding and Withdrawal Tests", function () {
             it("properly adds a funder", async function () {
@@ -171,5 +167,6 @@ import { PromiseFund } from "../../typechain-types/"
 
                 assert.equal(beforeFunderBalance.toString(), afterFunderBalance.toString())
             })
+            it("")
         })
     })
