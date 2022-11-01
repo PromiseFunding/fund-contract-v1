@@ -167,19 +167,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "getGovernanceToken",
-    outputs: [
-      {
-        internalType: "contract GovernanceToken",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "getOwner",
     outputs: [
       {

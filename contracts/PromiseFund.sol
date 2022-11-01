@@ -5,7 +5,6 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 import {IFund} from "./interfaces/IFund.sol";
-import {GovernanceToken} from "./governance/GovernanceToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error PromiseFund__FundAmountMustBeAboveZero();
@@ -32,7 +31,6 @@ contract PromiseFund is IFund, Ownable {
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
-    GovernanceToken public i_governanceToken;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
     WithdrawState private s_withdrawState;
@@ -46,8 +44,6 @@ contract PromiseFund is IFund, Ownable {
         i_assetAddress = assetAddress;
         s_totalFunded = 0;
         s_withdrawState = WithdrawState.PENDING;
-        GovernanceToken governanceToken = new GovernanceToken("GovernanceToken", "GTK");
-        i_governanceToken = governanceToken;
     }
 
     /// @notice Fund the contract with a token
@@ -172,10 +168,6 @@ contract PromiseFund is IFund, Ownable {
             return s_totalFunded;
         }
         return 0;
-    }
-
-    function getGovernanceToken() public view returns (GovernanceToken) {
-        return i_governanceToken;
     }
 
     function getTotalFunds() public view returns (uint256) {
