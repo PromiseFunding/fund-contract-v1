@@ -75,7 +75,7 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when an owner withdraws in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                const changeTx = await promiseFund.setState(2)
+                const changeTx = await promiseFund.setState(3)
 
                 await changeTx.wait(1)
                 await expect(
@@ -85,7 +85,7 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when an owner tries to withdraw too much", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                const changeTx = await promiseFund.setState(1)
+                const changeTx = await promiseFund.setState(2)
 
                 await changeTx.wait(1)
                 await expect(
@@ -95,7 +95,7 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when a funder tries to withdraw in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
-                const changeTx = await promiseFund.setState(1)
+                const changeTx = await promiseFund.setState(2)
 
                 await changeTx.wait(1)
                 await expect(
@@ -105,7 +105,7 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when a funder tries to withdraw too much", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
-                const changeTx = await promiseFund.setState(2)
+                const changeTx = await promiseFund.setState(3)
 
                 await changeTx.wait(1)
                 await expect(
@@ -128,7 +128,7 @@ import { PromiseFund } from "../../typechain-types/"
                 const beforeContractBalance = await promiseFund.getTotalFunds()
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
 
-                const changeTx = await promiseFund.setState(1)
+                const changeTx = await promiseFund.setState(2)
 
                 await changeTx.wait(1)
                 promiseFund = promiseFundContract.connect(deployer)
@@ -157,7 +157,7 @@ import { PromiseFund } from "../../typechain-types/"
                 await fundTx.wait(1)
 
 
-                const changeTx = await promiseFund.setState(2)
+                const changeTx = await promiseFund.setState(3)
                 await changeTx.wait(1)
 
                 const withdrawTx = await promiseFund.withdrawProceedsFunder(fundValueWithDecimals)

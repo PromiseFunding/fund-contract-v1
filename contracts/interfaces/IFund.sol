@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 interface IFund {
     enum WithdrawState {
         PENDING,
+        VOTING,
         OWNER_WITHDRAW,
         FUNDER_WITHDRAW
     }
