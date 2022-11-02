@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IFund {
-    enum WithdrawState {
+    enum FundState {
         PENDING,
         VOTING,
         OWNER_WITHDRAW,
@@ -45,7 +45,15 @@ interface IFund {
 
     function getOwner() external view returns (address);
 
-    function getState() external view returns (WithdrawState);
+    function getState() external view returns (FundState);
 
     function getTotalFunds() external view returns (uint256);
+
+    function getVoteEnd() external view returns (uint256);
+
+    function getTimeLeftVoting() external view returns (uint256);
+
+    function getVotesPro() external view returns (uint256);
+
+    function getVotesCon() external view returns (uint256);
 }

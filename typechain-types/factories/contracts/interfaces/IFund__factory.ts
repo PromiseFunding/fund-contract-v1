@@ -183,7 +183,7 @@ const _abi = [
     name: "getState",
     outputs: [
       {
-        internalType: "enum IFund.WithdrawState",
+        internalType: "enum IFund.FundState",
         name: "",
         type: "uint8",
       },
@@ -193,7 +193,59 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getTimeLeftVoting",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getTotalFunds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getVoteEnd",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getVotesCon",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getVotesPro",
     outputs: [
       {
         internalType: "uint256",

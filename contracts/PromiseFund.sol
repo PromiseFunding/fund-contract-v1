@@ -15,6 +15,11 @@ error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
 error PromiseFund__NotFundingPeriod();
+error PromiseFund__VoteTooShort(uint256 minVoteLength);
+error PromiseFund__StateNotPending();
+error PromiseFund__StateNotVoting();
+error PromiseFund__NoVotesLeft();
+error PromiseFund__VoteEnded();
 
 /// @title PromiseFund
 /// @author Silas Lenihan and Dylan Paul
@@ -34,9 +39,15 @@ contract PromiseFund is IFund, Ownable {
     address public i_assetAddress;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalFunded;
-    WithdrawState private s_withdrawState;
+    uint256 public s_voteEnd;
+    uint256 public s_votesTried;
+    uint256 public s_votesPro;
+    uint256 public s_votesCon;
+    FundState private s_fundState;
 
     // Constants
+    uint256 MIN_VOTE_LENGTH = 14;
+
     // Events
 
     constructor(address assetAddress) {
@@ -44,14 +55,15 @@ contract PromiseFund is IFund, Ownable {
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
         s_totalFunded = 0;
-        s_withdrawState = WithdrawState.PENDING;
+        s_votesTried = 0;
+        s_fundState = FundState.PENDING;
     }
 
     /// @notice Fund the contract with a token
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
     function fund(uint256 amount) public {
-        if (s_withdrawState != WithdrawState.PENDING) {
+        if (s_fundState != FundState.PENDING) {
             revert PromiseFund__NotFundingPeriod();
         }
         if (amount == 0) {
@@ -89,7 +101,7 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Funder withdraws tokens up to the amount they supplied from the LP
     /// @param amount The amount being withdrawn
     function withdrawProceedsFunder(uint256 amount) public {
-        if (s_withdrawState != WithdrawState.FUNDER_WITHDRAW) {
+        if (s_fundState != FundState.FUNDER_WITHDRAW) {
             revert PromiseFund__CantWithdrawFunder();
         }
         if (amount > s_funders[msg.sender].amount) {
@@ -111,12 +123,12 @@ contract PromiseFund is IFund, Ownable {
 
     /// @notice THIS FUNCTION IS PURELY FOR TESTING PURPOSES
     /// @dev CHANGE THE STATE WITH THIS TEST FUNCTION MANUALLY. DO NOT ALLOW THIS IN PRODUCTION
-    function setState(WithdrawState state) public {
-        s_withdrawState = state;
+    function setState(FundState state) public {
+        s_fundState = state;
     }
 
     function withdrawProceeds(uint256 amount) public onlyOwner {
-        if (s_withdrawState != WithdrawState.OWNER_WITHDRAW) {
+        if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
         }
 
@@ -131,6 +143,41 @@ contract PromiseFund is IFund, Ownable {
 
         emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
     }
+
+    /// @notice Start a vote for releasing the funds
+    /// @param length the length of the vote in days
+    function startVote(uint256 length) public onlyOwner {
+        if (length < MIN_VOTE_LENGTH) {
+            revert PromiseFund__VoteTooShort(MIN_VOTE_LENGTH);
+        }
+        if (s_fundState != FundState.PENDING) {
+            revert PromiseFund__StateNotPending();
+        }
+
+        s_voteEnd = block.timestamp + (length * 86400);
+        s_fundState = FundState.VOTING;
+    }
+
+    /// @notice Submit a vote pro or against the fundraiser getting their funds
+    /// @param support true if you are pro | false if you are agains
+    function submitVote(bool support) public {
+        if (s_fundState != FundState.VOTING) {
+            revert PromiseFund__StateNotVoting();
+        }
+        if (s_voteEnd < block.timestamp) {
+            endVote();
+            revert PromiseFund__VoteEnded();
+        }
+        if (s_funders[msg.sender].votes < 1) {
+            revert PromiseFund__NoVotesLeft();
+        }
+        s_funders[msg.sender].votes -= 1;
+        support ? s_votesPro += 1 : s_votesCon += 1;
+    }
+
+    /// @notice Allows anyone to call the end of the vote. The vote has already
+    /// ended before this, since it doesn't allow anyone to
+    function endVote() public {}
 
     /** Getter Functions */
 
@@ -161,14 +208,14 @@ contract PromiseFund is IFund, Ownable {
         return i_owner;
     }
 
-    function getState() public view returns (WithdrawState) {
-        return s_withdrawState;
+    function getState() public view returns (FundState) {
+        return s_fundState;
     }
 
     /// @notice Get the amount of proceeds that the owner can withdraw
     /// @return The amount of withdrawable proceeds
     function getWithdrawableProceeds() public view returns (uint256) {
-        if (s_withdrawState == WithdrawState.OWNER_WITHDRAW) {
+        if (s_fundState == FundState.OWNER_WITHDRAW) {
             return s_totalFunded;
         }
         return 0;
@@ -176,5 +223,27 @@ contract PromiseFund is IFund, Ownable {
 
     function getTotalFunds() public view returns (uint256) {
         return s_totalFunded;
+    }
+
+    function getVoteEnd() public view returns (uint256) {
+        if (s_fundState == FundState.VOTING) {
+            return s_voteEnd;
+        }
+        return 0;
+    }
+
+    function getTimeLeftVoting() public view returns (uint256) {
+        if (s_fundState == FundState.VOTING) {
+            return s_voteEnd - block.timestamp;
+        }
+        return 0;
+    }
+
+    function getVotesPro() public view returns (uint256) {
+        return s_votesPro;
+    }
+
+    function getVotesCon() public view returns (uint256) {
+        return s_votesCon;
     }
 }

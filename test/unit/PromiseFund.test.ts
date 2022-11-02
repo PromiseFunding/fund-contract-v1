@@ -75,9 +75,8 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when an owner withdraws in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                const changeTx = await promiseFund.setState(3)
+                await promiseFund.setState(3)
 
-                await changeTx.wait(1)
                 await expect(
                     promiseFund.withdrawProceeds(1)
                 ).to.be.revertedWith("PromiseFund__CantWithdrawOwner")
@@ -85,9 +84,8 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when an owner tries to withdraw too much", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                const changeTx = await promiseFund.setState(2)
+                await promiseFund.setState(2)
 
-                await changeTx.wait(1)
                 await expect(
                     promiseFund.withdrawProceeds(1)
                 ).to.be.revertedWith("PromiseFund__WithdrawProceedsGreaterThanBalance")
@@ -95,9 +93,8 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when a funder tries to withdraw in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
-                const changeTx = await promiseFund.setState(2)
+                await promiseFund.setState(2)
 
-                await changeTx.wait(1)
                 await expect(
                     promiseFund.withdrawProceedsFunder(1)
                 ).to.be.revertedWith("PromiseFund__CantWithdrawFunder")
@@ -105,9 +102,8 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when a funder tries to withdraw too much", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
-                const changeTx = await promiseFund.setState(3)
+                await promiseFund.setState(3)
 
-                await changeTx.wait(1)
                 await expect(
                     promiseFund.withdrawProceedsFunder(1)
                 ).to.be.revertedWith("PromiseFund__WithdrawFundsGreaterThanBalance")
@@ -115,9 +111,8 @@ import { PromiseFund } from "../../typechain-types/"
             it("fails when a funder tries to fund when the state isn't pending", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
-                const changeTx = await promiseFund.setState(3)
+                await promiseFund.setState(3)
 
-                await changeTx.wait(1)
                 await expect(
                     promiseFund.fund(fundValueWithDecimals)
                 ).to.be.revertedWith("PromiseFund__NotFundingPeriod")
@@ -138,9 +133,8 @@ import { PromiseFund } from "../../typechain-types/"
                 const beforeContractBalance = await promiseFund.getTotalFunds()
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
 
-                const changeTx = await promiseFund.setState(2)
+                await promiseFund.setState(2)
 
-                await changeTx.wait(1)
                 promiseFund = promiseFundContract.connect(deployer)
 
                 const withdrawTx = await promiseFund.withdrawProceeds(fundValueWithDecimals)
@@ -167,8 +161,7 @@ import { PromiseFund } from "../../typechain-types/"
                 await fundTx.wait(1)
 
 
-                const changeTx = await promiseFund.setState(3)
-                await changeTx.wait(1)
+                await promiseFund.setState(3)
 
                 const withdrawTx = await promiseFund.withdrawProceedsFunder(fundValueWithDecimals)
                 await withdrawTx.wait(1)
@@ -177,6 +170,134 @@ import { PromiseFund } from "../../typechain-types/"
 
                 assert.equal(beforeFunderBalance.toString(), afterFunderBalance.toString())
             })
-            it("")
+        })
+        describe("Voting Tests", function () {
+            it("fails when a non-owner tries to call a vote", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await expect(
+                    promiseFund.startVote(1)
+                ).to.be.revertedWith("Ownable: caller is not the owner")
+            })
+            it("fails when the vote length is too short", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await expect(
+                    promiseFund.startVote(1)
+                ).to.be.revertedWith("PromiseFund__VoteTooShort")
+            })
+            it("fails when the fund state isn't pending", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.setState(3)
+
+                await expect(
+                    promiseFund.startVote(15)
+                ).to.be.revertedWith("PromiseFund__StateNotPending")
+            })
+            it("fails when the fund state isn't voting and a user tries to vote", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.setState(0)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__StateNotVoting")
+            })
+            it("fails when the vote period has ended", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.startVote(15)
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__VoteEnded")
+            })
+            it("fails when a funder tries to vote twice", async function () {
+                promiseFund = promiseFundContract.connect(user)
+                assetToken = assetTokenContract.connect(user)
+
+                await promiseFund.setState(0)
+
+                const approveTx = await assetToken.approve(
+                    promiseFund.address,
+                    fundValueWithDecimals
+                )
+                await approveTx.wait(1)
+
+                const fundTx = await promiseFund.fund(fundValueWithDecimals)
+                await fundTx.wait(1)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await promiseFund.submitVote(true)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__NoVotesLeft")
+            })
+            it("properly sets the end date", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.setState(0)
+
+                await promiseFund.startVote(15)
+                const voteEnd = await promiseFund.getVoteEnd()
+                assert.notEqual(voteEnd.toNumber(), 0)
+            })
+            it("properly allows a funder to vote in support", async function () {
+                promiseFund = promiseFundContract.connect(user)
+                assetToken = assetTokenContract.connect(user)
+
+                const votesProBefore = await promiseFund.getVotesPro()
+                await promiseFund.setState(0)
+
+                const approveTx = await assetToken.approve(
+                    promiseFund.address,
+                    fundValueWithDecimals
+                )
+                await approveTx.wait(1)
+
+                const fundTx = await promiseFund.fund(fundValueWithDecimals)
+                await fundTx.wait(1)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await promiseFund.submitVote(true)
+
+                const votesProAfter = await promiseFund.getVotesPro()
+                assert.equal(votesProAfter.toNumber(), votesProBefore.add(1).toNumber())
+            })
+            it("properly allows a funder to vote against", async function () {
+                promiseFund = promiseFundContract.connect(user)
+                assetToken = assetTokenContract.connect(user)
+
+                const votesConBefore = await promiseFund.getVotesCon()
+                await promiseFund.setState(0)
+
+                const approveTx = await assetToken.approve(
+                    promiseFund.address,
+                    fundValueWithDecimals
+                )
+                await approveTx.wait(1)
+
+                const fundTx = await promiseFund.fund(fundValueWithDecimals)
+                await fundTx.wait(1)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await promiseFund.submitVote(false)
+
+                const votesConAfter = await promiseFund.getVotesCon()
+                assert.equal(votesConAfter.toNumber(), votesConBefore.add(1).toNumber())
+            })
         })
     })
