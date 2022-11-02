@@ -35,7 +35,11 @@ export interface IFundInterface extends utils.Interface {
     "getFundAmount(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
+    "getTimeLeftVoting()": FunctionFragment;
     "getTotalFunds()": FunctionFragment;
+    "getVoteEnd()": FunctionFragment;
+    "getVotesCon()": FunctionFragment;
+    "getVotesPro()": FunctionFragment;
     "withdrawProceeds(uint256)": FunctionFragment;
     "withdrawProceedsFunder(uint256)": FunctionFragment;
   };
@@ -48,7 +52,11 @@ export interface IFundInterface extends utils.Interface {
       | "getFundAmount"
       | "getOwner"
       | "getState"
+      | "getTimeLeftVoting"
       | "getTotalFunds"
+      | "getVoteEnd"
+      | "getVotesCon"
+      | "getVotesPro"
       | "withdrawProceeds"
       | "withdrawProceedsFunder"
   ): FunctionFragment;
@@ -76,7 +84,23 @@ export interface IFundInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "getTimeLeftVoting",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getTotalFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVoteEnd",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVotesCon",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVotesPro",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -104,7 +128,20 @@ export interface IFundInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getTimeLeftVoting",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getTotalFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getVoteEnd", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getVotesCon",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVotesPro",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -216,7 +253,15 @@ export interface IFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<[number]>;
 
+    getTimeLeftVoting(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getVoteEnd(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getVotesCon(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getVotesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -252,7 +297,15 @@ export interface IFund extends BaseContract {
 
   getState(overrides?: CallOverrides): Promise<number>;
 
+  getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
+
   getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
   withdrawProceeds(
     amount: PromiseOrValue<BigNumberish>,
@@ -288,7 +341,15 @@ export interface IFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<number>;
 
+    getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
+
     getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -364,7 +425,15 @@ export interface IFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
+
     getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,
@@ -401,7 +470,15 @@ export interface IFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVoteEnd(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVotesCon(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVotesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdrawProceeds(
       amount: PromiseOrValue<BigNumberish>,

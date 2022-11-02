@@ -88,7 +88,7 @@ const config: HardhatUserConfig = {
         },
         arbitrum_goerli: {
             url: ARBITRUM_GOERLI_RPC_URL,
-            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
+            accounts: [PRIVATE_KEY!, SECONDARY_PRIVATE_KEY!],
             saveDeployments: true,
             chainId: 421613,
             gas: 21000000,

@@ -162,11 +162,11 @@ hh run scripts/bypassLocktime.ts --network localhost
 ```
 5. In the production version of YieldFund, yield will be generated via gaining interest from a Liquidity Pool. Since there is of course no borrowing party on these mocks, we have to simulate the interest payout in order to withdraw proceeds from YieldFund. We can do so by running:
 ```
-hh run scripts/payout.ts --network localhost 
+hh run scripts/payout.ts --network localhost
 ```
 ---
 ## Tests
-There are three different ways to run tests based on what type of network you are using. We define the three networks here. 
+There are three different ways to run tests based on what type of network you are using. We define the three networks here.
 
 | Type      | Description |
 | ----------- | ----------- |
@@ -180,27 +180,30 @@ There are three different ways to run tests based on what type of network you ar
 ```
 yarn hardhat test
 ```
-2. To run on localhost, first you have to spin up the `aave-sandbox` environment. In this repo, we have configured it to fork polygon mainnet. 
+2. To run on localhost, first you have to spin up the `aave-sandbox` environment. In this repo, we have configured it to fork polygon mainnet.
 - First clone the [aave-sandbox](https://github.com/aave/aave-sandbox) repo
 - Follow the instructions to get set up.
-- In one terminal run 
+- In one terminal run
 ```
 npm run node:fork:polygon-v3
 ```
 - In another run:
 ```
-npm run feed-market:polygon-v3 && npm run feed-accounts:polygon-v3 -- --accounts 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+npm run feed-accounts:polygon-v3 -- --accounts 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 ```
 - This will feed the two first accounts of the hardhat network with fake funds. The `hardhat.config.ts` in this repo is configured to have the first account be the deployer and the second account to be a user.
 - Now the `aave-sandbox` is fully set up, and you can run the test.
 ```
 yarn hardhat test --network localhost
 ```
-3. Lastly, you can run tests on a testnet. This assumes you have already run `yarn hardhat deploy --network {network}` to deploy a fund factory. Pick either `goerli` or `arbitrum-goerli` and run: 
+3. Lastly, you can run tests on a testnet. This assumes you have already run `yarn hardhat deploy --network {network}` to deploy a fund factory. Pick either `goerli` or `arbitrum-goerli` and run:
 ```
 yarn hardhat test --network {network}
 ```
-To make sure everything is running properly. All three types of tests must be run and must be passing all tests. They each test a different aspect of the project, so make sure to test all. 
+To make sure everything is running properly. All three types of tests must be run and must be passing all tests. They each test a different aspect of the project, so make sure to test all. If you configure the aave network correctly, then you can run all three tests at once:
+```
+hh test --network arbitrum_goerli && hh test --network localhost && hh test
+```
 
 
 ---
@@ -307,4 +310,4 @@ When Running locally
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+[JQuery-url]: https://jquery.com

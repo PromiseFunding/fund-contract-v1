@@ -68,9 +68,6 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                 await fundTx.wait(1)
 
                 fundAmount = await yieldFund.getFundAmount(deployer.address)
-                console.log(
-                    `| initial funds: ${originalFundAmount} | fund value: ${fundValueWithDecimals} | final funds: ${fundAmount} |`
-                )
                 assert.equal(
                     fundValueWithDecimals.toString(),
                     (await aToken.balanceOf(yieldFund.address)).toString(),
