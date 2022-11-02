@@ -200,6 +200,12 @@ yarn hardhat test --network localhost
 ```
 yarn hardhat test --network {network}
 ```
+
+
+
+
+
+
 To make sure everything is running properly. All three types of tests must be run and must be passing all tests. They each test a different aspect of the project, so make sure to test all. If you configure the aave network correctly, then you can run all three tests at once:
 ```
 hh test --network arbitrum_goerli && hh test --network localhost && hh test
