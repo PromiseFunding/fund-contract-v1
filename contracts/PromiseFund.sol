@@ -30,32 +30,55 @@ error PromiseFund__VoteStillGoing();
 contract PromiseFund is IFund, Ownable {
     // Type Declarations
     struct Funder {
-        uint256 amount;
+        uint256[5] amount; //max amount of milestones
         uint256 entryTime;
         uint256 votes;
         uint256 timesVoted;
     }
 
+    struct Milestone {
+        uint256 amountRaised;
+        uint256 startTime;
+    }
+
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
-    mapping(address => Funder) public s_funders;
+    uint8 public i_numberOfMilestones;
+    uint256 public i_milestoneDuration;
     uint256 public s_totalFunded;
     uint256 public s_voteEnd;
     uint256 public s_votesTried;
     uint256 public s_votesPro;
     uint256 public s_votesCon;
     FundState private s_fundState;
+    WithdrawState private s_withdrawState;
+    uint8 private tranche;
+    uint256 public maxDuration = 10368000; //for now 120 days for each milestone
+    uint8 public maxMilestones = 5;
+    Milestone[] public tranches; //determine if we want this public?
+    mapping(address => Funder) public s_allFunders;
 
     // Constants
     uint256 MIN_VOTE_LENGTH = 14;
 
     // Events
 
-    constructor(address assetAddress) {
+    constructor(
+        address assetAddress,
+        uint8 numberOfMilestones,
+        uint256 milestoneDuration
+    ) {
         i_owner = payable(tx.origin);
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
+        i_numberOfMilestones = numberOfMilestones < maxMilestones
+            ? numberOfMilestones
+            : maxMilestones;
+        i_milestoneDuration = milestoneDuration < maxDuration ? milestoneDuration : maxDuration;
+        tranches = new Milestone[](numberOfMilestones);
+        tranches[0].startTime = block.timestamp;
+        tranche = 0;
         s_totalFunded = 0;
         s_votesTried = 0;
         s_fundState = FundState.PENDING;
@@ -75,17 +98,36 @@ contract PromiseFund is IFund, Ownable {
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
 
+<<<<<<< HEAD
         //set entryTime if first time depositing
         if (s_funders[msg.sender].amount == 0) {
             s_funders[msg.sender].entryTime = block.timestamp;
             s_funders[msg.sender].timesVoted = 0;
+=======
+        // Milestone x;
+        // x.amountRaised=0;
+        // x.s_funders[msg.sender].amount = amount;
+        // tranches.push(x);
+        //useful for rounding errors with division. Can do decimals in future but this works for now.
+        uint256 temp = amount;
+        //loop through tranches and update the amount funded. uniform split of funds
+        for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
+            //not perfect division so give last tranche rest of funds
+            if (trancheIndex + 1 == tranches.length) {
+                tranches[trancheIndex].amountRaised += temp;
+                s_allFunders[msg.sender].amount[trancheIndex] += temp;
+            } else {
+                tranches[trancheIndex].amountRaised += (amount / i_numberOfMilestones);
+                temp -= (amount / i_numberOfMilestones);
+                s_allFunders[msg.sender].amount[trancheIndex] += (amount / i_numberOfMilestones);
+            }
+>>>>>>> implemented fund/constructor. havent tested yet
         }
 
         //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
-        s_funders[msg.sender].amount = s_funders[msg.sender].amount + amount;
         // Set the number of votes to 1 for now. Will be weighted in the future.
-        s_funders[msg.sender].votes = 1;
+        s_allFunders[msg.sender].votes = 1;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -107,15 +149,15 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.FUNDER_WITHDRAW) {
             revert PromiseFund__CantWithdrawFunder();
         }
-        if (amount > s_funders[msg.sender].amount) {
+        if (amount > s_allFunders[msg.sender].amount[0]) {
             revert PromiseFund__WithdrawFundsGreaterThanBalance(
                 amount,
-                s_funders[msg.sender].amount
+                s_allFunders[msg.sender].amount[0]
             );
         }
         // Before actual transfer to deter reentrancy (I think)
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
-        s_funders[msg.sender].amount -= amount;
+        s_allFunders[msg.sender].amount[0] -= amount;
         s_totalFunded -= amount;
 
         approveTransfer(IERC20(i_assetAddress), address(this), amount);
@@ -194,8 +236,8 @@ contract PromiseFund is IFund, Ownable {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        if (s_funders[funder].amount != 0) {
-            return s_funders[funder].amount;
+        if (s_allFunders[funder].amount[0] != 0) {
+            return s_allFunders[funder].amount[0];
         }
         return 0;
     }
