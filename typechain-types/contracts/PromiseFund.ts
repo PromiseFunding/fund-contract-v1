@@ -27,6 +27,20 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace PromiseFund {
+  export type MilestoneStruct = {
+    amountRaised: PromiseOrValue<BigNumberish>;
+    startTime: PromiseOrValue<BigNumberish>;
+    milestoneDuration: PromiseOrValue<BigNumberish>;
+  };
+
+  export type MilestoneStructOutput = [BigNumber, BigNumber, BigNumber] & {
+    amountRaised: BigNumber;
+    startTime: BigNumber;
+    milestoneDuration: BigNumber;
+  };
+}
+
 export interface PromiseFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
@@ -35,6 +49,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getMilestoneDuration()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
@@ -42,12 +57,17 @@ export interface PromiseFundInterface extends utils.Interface {
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
     "getVotesPro()": FunctionFragment;
+    "getTranches()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
+    "i_milestoneDuration()": FunctionFragment;
+    "i_numberOfMilestones()": FunctionFragment;
     "i_owner()": FunctionFragment;
+    "maxDuration()": FunctionFragment;
+    "maxMilestones()": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "s_funders(address)": FunctionFragment;
+    "s_allFunders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
     "s_voteEnd()": FunctionFragment;
     "s_votesCon()": FunctionFragment;
@@ -55,6 +75,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "s_votesTried()": FunctionFragment;
     "startVote(uint256)": FunctionFragment;
     "submitVote(bool)": FunctionFragment;
+    "tranches(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "withdrawProceeds(uint256)": FunctionFragment;
     "withdrawProceedsFunder(uint256)": FunctionFragment;
@@ -68,6 +89,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getAssetAddress"
       | "getBlockTime"
       | "getFundAmount"
+      | "getMilestoneDuration"
       | "getOwner"
       | "getState"
       | "getTimeLeftVoting"
@@ -75,12 +97,17 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getVoteEnd"
       | "getVotesCon"
       | "getVotesPro"
+      | "getTranches"
       | "getWithdrawableProceeds"
       | "i_assetAddress"
+      | "i_milestoneDuration"
+      | "i_numberOfMilestones"
       | "i_owner"
+      | "maxDuration"
+      | "maxMilestones"
       | "owner"
       | "renounceOwnership"
-      | "s_funders"
+      | "s_allFunders"
       | "s_totalFunded"
       | "s_voteEnd"
       | "s_votesCon"
@@ -88,6 +115,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "s_votesTried"
       | "startVote"
       | "submitVote"
+      | "tranches"
       | "transferOwnership"
       | "withdrawProceeds"
       | "withdrawProceedsFunder"
@@ -118,6 +146,10 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getMilestoneDuration",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
@@ -141,6 +173,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getTranches",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getWithdrawableProceeds",
     values?: undefined
   ): string;
@@ -148,14 +184,30 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "i_assetAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "i_milestoneDuration",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "i_numberOfMilestones",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "i_owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "maxDuration",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxMilestones",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "s_funders",
+    functionFragment: "s_allFunders",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -182,6 +234,10 @@ export interface PromiseFundInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "submitVote",
     values: [PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tranches",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -214,6 +270,10 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "getFundAmount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMilestoneDuration",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
@@ -234,6 +294,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getTranches",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getWithdrawableProceeds",
     data: BytesLike
   ): Result;
@@ -241,13 +305,32 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "i_assetAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_milestoneDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_numberOfMilestones",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "maxDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxMilestones",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "s_funders", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "s_allFunders",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "s_totalFunded",
     data: BytesLike
@@ -261,6 +344,7 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "startVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "submitVote", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "tranches", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -390,6 +474,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getMilestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
@@ -404,11 +490,23 @@ export interface PromiseFund extends BaseContract {
 
     getVotesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getTranches(
+      overrides?: CallOverrides
+    ): Promise<[PromiseFund.MilestoneStructOutput[]]>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<[number]>;
+
     i_owner(overrides?: CallOverrides): Promise<[string]>;
+
+    maxDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<[number]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -416,7 +514,7 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
@@ -447,6 +545,17 @@ export interface PromiseFund extends BaseContract {
       support: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountRaised: BigNumber;
+        startTime: BigNumber;
+        milestoneDuration: BigNumber;
+      }
+    >;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
@@ -489,6 +598,8 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
   getOwner(overrides?: CallOverrides): Promise<string>;
 
   getState(overrides?: CallOverrides): Promise<number>;
@@ -503,11 +614,23 @@ export interface PromiseFund extends BaseContract {
 
   getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getTranches(
+    overrides?: CallOverrides
+  ): Promise<PromiseFund.MilestoneStructOutput[]>;
+
   getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
+  i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+  i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+
   i_owner(overrides?: CallOverrides): Promise<string>;
+
+  maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+  maxMilestones(overrides?: CallOverrides): Promise<number>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -515,15 +638,14 @@ export interface PromiseFund extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  s_funders(
+  s_allFunders(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber] & {
       amount: BigNumber;
       entryTime: BigNumber;
       votes: BigNumber;
-      timesVoted: BigNumber;
     }
   >;
 
@@ -546,6 +668,17 @@ export interface PromiseFund extends BaseContract {
     support: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  tranches(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      amountRaised: BigNumber;
+      startTime: BigNumber;
+      milestoneDuration: BigNumber;
+    }
+  >;
 
   transferOwnership(
     newOwner: PromiseOrValue<string>,
@@ -586,6 +719,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<string>;
 
     getState(overrides?: CallOverrides): Promise<number>;
@@ -600,25 +735,36 @@ export interface PromiseFund extends BaseContract {
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTranches(
+      overrides?: CallOverrides
+    ): Promise<PromiseFund.MilestoneStructOutput[]>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+
     i_owner(overrides?: CallOverrides): Promise<string>;
+
+    maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<number>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber] & {
         amount: BigNumber;
         entryTime: BigNumber;
         votes: BigNumber;
-        timesVoted: BigNumber;
       }
     >;
 
@@ -641,6 +787,17 @@ export interface PromiseFund extends BaseContract {
       support: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountRaised: BigNumber;
+        startTime: BigNumber;
+        milestoneDuration: BigNumber;
+      }
+    >;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
@@ -732,6 +889,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
@@ -746,11 +905,21 @@ export interface PromiseFund extends BaseContract {
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTranches(overrides?: CallOverrides): Promise<BigNumber>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
+
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -758,7 +927,7 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -781,6 +950,11 @@ export interface PromiseFund extends BaseContract {
     submitVote(
       support: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     transferOwnership(
@@ -825,6 +999,10 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getMilestoneDuration(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -839,13 +1017,27 @@ export interface PromiseFund extends BaseContract {
 
     getVotesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getTranches(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getWithdrawableProceeds(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    i_milestoneDuration(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    i_numberOfMilestones(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     i_owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxDuration(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -853,7 +1045,7 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -876,6 +1068,11 @@ export interface PromiseFund extends BaseContract {
     submitVote(
       support: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(

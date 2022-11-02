@@ -31,7 +31,7 @@ contract PromiseFund is IFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256[5] amount; //max amount of milestones
-        uint256 entryTime;
+        //uint256 entryTime; //need to implement in future with interest generating
         uint256 votes;
         uint256 timesVoted;
     }
@@ -39,6 +39,7 @@ contract PromiseFund is IFund, Ownable {
     struct Milestone {
         uint256 amountRaised;
         uint256 startTime;
+        uint256 milestoneDuration; //useful in future if we have different lengths of milestones
     }
 
     // State variables
@@ -52,7 +53,6 @@ contract PromiseFund is IFund, Ownable {
     uint256 public s_votesPro;
     uint256 public s_votesCon;
     FundState private s_fundState;
-    WithdrawState private s_withdrawState;
     uint8 private tranche;
     uint256 public maxDuration = 10368000; //for now 120 days for each milestone
     uint8 public maxMilestones = 5;
@@ -76,8 +76,14 @@ contract PromiseFund is IFund, Ownable {
             ? numberOfMilestones
             : maxMilestones;
         i_milestoneDuration = milestoneDuration < maxDuration ? milestoneDuration : maxDuration;
-        tranches = new Milestone[](numberOfMilestones);
+        //tranches = new Milestone[](numberOfMilestones);
+        //tranches[0].startTime = block.timestamp;
+        for (uint256 i = 0; i < numberOfMilestones; i++) {
+            Milestone memory temp;
+            tranches.push(temp);
+        }
         tranches[0].startTime = block.timestamp;
+        tranches[0].milestoneDuration = i_milestoneDuration;
         tranche = 0;
         s_totalFunded = 0;
         s_votesTried = 0;
@@ -98,16 +104,10 @@ contract PromiseFund is IFund, Ownable {
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
 
-<<<<<<< HEAD
         //set entryTime if first time depositing
-        if (s_funders[msg.sender].amount == 0) {
-            s_funders[msg.sender].entryTime = block.timestamp;
-            s_funders[msg.sender].timesVoted = 0;
-=======
-        // Milestone x;
-        // x.amountRaised=0;
-        // x.s_funders[msg.sender].amount = amount;
-        // tranches.push(x);
+        if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
+            s_allFunders[msg.sender].timesVoted = 0;
+        }
         //useful for rounding errors with division. Can do decimals in future but this works for now.
         uint256 temp = amount;
         //loop through tranches and update the amount funded. uniform split of funds
@@ -121,7 +121,6 @@ contract PromiseFund is IFund, Ownable {
                 temp -= (amount / i_numberOfMilestones);
                 s_allFunders[msg.sender].amount[trancheIndex] += (amount / i_numberOfMilestones);
             }
->>>>>>> implemented fund/constructor. havent tested yet
         }
 
         //add to total deposits and user deposits
@@ -209,10 +208,10 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__VoteEnded();
         }
         // They get double their votes for each consecutive vote
-        if (s_funders[msg.sender].votes * s_votesTried <= s_funders[msg.sender].timesVoted) {
+        if (s_allFunders[msg.sender].votes * s_votesTried <= s_allFunders[msg.sender].timesVoted) {
             revert PromiseFund__NoVotesLeft();
         }
-        s_funders[msg.sender].timesVoted += 1;
+        s_allFunders[msg.sender].timesVoted += 1;
         support ? s_votesPro += 1 : s_votesCon += 1;
     }
 
@@ -274,27 +273,5 @@ contract PromiseFund is IFund, Ownable {
 
     function getTotalFunds() public view returns (uint256) {
         return s_totalFunded;
-    }
-
-    function getVoteEnd() public view returns (uint256) {
-        if (s_fundState == FundState.VOTING) {
-            return s_voteEnd;
-        }
-        return 0;
-    }
-
-    function getTimeLeftVoting() public view returns (uint256) {
-        if (s_fundState == FundState.VOTING) {
-            return s_voteEnd - block.timestamp;
-        }
-        return 0;
-    }
-
-    function getVotesPro() public view returns (uint256) {
-        return s_votesPro;
-    }
-
-    function getVotesCon() public view returns (uint256) {
-        return s_votesCon;
     }
 }

@@ -66,6 +66,16 @@ const _abi = [
         name: "assetAddress",
         type: "address",
       },
+      {
+        internalType: "uint8",
+        name: "numberOfMilestones",
+        type: "uint8",
+      },
+      {
+        internalType: "uint256",
+        name: "milestoneDuration",
+        type: "uint256",
+      },
     ],
     name: "createPromiseFund",
     outputs: [],

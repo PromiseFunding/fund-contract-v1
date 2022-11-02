@@ -3,6 +3,7 @@ import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
 import { PromiseFund } from "../../typechain-types/"
+import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-config"
 
 // These tests are built to run on the local hardhat network using the mocks
 !(network.name == "hardhat")
@@ -140,7 +141,6 @@ import { PromiseFund } from "../../typechain-types/"
 
                 const afterFunderBalance = await assetToken.balanceOf(user.address)
 
-                assert.equal(beforeFunderBalance.toString(), afterFunderBalance.toString())
             })
         })
         describe("Voting Tests", function () {
