@@ -20,6 +20,7 @@ error PromiseFund__StateNotPending();
 error PromiseFund__StateNotVoting();
 error PromiseFund__NoVotesLeft();
 error PromiseFund__VoteEnded();
+error PromiseFund__VoteStillGoing();
 
 /// @title PromiseFund
 /// @author Silas Lenihan and Dylan Paul
@@ -32,6 +33,7 @@ contract PromiseFund is IFund, Ownable {
         uint256 amount;
         uint256 entryTime;
         uint256 votes;
+        uint256 timesVoted;
     }
 
     // State variables
@@ -76,6 +78,7 @@ contract PromiseFund is IFund, Ownable {
         //set entryTime if first time depositing
         if (s_funders[msg.sender].amount == 0) {
             s_funders[msg.sender].entryTime = block.timestamp;
+            s_funders[msg.sender].timesVoted = 0;
         }
 
         //add to total deposits and user deposits
@@ -121,12 +124,6 @@ contract PromiseFund is IFund, Ownable {
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
-    /// @notice THIS FUNCTION IS PURELY FOR TESTING PURPOSES
-    /// @dev CHANGE THE STATE WITH THIS TEST FUNCTION MANUALLY. DO NOT ALLOW THIS IN PRODUCTION
-    function setState(FundState state) public {
-        s_fundState = state;
-    }
-
     function withdrawProceeds(uint256 amount) public onlyOwner {
         if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
@@ -150,9 +147,10 @@ contract PromiseFund is IFund, Ownable {
         if (length < MIN_VOTE_LENGTH) {
             revert PromiseFund__VoteTooShort(MIN_VOTE_LENGTH);
         }
-        if (s_fundState != FundState.PENDING) {
+        if (s_fundState != FundState.PENDING && s_fundState != FundState.REVOTE) {
             revert PromiseFund__StateNotPending();
         }
+        s_votesTried += 1;
 
         s_voteEnd = block.timestamp + (length * 86400);
         s_fundState = FundState.VOTING;
@@ -168,16 +166,27 @@ contract PromiseFund is IFund, Ownable {
             endVote();
             revert PromiseFund__VoteEnded();
         }
-        if (s_funders[msg.sender].votes < 1) {
+        // They get double their votes for each consecutive vote
+        if (s_funders[msg.sender].votes * s_votesTried <= s_funders[msg.sender].timesVoted) {
             revert PromiseFund__NoVotesLeft();
         }
-        s_funders[msg.sender].votes -= 1;
+        s_funders[msg.sender].timesVoted += 1;
         support ? s_votesPro += 1 : s_votesCon += 1;
     }
 
     /// @notice Allows anyone to call the end of the vote. The vote has already
     /// ended before this, since it doesn't allow anyone to
-    function endVote() public {}
+    function endVote() public {
+        if (s_fundState != FundState.VOTING) {
+            revert PromiseFund__StateNotVoting();
+        }
+        if (block.timestamp < s_voteEnd) {
+            revert PromiseFund__VoteStillGoing();
+        }
+        s_fundState = s_votesCon > s_votesPro
+            ? (s_votesTried < 2 ? FundState.REVOTE : FundState.FUNDER_WITHDRAW)
+            : FundState.OWNER_WITHDRAW;
+    }
 
     /** Getter Functions */
 

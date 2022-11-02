@@ -53,7 +53,6 @@ export interface PromiseFundInterface extends utils.Interface {
     "s_votesCon()": FunctionFragment;
     "s_votesPro()": FunctionFragment;
     "s_votesTried()": FunctionFragment;
-    "setState(uint8)": FunctionFragment;
     "startVote(uint256)": FunctionFragment;
     "submitVote(bool)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -87,7 +86,6 @@ export interface PromiseFundInterface extends utils.Interface {
       | "s_votesCon"
       | "s_votesPro"
       | "s_votesTried"
-      | "setState"
       | "startVote"
       | "submitVote"
       | "transferOwnership"
@@ -178,10 +176,6 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setState",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "startVote",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -265,7 +259,6 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "s_votesTried",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setState", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "startVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "submitVote", data: BytesLike): Result;
   decodeFunctionResult(
@@ -427,10 +420,11 @@ export interface PromiseFund extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amount: BigNumber;
         entryTime: BigNumber;
         votes: BigNumber;
+        timesVoted: BigNumber;
       }
     >;
 
@@ -443,11 +437,6 @@ export interface PromiseFund extends BaseContract {
     s_votesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     s_votesTried(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    setState(
-      state: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     startVote(
       length: PromiseOrValue<BigNumberish>,
@@ -530,10 +519,11 @@ export interface PromiseFund extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber] & {
       amount: BigNumber;
       entryTime: BigNumber;
       votes: BigNumber;
+      timesVoted: BigNumber;
     }
   >;
 
@@ -546,11 +536,6 @@ export interface PromiseFund extends BaseContract {
   s_votesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
   s_votesTried(overrides?: CallOverrides): Promise<BigNumber>;
-
-  setState(
-    state: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   startVote(
     length: PromiseOrValue<BigNumberish>,
@@ -629,10 +614,11 @@ export interface PromiseFund extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amount: BigNumber;
         entryTime: BigNumber;
         votes: BigNumber;
+        timesVoted: BigNumber;
       }
     >;
 
@@ -645,11 +631,6 @@ export interface PromiseFund extends BaseContract {
     s_votesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
     s_votesTried(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setState(
-      state: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     startVote(
       length: PromiseOrValue<BigNumberish>,
@@ -792,11 +773,6 @@ export interface PromiseFund extends BaseContract {
 
     s_votesTried(overrides?: CallOverrides): Promise<BigNumber>;
 
-    setState(
-      state: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     startVote(
       length: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -891,11 +867,6 @@ export interface PromiseFund extends BaseContract {
     s_votesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     s_votesTried(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    setState(
-      state: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
 
     startVote(
       length: PromiseOrValue<BigNumberish>,
