@@ -112,7 +112,7 @@ contract PromiseFund is IFund, Ownable {
         uint256 temp = amount;
         //loop through tranches and update the amount funded. uniform split of funds
         for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
-            //not perfect division so give last tranche rest of funds
+            //not perfect division so give last tranche rest of funds if extra decimals exist
             if (trancheIndex + 1 == tranches.length) {
                 tranches[trancheIndex].amountRaised += temp;
                 s_allFunders[msg.sender].amount[trancheIndex] += temp;
@@ -231,14 +231,15 @@ contract PromiseFund is IFund, Ownable {
 
     /** Getter Functions */
 
-    /// @notice Get the fund amount of a given address
+    /// @notice Get the fund amount of a given address by looping through their funder array
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        if (s_allFunders[funder].amount[0] != 0) {
-            return s_allFunders[funder].amount[0];
+        uint sum = 0;
+        for(uint i = 0; i < s_allFunders[funder].amount.length; i++){
+            sum += s_allFunders[funder].amount[i];
         }
-        return 0;
+        return sum;
     }
 
     /// @notice Gets the asset address of this contract
@@ -271,7 +272,36 @@ contract PromiseFund is IFund, Ownable {
         return 0;
     }
 
+    /// @notice Get the total amount donated to contract/fundraiser
+    /// @return The total amount in contract
     function getTotalFunds() public view returns (uint256) {
         return s_totalFunded;
+    }
+
+    /// @notice Get the Milestone Array that keeps track of amount raised, duration, and startTime
+    /// @return The entire Milestone tranches array
+    function getTranches() public view returns (Milestone[] memory) {
+        return tranches;
+    }
+
+    /// @notice Get the milestone duration that is currently uniformly set on deployment
+    /// @return The milestone duration or time to end
+    function getMilestoneDuration() public view returns (uint256) {
+        return i_milestoneDuration;
+    }
+
+    /// @notice Get the total amount raised for a single Milestone level
+    /// @param level the 'tranche' number. Ex: first milestone, second milestone...
+    /// @return The uint256 amount raised in that specific tranche
+    function getTrancheAmountRaised(uint256 level) public view returns (uint256) {
+        return tranches[level].amountRaised;
+    }
+
+    /// @notice Get the the specific amount raised in a funders 'tranche'
+    /// @param funder the address of the funder you are trying to check
+    /// @param level the amount donated to a specific tranche by the donor
+    /// @return The uint256 amount donated to a tranche level by the donor
+    function getFunderTrancheAmountRaised(address funder, uint256 level) public view returns (uint256) {
+        return s_allFunders[funder].amount[level];
     }
 }

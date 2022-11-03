@@ -14,6 +14,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         let promiseFundContract: PromiseFund, promiseFund: PromiseFund, assetToken: any, assetTokenContract: any
         let fundValueWithDecimals = BigNumber.from("1")
         let decimals: number
+        let timestamp: number
         const chainId = network.config.chainId || 31337
 
         beforeEach(async function () {
@@ -29,6 +30,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assetToken.address
             )
             const txReceipt = await createPromiseFundTx.wait(1)
+            const blockNum = txReceipt.blockNumber
+            const block = await ethers.provider.getBlock(blockNum)
+            timestamp = block.timestamp
             const promiseFundAddress = txReceipt.events[txReceipt.events.length - 1].args.fundAddress
             promiseFundContract = await ethers.getContractAt("PromiseFund", promiseFundAddress)
             promiseFund = await promiseFundContract.connect(deployer)
@@ -50,19 +54,114 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const state = await promiseFund.getState()
                 assert.equal(state, 0)
             })
+            it("initializes the asset address correctly", async () => {
+                promiseFund = await promiseFundContract.connect(user)
+                const response = await promiseFund.getAssetAddress()
+                assert.equal(
+                    response.toString().toLowerCase(),
+                    assetToken.address.toString().toLowerCase()
+                )
+            })
+            it("initializes the tranches correctly", async () => {
+                promiseFund = await promiseFundContract.connect(user)
+                const response = await promiseFund.getTranches()
+                //set length of milestones correctly
+                assert.equal(response.length, 4)
+                //sets time of beginning of tranche correctly
+                assert.equal(response[0].startTime.toNumber(), timestamp)
+            })
+            it("sets milestone duration correctly", async () => {
+                promiseFund = await promiseFundContract.connect(user)
+                const response = await promiseFund.getTranches()
+                //set duration of milestones correctly
+                //assert.equal(response[0].milestoneDuration.toNumber(), 10368000) -test if over maxDuration works
+                assert.equal(response[0].milestoneDuration.toNumber(), 600)
+
+            })
         })
+
+
         describe("Funding and Withdrawal Tests", function () {
             it("properly adds a funder", async function () {
-                const originalFundAmount = await promiseFund.getFundAmount(user.address)
-                const originalFundsRaised = await promiseFund.getTotalFunds();
+                promiseFund = promiseFundContract.connect(user)
+                assetToken = assetTokenContract.connect(user)
 
-                await fund()
+                //tests total amount in the funder amount array equals the total amount in the contract/donated
+                //tests each milestone tranche equals the amount in the funder array tranche
+                //ex: user donates 1 dollar. Milestones 1-4 each have .25 and the users amount array in indices 0-3 have 0.25
+                //to keep track of which rounds they funded to
+                const originalFundAmount = await promiseFund.getFundAmount(user.address)
+                const originalFundsRaised = await promiseFund.getTotalFunds()
+                const originalMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const originalFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
+                const originalMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const originalFunderAmountInTrancheTwo = (await promiseFund.getFunderTrancheAmountRaised(user.address, 1))
+                const originalMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const originalFunderAmountInTrancheThree = (await promiseFund.getFunderTrancheAmountRaised(user.address, 2))
+                const originalMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const originalFunderAmountInTrancheFour = (await promiseFund.getFunderTrancheAmountRaised(user.address, 3))
+
+                const approveTx = await assetToken.approve(
+                    promiseFund.address,
+                    fundValueWithDecimals
+                )
+                await approveTx.wait(1)
+
+                const fundTx = await promiseFund.fund(fundValueWithDecimals)
+                await fundTx.wait(1)
 
                 const afterFundAmount = await promiseFund.getFundAmount(user.address)
                 const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
+                const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const afterFunderAmountInTrancheTwo = (await promiseFund.getFunderTrancheAmountRaised(user.address, 1))
+                const afterMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const afterFunderAmountInTrancheThree = (await promiseFund.getFunderTrancheAmountRaised(user.address, 2))
+                const afterMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const afterFunderAmountInTrancheFour = (await promiseFund.getFunderTrancheAmountRaised(user.address, 3))
 
-                assert.equal(afterFundAmount.toString(), originalFundAmount.add(fundValueWithDecimals).toString())
-                assert.equal(afterFundsRaised.toString(), originalFundsRaised.add(fundValueWithDecimals).toString(), assetToken.balanceOf(promiseFund.address))
+                assert.equal(
+                    afterFundAmount.toString(),
+                    originalFundAmount.add(fundValueWithDecimals).toString()
+                )
+                assert.equal(
+                    afterFundsRaised.toString(),
+                    originalFundsRaised.add(fundValueWithDecimals).toString(),
+                    assetToken.balanceOf(promiseFund.address)
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheOne.toString(),
+                    originalFunderAmountInTrancheOne.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheOne.toString(),
+                    afterFunderAmountInTrancheOne.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheTwo.toString(),
+                    originalFunderAmountInTrancheTwo.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheTwo.toString(),
+                    afterFunderAmountInTrancheTwo.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheThree.toString(),
+                    originalFunderAmountInTrancheThree.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheThree.toString(),
+                    afterFunderAmountInTrancheThree.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheFour.toString(),
+                    originalFunderAmountInTrancheFour.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheFour.toString(),
+                    afterFunderAmountInTrancheFour.toString()
+                )
             })
             it("fails when an owner withdraws in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
