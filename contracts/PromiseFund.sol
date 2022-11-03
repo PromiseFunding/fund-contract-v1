@@ -235,8 +235,8 @@ contract PromiseFund is IFund, Ownable {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        uint sum = 0;
-        for(uint i = 0; i < s_allFunders[funder].amount.length; i++){
+        uint256 sum = 0;
+        for (uint256 i = 0; i < s_allFunders[funder].amount.length; i++) {
             sum += s_allFunders[funder].amount[i];
         }
         return sum;
@@ -301,7 +301,33 @@ contract PromiseFund is IFund, Ownable {
     /// @param funder the address of the funder you are trying to check
     /// @param level the amount donated to a specific tranche by the donor
     /// @return The uint256 amount donated to a tranche level by the donor
-    function getFunderTrancheAmountRaised(address funder, uint256 level) public view returns (uint256) {
+    function getFunderTrancheAmountRaised(address funder, uint256 level)
+        public
+        view
+        returns (uint256)
+    {
         return s_allFunders[funder].amount[level];
+    }
+
+    function getVoteEnd() public view returns (uint256) {
+        if (s_fundState == FundState.VOTING) {
+            return s_voteEnd;
+        }
+        return 0;
+    }
+
+    function getTimeLeftVoting() public view returns (uint256) {
+        if (s_fundState == FundState.VOTING) {
+            return s_voteEnd - block.timestamp;
+        }
+        return 0;
+    }
+
+    function getVotesPro() public view returns (uint256) {
+        return s_votesPro;
+    }
+
+    function getVotesCon() public view returns (uint256) {
+        return s_votesCon;
     }
 }

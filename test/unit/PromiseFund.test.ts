@@ -27,7 +27,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             assetTokenContract = await ethers.getContract("MockERC20Token")
             assetToken = await assetTokenContract.connect(deployer)
             const createPromiseFundTx = await fundFactory.createPromiseFund(
-                assetToken.address
+                assetToken.address, 4, 600
             )
             const txReceipt = await createPromiseFundTx.wait(1)
             const blockNum = txReceipt.blockNumber
@@ -239,7 +239,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await withdrawTx.wait(1)
 
                 const afterFunderBalance = await assetToken.balanceOf(user.address)
-
+                assert.equal(beforeFunderBalance.toString(), afterFunderBalance.toString())
             })
         })
         describe("Voting Tests", function () {

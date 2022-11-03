@@ -44,7 +44,7 @@ import { FundFactory, PromiseFundFactory } from "../../typechain-types/"
         describe("PromiseFundFactory Tests", function () {
             it("Emits an event when creating a new Promise contract", async function () {
                 await expect(
-                    promiseFactory.createPromiseFund(assetAddress)
+                    promiseFactory.createPromiseFund(assetAddress, 4, 600)
                 ).to.emit(promiseFactory, "Created")
             })
         })
