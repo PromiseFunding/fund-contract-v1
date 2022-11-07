@@ -16,6 +16,8 @@ error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
 error PromiseFund__NotFundingPeriod();
 error PromiseFund__VoteTooShort(uint256 minVoteLength);
+error PromiseFund__VoteTooLong(uint256 maxVoteLength);
+error PromiseFund_OwnerCalledTwoVotesAlready();
 error PromiseFund__StateNotPending();
 error PromiseFund__StateNotVoting();
 error PromiseFund__NoVotesLeft();
@@ -56,11 +58,23 @@ contract PromiseFund is IFund, Ownable {
     uint8 private tranche;
     uint256 public maxDuration = 10368000; //for now 120 days for each milestone
     uint8 public maxMilestones = 5;
+    bool funderCalledVote; //checks to see if the funders are the ones who called the vote
+    uint256 voteEndTime; //helps in ownerWithdraw function make sure owner cant not withdraw forever
     Milestone[] public tranches; //determine if we want this public?
     mapping(address => Funder) public s_allFunders;
 
     // Constants
     uint256 MIN_VOTE_LENGTH = 14;
+    uint256 MAX_VOTE_LENGTH = 21;
+    uint256 MAX_OWNER_WITHDRAW_PERIOD = 30;
+
+    // enum FundState {
+    //     PENDING,
+    //     VOTING,
+    //     OWNER_WITHDRAW,
+    //     FUNDER_WITHDRAW,
+    //     REVOTE
+    // }
 
     // Events
 
@@ -88,6 +102,7 @@ contract PromiseFund is IFund, Ownable {
         s_totalFunded = 0;
         s_votesTried = 0;
         s_fundState = FundState.PENDING;
+        funderCalledVote = false;
     }
 
     /// @notice Fund the contract with a token
@@ -165,33 +180,77 @@ contract PromiseFund is IFund, Ownable {
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
+    //withdrawing proceeds from the current tranche
+    //after the owner withdraws all of the proceeds or if 30 days have passed:
+    //iterate to the next tranche, set the starttime, change the state to pending, reset s_votesTried to 0 and funderCalledVote to false
     function withdrawProceeds(uint256 amount) public onlyOwner {
         if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
         }
 
-        if (amount > s_totalFunded) {
-            revert PromiseFund__WithdrawProceedsGreaterThanBalance(amount, s_totalFunded);
+        if (amount > tranches[tranche].amountRaised) {
+            revert PromiseFund__WithdrawProceedsGreaterThanBalance(
+                amount,
+                tranches[tranche].amountRaised
+            );
         }
+
         s_totalFunded -= amount;
+        tranches[tranche].amountRaised -= amount;
 
         // Redeem tokens and send them directly to the funder
         approveTransfer(IERC20(i_assetAddress), address(this), amount);
         IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
 
+        //check to see if owner withdrew all of their funds
+        //need to reset vote counting variables (Silas) as well as vote amount!
+        if (tranches[tranche].amountRaised == 0) {
+            tranche += 1;
+            tranches[tranche].startTime = block.timestamp;
+            tranches[tranche].milestoneDuration = i_milestoneDuration;
+            s_fundState = FundState.PENDING;
+            s_votesTried = 0;
+            funderCalledVote = false;
+        }
+
+        // check to see if 30 days have passed... if they have and their is still more to be withdrawn
+        // add that amount funded to be locked in the next tranche
+        // This ensures that owner is sticking to schedule and not locking everyones money up forever
+        //not sure where to do that yet... needs to be callable by funders or use chainlink automation
+
         emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
     }
 
-    /// @notice Start a vote for releasing the funds
-    /// @param length the length of the vote in days
-    function startVote(uint256 length) public onlyOwner {
+    /// @notice Start a vote for releasing the funds. Owner can call whenever and funders can only call after duration of milestone.
+    /// Max 2 votes called by owner prior to end of milestone and one after by funders
+    /// @param length the length of the vote in days. max length ensures that vote doesn't last an infinite amount of time.
+    function startVote(uint256 length) public {
         if (length < MIN_VOTE_LENGTH) {
             revert PromiseFund__VoteTooShort(MIN_VOTE_LENGTH);
         }
-        if (s_fundState != FundState.PENDING && s_fundState != FundState.REVOTE) {
+        if (length > MAX_VOTE_LENGTH) {
+            revert PromiseFund__VoteTooLong(MAX_VOTE_LENGTH);
+        }
+        if (s_fundState != FundState.PENDING) {
             revert PromiseFund__StateNotPending();
         }
-        s_votesTried += 1;
+        //checks to see if owner can call another vote
+        if (s_votesTried >= 2) {
+            revert PromiseFund_OwnerCalledTwoVotesAlready();
+        }
+
+        //Funder can call for vote only if time has expired in the current tranche
+        if (
+            msg.sender != i_owner &&
+            (block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration
+        ) {
+            funderCalledVote = true;
+        }
+
+        //counter goes up if the owner called for the vote
+        if (msg.sender == i_owner) {
+            s_votesTried += 1;
+        }
 
         s_voteEnd = block.timestamp + (length * 86400);
         s_fundState = FundState.VOTING;
@@ -224,9 +283,18 @@ contract PromiseFund is IFund, Ownable {
         if (block.timestamp < s_voteEnd) {
             revert PromiseFund__VoteStillGoing();
         }
+        //need to check for duration of tranche to determine state!
+        // if funderCalledVote == true , that means the duration is up and funders can withdraw. if it is false then owner called the vote
+        // and the state is pending again and people can donate
+        //(FUNDER_WITHDRAW is the terminated state of the contract... cannot get out of this state)
         s_fundState = s_votesCon > s_votesPro
-            ? (s_votesTried < 2 ? FundState.REVOTE : FundState.FUNDER_WITHDRAW)
+            ? (!funderCalledVote ? FundState.PENDING : FundState.FUNDER_WITHDRAW)
             : FundState.OWNER_WITHDRAW;
+
+        //used in owner withdraw function
+        if (s_fundState == FundState.OWNER_WITHDRAW){
+            voteEndTime = block.timestamp;
+        }
     }
 
     /** Getter Functions */
