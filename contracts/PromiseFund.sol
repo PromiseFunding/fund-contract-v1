@@ -16,6 +16,7 @@ error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
 error PromiseFund__NotFundingPeriod();
+error PromiseFund_FunderCannotCallForVote();
 error PromiseFund__VoteTooShort(uint256 minVoteLength);
 error PromiseFund__VoteTooLong(uint256 maxVoteLength);
 error PromiseFund_OwnerCalledTwoVotesAlready();
@@ -271,6 +272,13 @@ contract PromiseFund is IFund, Ownable {
         //Funder can call for vote only if time has expired in the current tranche
         if (
             msg.sender != i_owner &&
+            (block.timestamp - tranches[tranche].startTime) < tranches[tranche].milestoneDuration
+        ) {
+            revert PromiseFund_FunderCannotCallForVote();
+        }
+
+        if (
+            msg.sender != i_owner &&
             (block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration
         ) {
             funderCalledVote = true;
@@ -312,10 +320,10 @@ contract PromiseFund is IFund, Ownable {
         if (block.timestamp < s_voteEnd) {
             revert PromiseFund__VoteStillGoing();
         }
-        //need to check for duration of tranche to determine state!
+        
         // if funderCalledVote == true , that means the duration is up and funders can withdraw. if it is false then owner called the vote
         // and the state is pending again and people can donate
-        //(FUNDER_WITHDRAW is the terminated state of the contract... cannot get out of this state)
+        // (FUNDER_WITHDRAW is the terminated state of the contract... cannot get out of this state)
         s_fundState = s_votesCon > s_votesPro
             ? (!funderCalledVote ? FundState.PENDING : FundState.FUNDER_WITHDRAW)
             : FundState.OWNER_WITHDRAW;
