@@ -38,7 +38,7 @@ contract PromiseFund is IFund, Ownable {
         uint256[5] amount; //max amount of milestones
         //uint256 entryTime; //need to implement in future with interest generating
         uint256 votes;
-        uint256 timesVoted;
+        uint256[5] timesVoted;
         bool withdrewAllFunds;
     }
 
@@ -72,14 +72,6 @@ contract PromiseFund is IFund, Ownable {
     uint256 MIN_VOTE_LENGTH = 14;
     uint256 MAX_VOTE_LENGTH = 21;
     uint256 MAX_OWNER_WITHDRAW_PERIOD = 30;
-
-    // enum FundState {
-    //     PENDING,
-    //     VOTING,
-    //     OWNER_WITHDRAW,
-    //     FUNDER_WITHDRAW,
-    //     REVOTE
-    // }
 
     // Events
 
@@ -127,7 +119,7 @@ contract PromiseFund is IFund, Ownable {
 
         //set entryTime if first time depositing
         if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
-            s_allFunders[msg.sender].timesVoted = 0;
+            s_allFunders[msg.sender].timesVoted[tranche] = 0;
         }
         //useful for rounding errors with division. Can do decimals in future but this works for now.
         uint256 temp = amount;
@@ -173,7 +165,7 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__CantWithdrawFunder();
         }
 
-        if(s_allFunders[msg.sender].withdrewAllFunds){
+        if (s_allFunders[msg.sender].withdrewAllFunds) {
             revert PromiseFund_AlreadyWithdrewAllFunds();
         }
         //test if this works if a non-funder calls function
@@ -181,10 +173,7 @@ contract PromiseFund is IFund, Ownable {
 
         //must withdraw all funds. Nothing more, nothing less
         if (amount != total) {
-            revert PromiseFund__WithdrawFundsNotEqualToBalance(
-                amount,
-                total
-            );
+            revert PromiseFund__WithdrawFundsNotEqualToBalance(amount, total);
         }
 
         // Before actual transfer to deter reentrancy (I think)
@@ -237,15 +226,14 @@ contract PromiseFund is IFund, Ownable {
     }
 
     // check to see if 30 days have passed... if they have and their is still more to be withdrawn
-    // add that amount funded to be locked in the next tranche or change state to funder withdraw! 
+    // add that amount funded to be locked in the next tranche or change state to funder withdraw!
     // This ensures that owner is sticking to schedule and not locking everyones money up forever
     // Current Implementation: Switches state so funders can withdraw their money
     // voteEnded bool helps make sure voteEndTime gets updated appropriately and cant call this function continuously
     function ownerWithdrawPeriodExpired() public {
-        if(voteEnded && (block.timestamp - voteEndTime < MAX_OWNER_WITHDRAW_PERIOD)){
+        if (voteEnded && (block.timestamp - voteEndTime < MAX_OWNER_WITHDRAW_PERIOD)) {
             revert PromiseFund_OwnerCanStillWithdraw();
-        }
-        else{
+        } else {
             s_fundState = FundState.FUNDER_WITHDRAW;
             voteEnded = false;
         }
@@ -263,10 +251,6 @@ contract PromiseFund is IFund, Ownable {
         }
         if (s_fundState != FundState.PENDING) {
             revert PromiseFund__StateNotPending();
-        }
-        //checks to see if owner can call another vote
-        if (s_votesTried >= 2) {
-            revert PromiseFund_OwnerCalledTwoVotesAlready();
         }
 
         //Funder can call for vote only if time has expired in the current tranche
@@ -304,10 +288,15 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__VoteEnded();
         }
         // They get double their votes for each consecutive vote
-        if (s_allFunders[msg.sender].votes * s_votesTried <= s_allFunders[msg.sender].timesVoted) {
+        if (
+            s_allFunders[msg.sender].votes * s_votesTried <=
+            s_allFunders[msg.sender].timesVoted[tranche]
+        ) {
             revert PromiseFund__NoVotesLeft();
         }
-        s_allFunders[msg.sender].timesVoted += 1;
+        s_allFunders[msg.sender].timesVoted[tranche] =
+            s_allFunders[msg.sender].votes *
+            s_votesTried;
         support ? s_votesPro += 1 : s_votesCon += 1;
     }
 
@@ -320,16 +309,20 @@ contract PromiseFund is IFund, Ownable {
         if (block.timestamp < s_voteEnd) {
             revert PromiseFund__VoteStillGoing();
         }
-        
+
         // if funderCalledVote == true , that means the duration is up and funders can withdraw. if it is false then owner called the vote
         // and the state is pending again and people can donate
         // (FUNDER_WITHDRAW is the terminated state of the contract... cannot get out of this state)
         s_fundState = s_votesCon > s_votesPro
-            ? (!funderCalledVote ? FundState.PENDING : FundState.FUNDER_WITHDRAW)
+            ? (
+                !(funderCalledVote || s_votesTried >= 2)
+                    ? FundState.PENDING
+                    : FundState.FUNDER_WITHDRAW
+            )
             : FundState.OWNER_WITHDRAW;
 
         //used in ownerWithdrawPeriodExpired
-        if (s_fundState == FundState.OWNER_WITHDRAW){
+        if (s_fundState == FundState.OWNER_WITHDRAW) {
             voteEndTime = block.timestamp;
             voteEnded = true;
         }
@@ -382,6 +375,12 @@ contract PromiseFund is IFund, Ownable {
     /// @return The total amount in contract
     function getTotalFunds() public view returns (uint256) {
         return s_totalFunded;
+    }
+
+    /// @notice Get the current tranche
+    /// @return The current tranche
+    function getCurrentTranche() public view returns (uint8) {
+        return tranche;
     }
 
     /// @notice Get the Milestone Array that keeps track of amount raised, duration, and startTime

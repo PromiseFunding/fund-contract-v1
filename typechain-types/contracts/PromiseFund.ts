@@ -48,6 +48,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
+    "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
     "getMilestoneDuration()": FunctionFragment;
@@ -68,6 +69,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "maxDuration()": FunctionFragment;
     "maxMilestones()": FunctionFragment;
     "owner()": FunctionFragment;
+    "ownerWithdrawPeriodExpired()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "s_allFunders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
@@ -90,6 +92,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "fund"
       | "getAssetAddress"
       | "getBlockTime"
+      | "getCurrentTranche"
       | "getFundAmount"
       | "getFunderTrancheAmountRaised"
       | "getMilestoneDuration"
@@ -110,6 +113,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "maxDuration"
       | "maxMilestones"
       | "owner"
+      | "ownerWithdrawPeriodExpired"
       | "renounceOwnership"
       | "s_allFunders"
       | "s_totalFunded"
@@ -144,6 +148,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getBlockTime",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCurrentTranche",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -215,6 +223,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "ownerWithdrawPeriodExpired",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -276,6 +288,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getBlockTime",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCurrentTranche",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -343,6 +359,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "ownerWithdrawPeriodExpired",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -489,6 +509,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<[number]>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -541,6 +563,10 @@ export interface PromiseFund extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -549,7 +575,7 @@ export interface PromiseFund extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber] & { votes: BigNumber; timesVoted: BigNumber }
+      [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -619,6 +645,8 @@ export interface PromiseFund extends BaseContract {
 
   getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getCurrentTranche(overrides?: CallOverrides): Promise<number>;
+
   getFundAmount(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -671,6 +699,10 @@ export interface PromiseFund extends BaseContract {
 
   owner(overrides?: CallOverrides): Promise<string>;
 
+  ownerWithdrawPeriodExpired(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -679,7 +711,7 @@ export interface PromiseFund extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber] & { votes: BigNumber; timesVoted: BigNumber }
+    [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
   >;
 
   s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
@@ -747,6 +779,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<number>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -799,13 +833,15 @@ export interface PromiseFund extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<string>;
 
+    ownerWithdrawPeriodExpired(overrides?: CallOverrides): Promise<void>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber] & { votes: BigNumber; timesVoted: BigNumber }
+      [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
@@ -924,6 +960,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -973,6 +1011,10 @@ export interface PromiseFund extends BaseContract {
     maxMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1045,6 +1087,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1102,6 +1146,10 @@ export interface PromiseFund extends BaseContract {
     maxMilestones(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }

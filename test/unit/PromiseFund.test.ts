@@ -195,10 +195,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await callVote(false)
                 await callVote(false)
-
                 await expect(
                     promiseFund.withdrawProceedsFunder(fundValueWithDecimals.add(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawFundsGreaterThanBalance")
+                ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
             })
             it("fails when a funder tries to fund when the state isn't pending", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
@@ -219,14 +218,15 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await callVote(true)
 
                 promiseFund = promiseFundContract.connect(deployer)
-
-                const withdrawTx = await promiseFund.withdrawProceeds(fundValueWithDecimals)
+                const tranche = await promiseFund.getCurrentTranche()
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount)
                 await withdrawTx.wait(1)
 
                 const afterContractBalance = await promiseFund.getTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
-                assert.equal(beforeContractBalance.sub(fundValueWithDecimals).toString(), afterContractBalance.toString())
-                assert.equal(beforeDeployerBalance.add(fundValueWithDecimals).toString(), afterDeployerBalance.toString())
+                assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
+                assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
             })
             it("correctly allows a funder to withdraw what they funded in the correct state", async function () {
                 const beforeFunderBalance = await assetToken.balanceOf(user.address)
@@ -247,8 +247,8 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
-                    promiseFund.startVote(1)
-                ).to.be.revertedWith("Ownable: caller is not the owner")
+                    promiseFund.startVote(15)
+                ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
             })
             it("fails when the vote length is too short", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
@@ -366,16 +366,19 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await callVote(false)
                 await callVote(true)
 
+                const tranche = await promiseFund.getCurrentTranche()
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
                 const beforeContractBalance = await promiseFund.getTotalFunds()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.withdrawProceeds(beforeContractBalance)
+                await promiseFund.withdrawProceeds(withdrawAmount)
 
                 const afterContractBalance = await promiseFund.getTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
-                assert.equal(beforeContractBalance.sub(fundValueWithDecimals).toString(), afterContractBalance.toString())
-                assert.equal(beforeDeployerBalance.add(fundValueWithDecimals).toString(), afterDeployerBalance.toString())
+                assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
+                assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
             })
         })
 
