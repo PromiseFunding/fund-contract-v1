@@ -8,7 +8,8 @@ import {IFund} from "./interfaces/IFund.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error PromiseFund__FundAmountMustBeAboveZero();
-error PromiseFund__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
+error PromiseFund__WithdrawFundsNotEqualToBalance(uint256 amount, uint256 balance);
+error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
 error PromiseFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
@@ -19,6 +20,7 @@ error PromiseFund__VoteTooShort(uint256 minVoteLength);
 error PromiseFund__VoteTooLong(uint256 maxVoteLength);
 error PromiseFund_OwnerCalledTwoVotesAlready();
 error PromiseFund__StateNotPending();
+error PromiseFund_OwnerCanStillWithdraw();
 error PromiseFund__StateNotVoting();
 error PromiseFund__NoVotesLeft();
 error PromiseFund__VoteEnded();
@@ -36,6 +38,7 @@ contract PromiseFund is IFund, Ownable {
         //uint256 entryTime; //need to implement in future with interest generating
         uint256 votes;
         uint256 timesVoted;
+        bool withdrewAllFunds;
     }
 
     struct Milestone {
@@ -60,6 +63,7 @@ contract PromiseFund is IFund, Ownable {
     uint8 public maxMilestones = 5;
     bool funderCalledVote; //checks to see if the funders are the ones who called the vote
     uint256 voteEndTime; //helps in ownerWithdraw function make sure owner cant not withdraw forever
+    bool voteEnded; //used for helping define voteEndTime
     Milestone[] public tranches; //determine if we want this public?
     mapping(address => Funder) public s_allFunders;
 
@@ -103,6 +107,7 @@ contract PromiseFund is IFund, Ownable {
         s_votesTried = 0;
         s_fundState = FundState.PENDING;
         funderCalledVote = false;
+        voteEnded = false;
     }
 
     /// @notice Fund the contract with a token
@@ -142,6 +147,8 @@ contract PromiseFund is IFund, Ownable {
         s_totalFunded = s_totalFunded + amount;
         // Set the number of votes to 1 for now. Will be weighted in the future.
         s_allFunders[msg.sender].votes = 1;
+        //set withdrewAllFunds to false (can we do this in constructor?)
+        s_allFunders[msg.sender].withdrewAllFunds = false;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -157,21 +164,31 @@ contract PromiseFund is IFund, Ownable {
         token.approve(recipient, amount);
     }
 
-    /// @notice Funder withdraws tokens up to the amount they supplied from the LP
+    /// @notice When in this state, the funder is eligbible to withdraw the total amount they funded in all tranches
+    /// make it so the funder has to withdraw all of their funds. Once in this FUNDER_WITHDRAW state never out of it.
     /// @param amount The amount being withdrawn
     function withdrawProceedsFunder(uint256 amount) public {
         if (s_fundState != FundState.FUNDER_WITHDRAW) {
             revert PromiseFund__CantWithdrawFunder();
         }
-        if (amount > s_allFunders[msg.sender].amount[0]) {
-            revert PromiseFund__WithdrawFundsGreaterThanBalance(
+
+        if(s_allFunders[msg.sender].withdrewAllFunds){
+            revert PromiseFund_AlreadyWithdrewAllFunds();
+        }
+        //test if this works if a non-funder calls function
+        uint256 total = getFundAmount(msg.sender);
+
+        //must withdraw all funds. Nothing more, nothing less
+        if (amount != total) {
+            revert PromiseFund__WithdrawFundsNotEqualToBalance(
                 amount,
-                s_allFunders[msg.sender].amount[0]
+                total
             );
         }
+
         // Before actual transfer to deter reentrancy (I think)
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
-        s_allFunders[msg.sender].amount[0] -= amount;
+        s_allFunders[msg.sender].withdrewAllFunds = true;
         s_totalFunded -= amount;
 
         approveTransfer(IERC20(i_assetAddress), address(this), amount);
@@ -210,15 +227,27 @@ contract PromiseFund is IFund, Ownable {
             tranches[tranche].milestoneDuration = i_milestoneDuration;
             s_fundState = FundState.PENDING;
             s_votesTried = 0;
+            s_votesCon = 0;
+            s_votesPro = 0;
             funderCalledVote = false;
         }
 
-        // check to see if 30 days have passed... if they have and their is still more to be withdrawn
-        // add that amount funded to be locked in the next tranche
-        // This ensures that owner is sticking to schedule and not locking everyones money up forever
-        //not sure where to do that yet... needs to be callable by funders or use chainlink automation
-
         emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
+    }
+
+    // check to see if 30 days have passed... if they have and their is still more to be withdrawn
+    // add that amount funded to be locked in the next tranche or change state to funder withdraw! 
+    // This ensures that owner is sticking to schedule and not locking everyones money up forever
+    // Current Implementation: Switches state so funders can withdraw their money
+    // voteEnded bool helps make sure voteEndTime gets updated appropriately and cant call this function continuously
+    function ownerWithdrawPeriodExpired() public {
+        if(voteEnded && (block.timestamp - voteEndTime < MAX_OWNER_WITHDRAW_PERIOD)){
+            revert PromiseFund_OwnerCanStillWithdraw();
+        }
+        else{
+            s_fundState = FundState.FUNDER_WITHDRAW;
+            voteEnded = false;
+        }
     }
 
     /// @notice Start a vote for releasing the funds. Owner can call whenever and funders can only call after duration of milestone.
@@ -291,20 +320,21 @@ contract PromiseFund is IFund, Ownable {
             ? (!funderCalledVote ? FundState.PENDING : FundState.FUNDER_WITHDRAW)
             : FundState.OWNER_WITHDRAW;
 
-        //used in owner withdraw function
+        //used in ownerWithdrawPeriodExpired
         if (s_fundState == FundState.OWNER_WITHDRAW){
             voteEndTime = block.timestamp;
+            voteEnded = true;
         }
     }
 
     /** Getter Functions */
 
-    /// @notice Get the fund amount of a given address by looping through their funder array
+    /// @notice Get the fund amount of a given address by looping through their funder array starting at most recent tranche
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
         uint256 sum = 0;
-        for (uint256 i = 0; i < s_allFunders[funder].amount.length; i++) {
+        for (uint256 i = tranche; i < s_allFunders[funder].amount.length; i++) {
             sum += s_allFunders[funder].amount[i];
         }
         return sum;
