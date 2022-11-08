@@ -17,6 +17,8 @@ const updateFrontEnd: DeployFunction = async function (hre: HardhatRuntimeEnviro
 async function updateAbi() {
     const fundFactory = await ethers.getContract("FundFactory")
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
+    const promiseFundAddress = await promiseFactory.getPromiseFund(0)
+    const promiseFund = await ethers.getContractAt("PromiseFund", promiseFundAddress)
 
     fs.writeFileSync(
         `${frontEndAbiLocation1}FundFactory.json`,
@@ -26,6 +28,11 @@ async function updateAbi() {
     fs.writeFileSync(
         `${frontEndAbiLocation2}PromiseFundFactory.json`,
         promiseFactory.interface.format(ethers.utils.FormatTypes.json).toString()
+    )
+
+    fs.writeFileSync(
+        `${frontEndAbiLocation2}PromiseFund.json`,
+        promiseFund.interface.format(ethers.utils.FormatTypes.json).toString()
     )
 }
 
