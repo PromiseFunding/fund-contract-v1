@@ -5,7 +5,11 @@ async function bypass() {
     const accounts = await ethers.getSigners()
     const deployer = accounts[0]
     const contractAddress = process.env.CONTRACT_ADDRESS
-    const promiseFund = await ethers.getContractAt("PromiseFund", contractAddress!)
+    if (!contractAddress) {
+        console.log("Please include the contract address as an ENV VAR")
+        return
+    }
+    const promiseFund = await ethers.getContractAt("PromiseFund", contractAddress)
     const timeLeft = await promiseFund.getTimeLeftVoting()
     console.log(timeLeft.toNumber())
     await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])

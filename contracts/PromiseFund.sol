@@ -422,7 +422,7 @@ contract PromiseFund is IFund, Ownable {
     }
 
     function getTimeLeftVoting() public view returns (uint256) {
-        if (s_fundState == FundState.VOTING) {
+        if (s_fundState == FundState.VOTING && s_voteEnd > block.timestamp) {
             return s_voteEnd - block.timestamp;
         }
         return 0;
