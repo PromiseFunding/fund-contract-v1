@@ -334,6 +334,9 @@ contract PromiseFund is IFund, Ownable {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
+        if (s_allFunders[funder].withdrewAllFunds) {
+            return 0;
+        }
         uint256 sum = 0;
         for (uint256 i = tranche; i < s_allFunders[funder].amount.length; i++) {
             sum += s_allFunders[funder].amount[i];
