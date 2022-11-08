@@ -1,4 +1,4 @@
-import { frontEndContractsFile, frontEndAbiLocation } from "../helper-hardhat-config"
+import { frontEndContractsFile1, frontEndAbiLocation1, frontEndContractsFile2, frontEndAbiLocation2 } from "../helper-hardhat-config"
 import "dotenv/config"
 import fs from "fs"
 import { network, ethers } from "hardhat"
@@ -16,24 +16,39 @@ const updateFrontEnd: DeployFunction = async function (hre: HardhatRuntimeEnviro
 
 async function updateAbi() {
     const fundFactory = await ethers.getContract("FundFactory")
+    const promiseFactory = await ethers.getContract("PromiseFundFactory")
 
     fs.writeFileSync(
-        `${frontEndAbiLocation}FundFactory.json`,
+        `${frontEndAbiLocation1}FundFactory.json`,
         fundFactory.interface.format(ethers.utils.FormatTypes.json).toString()
+    )
+
+    fs.writeFileSync(
+        `${frontEndAbiLocation2}PromiseFundFactory.json`,
+        promiseFactory.interface.format(ethers.utils.FormatTypes.json).toString()
     )
 }
 
 async function updateContractAddresses() {
     const chainId = network.config.chainId!.toString()
     const fundFactory = await ethers.getContract("FundFactory")
+    const promiseFactory = await ethers.getContract("PromiseFundFactory")
 
-    const contractAddresses = JSON.parse(fs.readFileSync(frontEndContractsFile, "utf8"))
-    if (chainId in contractAddresses) {
-        contractAddresses[chainId]["FundFactory"] = [fundFactory.address]
+    const contractAddresses1 = JSON.parse(fs.readFileSync(frontEndContractsFile1, "utf8"))
+    if (chainId in contractAddresses1) {
+        contractAddresses1[chainId]["FundFactory"] = [fundFactory.address]
     } else {
-        contractAddresses[chainId] = [{ FundFactory: fundFactory.address }]
+        contractAddresses1[chainId] = [{ FundFactory: fundFactory.address }]
     }
-    fs.writeFileSync(frontEndContractsFile, JSON.stringify(contractAddresses))
+    fs.writeFileSync(frontEndContractsFile1, JSON.stringify(contractAddresses1))
+
+    const contractAddresses2 = JSON.parse(fs.readFileSync(frontEndContractsFile2, "utf8"))
+    if (chainId in contractAddresses2) {
+        contractAddresses2[chainId]["PromiseFundFactory"] = [promiseFactory.address]
+    } else {
+        contractAddresses2[chainId] = [{ PromiseFundFactory: promiseFactory.address }]
+    }
+    fs.writeFileSync(frontEndContractsFile2, JSON.stringify(contractAddresses2))
 }
 export default updateFrontEnd
 updateFrontEnd.tags = ["all", "frontend"]

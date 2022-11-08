@@ -58,5 +58,9 @@ export const developmentChains = ["hardhat", "localhost"]
 export const DEFAULT_ASSET_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 export const DEFAULT_AAVE_TOKEN_ADDRESS = "0x73258E6fb96ecAc8a979826d503B45803a382d68"
 export const DEFAULT_POOL_ADDRESS = "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6"
-export const frontEndContractsFile = "../fund-me-frontend-v1/constants/contractAddresses.json"
-export const frontEndAbiLocation = "../fund-me-frontend-v1/constants/"
+export const frontEndContractsFile1 = "../fund-me-frontend-v1/constants/contractAddresses.json"
+export const frontEndAbiLocation1 = "../fund-me-frontend-v1/constants/"
+export const frontEndContractsFile2 = "../promise-frontend/constants/contractAddresses.json"
+export const frontEndAbiLocation2 = "../promise-frontend/constants/"
+
+
