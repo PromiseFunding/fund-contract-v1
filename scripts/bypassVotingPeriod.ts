@@ -1,11 +1,12 @@
 import { ethers, network } from "hardhat"
 
-async function payout() {
+async function bypass() {
     console.log("Fast forwarding time...")
     const accounts = await ethers.getSigners()
     const deployer = accounts[0]
-    const yieldFund = await ethers.getContract("YieldFund")
-    const timeLeft = await yieldFund.getTimeLeft(deployer.address)
+    const contractAddress = process.env.CONTRACT_ADDRESS
+    const promiseFund = await ethers.getContractAt("PromiseFund", contractAddress!)
+    const timeLeft = await promiseFund.getTimeLeftVoting()
     console.log(timeLeft.toNumber())
     await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
     await network.provider.request({
@@ -16,7 +17,7 @@ async function payout() {
     console.log("Done.")
 }
 
-payout()
+bypass()
     .then(() => process.exit(0))
     .catch((error) => {
         console.error(error)
