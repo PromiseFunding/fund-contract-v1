@@ -11,7 +11,7 @@ error PromiseFund__FundAmountMustBeAboveZero();
 error PromiseFund__WithdrawFundsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
-error PromiseFund__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
+error PromiseFund__WithdrawProceedsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
@@ -87,8 +87,6 @@ contract PromiseFund is IFund, Ownable {
             ? numberOfMilestones
             : maxMilestones;
         i_milestoneDuration = milestoneDuration < maxDuration ? milestoneDuration : maxDuration;
-        //tranches = new Milestone[](numberOfMilestones);
-        //tranches[0].startTime = block.timestamp;
         for (uint256 i = 0; i < numberOfMilestones; i++) {
             Milestone memory temp;
             tranches.push(temp);
@@ -187,16 +185,16 @@ contract PromiseFund is IFund, Ownable {
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
-    //withdrawing proceeds from the current tranche
-    //after the owner withdraws all of the proceeds or if 30 days have passed:
+    //withdrawing proceeds from the current tranche. Owner must withdraw all funds.
+    //after the owner withdraws all of the proceeds:
     //iterate to the next tranche, set the starttime, change the state to pending, reset s_votesTried to 0 and funderCalledVote to false
     function withdrawProceeds(uint256 amount) public onlyOwner {
         if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
         }
 
-        if (amount > tranches[tranche].amountRaised) {
-            revert PromiseFund__WithdrawProceedsGreaterThanBalance(
+        if (amount != tranches[tranche].amountRaised) {
+            revert PromiseFund__WithdrawProceedsNotEqualToBalance(
                 amount,
                 tranches[tranche].amountRaised
             );
@@ -209,9 +207,11 @@ contract PromiseFund is IFund, Ownable {
         approveTransfer(IERC20(i_assetAddress), address(this), amount);
         IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
 
-        //check to see if owner withdrew all of their funds
-        //need to reset vote counting variables (Silas) as well as vote amount!
-        if (tranches[tranche].amountRaised == 0) {
+        // reset all variables for following tranche if it isn't the last tranche
+        // if it is the last tranche, the contract stayts in the OWNER_WITHDRAW state and no more funding
+        // or withdrawing can take place, thereby rendering the functionality useless
+        // need to reset vote counting variables (Silas) as well as vote amount!
+        if (tranche != i_numberOfMilestones - 1) {
             tranche += 1;
             tranches[tranche].startTime = block.timestamp;
             tranches[tranche].milestoneDuration = i_milestoneDuration;
