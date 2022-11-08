@@ -22,7 +22,7 @@ const deployFundFactory: DeployFunction = async function (hre: HardhatRuntimeEnv
         log: true,
         waitConfirmations: networkConfig[chainId].blockConfirmations || 1,
     })
-    
+
     log("----------------------------------------------------")
 
     await deploy("PromiseFundFactory", {
