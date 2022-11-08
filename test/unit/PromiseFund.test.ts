@@ -170,7 +170,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     promiseFund.withdrawProceeds(1)
                 ).to.be.revertedWith("PromiseFund__CantWithdrawOwner")
             })
-            it("fails when an owner tries to withdraw too much", async function () {
+            it("fails when an owner tries to withdraw too much or too little", async function () {
                 await fund()
                 await callVote(true)
 
@@ -178,7 +178,10 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await expect(
                     promiseFund.withdrawProceeds(fundValueWithDecimals.add(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawProceedsGreaterThanBalance")
+                ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
+                await expect(
+                    promiseFund.withdrawProceeds(fundValueWithDecimals.sub(1))
+                ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
             })
             it("fails when a funder tries to withdraw in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
@@ -190,13 +193,16 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     promiseFund.withdrawProceedsFunder(1)
                 ).to.be.revertedWith("PromiseFund__CantWithdrawFunder")
             })
-            it("fails when a funder tries to withdraw too much", async function () {
+            it("fails when a funder tries to withdraw too much or too little", async function () {
                 await fund()
 
                 await callVote(false)
                 await callVote(false)
                 await expect(
                     promiseFund.withdrawProceedsFunder(fundValueWithDecimals.add(1))
+                ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
+                await expect(
+                    promiseFund.withdrawProceedsFunder(fundValueWithDecimals.sub(1))
                 ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
             })
             it("fails when a funder tries to fund when the state isn't pending", async function () {
@@ -209,24 +215,41 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     promiseFund.fund(fundValueWithDecimals)
                 ).to.be.revertedWith("PromiseFund__NotFundingPeriod")
             })
-            it("correctly allows the owner to withdraw proceeds in the correct state", async function () {
+            it("correctly allows the owner to withdraw proceeds in the correct state with exact amount if not last tranche", async function () {
                 await fund()
 
                 const beforeContractBalance = await promiseFund.getTotalFunds()
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
 
                 await callVote(true)
+                // const prevstate = await promiseFund.getState()
+                // console.log(prevstate)
 
                 promiseFund = promiseFundContract.connect(deployer)
                 const tranche = await promiseFund.getCurrentTranche()
+                
+                
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
                 const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount)
-                await withdrawTx.wait(1)
+                const withdrawTxReceipt = await withdrawTx.wait(1)
+                const blockNum1 = withdrawTxReceipt.blockNumber
+                const block = await ethers.provider.getBlock(blockNum1)
+                timestamp = block.timestamp
 
+                const response = await promiseFund.getTranches()
+                const state = await promiseFund.getState()
+
+                const aftertranche = await promiseFund.getCurrentTranche()
+                const trancheAmountAfter = await promiseFund.getTrancheAmountRaised(tranche)
                 const afterContractBalance = await promiseFund.getTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
                 assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
                 assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
+                assert.equal(trancheAmountAfter.toString(), "0")
+                assert.equal(tranche.toString(), (aftertranche-1).toString())
+                assert.equal(timestamp, response[aftertranche].startTime.toNumber())
+                assert.equal(response[aftertranche].milestoneDuration.toNumber(), 600)
+                assert.equal(state, 0)
             })
             it("correctly allows a funder to withdraw what they funded in the correct state", async function () {
                 const beforeFunderBalance = await assetToken.balanceOf(user.address)

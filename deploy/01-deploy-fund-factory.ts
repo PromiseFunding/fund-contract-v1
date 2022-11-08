@@ -35,7 +35,7 @@ const deployFundFactory: DeployFunction = async function (hre: HardhatRuntimeEnv
     log("----------------------------------------------------")
 
     const promiseFundFactory = await ethers.getContract("PromiseFundFactory")
-    await promiseFundFactory.createPromiseFund(networkConfig[chainId].assetAddress)
+    await promiseFundFactory.createPromiseFund(networkConfig[chainId].assetAddress, 4, 600)
 }
 
 export default deployFundFactory
