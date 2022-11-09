@@ -12,7 +12,7 @@ async function bypass() {
     const promiseFund = await ethers.getContractAt("PromiseFund", contractAddress)
     const timeLeft = await promiseFund.getTimeLeftVoting()
     console.log(timeLeft.toNumber())
-    await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+    await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 300])
     await network.provider.request({
         method: "evm_mine",
         params: [],

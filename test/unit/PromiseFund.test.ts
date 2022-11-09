@@ -425,8 +425,41 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 ).to.be.revertedWith("PromiseFund__CantWithdrawFunder")
             })
         })
+        describe("Owner Withdraw period expired tests", function () {
+            it("fails when a funder tries to call function before vote ends", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await expect(
+                    promiseFund.ownerWithdrawPeriodExpired()
+                ).to.be.revertedWith("PromiseFund_FunderStateChangedOrVoteNotDone")
+
+                await fund()
+                await callVote(false)
+
+                await expect(
+                    promiseFund.ownerWithdrawPeriodExpired()
+                ).to.be.revertedWith("PromiseFund_FunderStateChangedOrVoteNotDone")
+
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                const tranche = await promiseFund.getCurrentTranche()
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount) 
+                await withdrawTx.wait(1)
+
+                await expect(
+                    promiseFund.ownerWithdrawPeriodExpired()
+                ).to.be.revertedWith("PromiseFund_OwnerCanStillWithdraw")
+                
+                await network.provider.send("evm_increaseTime", [50])
+                await promiseFund.ownerWithdrawPeriodExpired()
+                const state = await promiseFund.getState()
+                assert.equal(state, 3)
+            })
+        })
         describe("Voting Tests", function () {
-            it("fails when a non-owner tries to call a vote", async function () {
+            it("fails when a non-owner tries to call a vote prior to end of milestone", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
