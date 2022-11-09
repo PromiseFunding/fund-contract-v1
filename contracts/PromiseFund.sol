@@ -61,7 +61,7 @@ contract PromiseFund is IFund, Ownable {
     uint8 private tranche;
     uint256 public maxDuration = 10368000; //for now 120 days for each milestone
     uint8 public maxMilestones = 5;
-    bool funderCalledVote; //checks to see if the funders are the ones who called the vote
+    bool calledVoteAfterExpiry; //checks to see if the funders are the ones who called the vote
     uint256 voteEndTime; //helps in ownerWithdraw function make sure owner cant not withdraw forever
     bool voteEnded; //used for helping define voteEndTime
     Milestone[] public tranches; //determine if we want this public?
@@ -96,7 +96,7 @@ contract PromiseFund is IFund, Ownable {
         s_totalFunded = 0;
         s_votesTried = 0;
         s_fundState = FundState.PENDING;
-        funderCalledVote = false;
+        calledVoteAfterExpiry = false;
         voteEnded = false;
     }
 
@@ -194,11 +194,7 @@ contract PromiseFund is IFund, Ownable {
 
         // Redeem tokens and send them directly to the funder
         approveTransfer(IERC20(i_assetAddress), address(this), total);
-        IERC20(i_assetAddress).transferFrom(
-            address(this),
-            msg.sender,
-            total
-        );
+        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
 
         // reset all variables for following tranche if it isn't the last tranche
         // if it is the last tranche, the contract stayts in the OWNER_WITHDRAW state and no more funding
@@ -212,7 +208,7 @@ contract PromiseFund is IFund, Ownable {
             s_votesTried = 0;
             s_votesCon = 0;
             s_votesPro = 0;
-            funderCalledVote = false;
+            calledVoteAfterExpiry = false;
         }
 
         emit ProceedsWithdrawn(i_owner, i_assetAddress, total);
@@ -259,17 +255,12 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund_FunderCannotCallForVote();
         }
 
-        if (
-            msg.sender != i_owner &&
-            (block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration
-        ) {
-            funderCalledVote = true;
+        if ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration) {
+            calledVoteAfterExpiry = true;
         }
 
-        //counter goes up if the owner called for the vote
-        if (msg.sender == i_owner) {
-            s_votesTried += 1;
-        }
+        //counter goes up if the owner called for the vote or if the funder
+        s_votesTried += 1;
 
         s_voteEnd = block.timestamp + (length * 86400);
         s_fundState = FundState.VOTING;
@@ -313,7 +304,7 @@ contract PromiseFund is IFund, Ownable {
         // (FUNDER_WITHDRAW is the terminated state of the contract... cannot get out of this state)
         s_fundState = s_votesCon > s_votesPro
             ? (
-                !(funderCalledVote || s_votesTried >= 2)
+                !(calledVoteAfterExpiry || s_votesTried >= 2)
                     ? FundState.PENDING
                     : FundState.FUNDER_WITHDRAW
             )
@@ -430,7 +421,7 @@ contract PromiseFund is IFund, Ownable {
     }
 
     function getFunderCalledVote() public view returns (bool) {
-        return funderCalledVote;
+        return calledVoteAfterExpiry;
     }
 
     function getVotesTried() public view returns (uint256) {

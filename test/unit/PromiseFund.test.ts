@@ -458,6 +458,35 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(state, 3)
             })
         })
+        describe("Funder called for Vote tests after duration", function () {
+            it("correctly assigns state if owner didn't call for vote and duration expired", async function () {
+                //check s_allFunders[msg.sender].timesVoted[tranche] is updating
+                promiseFund = promiseFundContract.connect(user)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__NoVotesLeft")
+
+                await fund()
+                const duration = await promiseFund.getMilestoneDuration()
+                await network.provider.send("evm_increaseTime", [duration])
+                promiseFund = promiseFundContract.connect(user)
+                await promiseFund.startVote(15)
+
+                await promiseFund.submitVote(true)
+
+                const votesProAfter = await promiseFund.getVotesPro()
+                assert.equal(votesProAfter.toNumber(), 1)
+
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                await promiseFund.endVote()
+                
+                const state = await promiseFund.getState()
+                assert.equal(state, 2)
+            })
+        })
         describe("Voting Tests", function () {
             it("fails when a non-owner tries to call a vote prior to end of milestone", async function () {
                 promiseFund = promiseFundContract.connect(user)
