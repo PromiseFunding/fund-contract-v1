@@ -8,11 +8,9 @@ import {IFund} from "./interfaces/IFund.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error PromiseFund__FundAmountMustBeAboveZero();
-error PromiseFund__WithdrawFundsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
 error PromiseFund_FunderStateChangedOrVoteNotDone();
-error PromiseFund__WithdrawProceedsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
@@ -159,8 +157,7 @@ contract PromiseFund is IFund, Ownable {
 
     /// @notice When in this state, the funder is eligbible to withdraw the total amount they funded in all tranches
     /// make it so the funder has to withdraw all of their funds. Once in this FUNDER_WITHDRAW state never out of it.
-    /// @param amount The amount being withdrawn
-    function withdrawProceedsFunder(uint256 amount) public {
+    function withdrawProceedsFunder() public {
         if (s_fundState != FundState.FUNDER_WITHDRAW) {
             revert PromiseFund__CantWithdrawFunder();
         }
@@ -171,43 +168,37 @@ contract PromiseFund is IFund, Ownable {
         //test if this works if a non-funder calls function
         uint256 total = getFundAmount(msg.sender);
 
-        //must withdraw all funds. Nothing more, nothing less
-        if (amount != total) {
-            revert PromiseFund__WithdrawFundsNotEqualToBalance(amount, total);
-        }
-
         // Before actual transfer to deter reentrancy (I think)
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_allFunders[msg.sender].withdrewAllFunds = true;
-        s_totalFunded -= amount;
+        s_totalFunded -= total;
 
-        approveTransfer(IERC20(i_assetAddress), address(this), amount);
-        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
+        approveTransfer(IERC20(i_assetAddress), address(this), total);
+        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
 
-        emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
+        emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, total);
     }
 
     //withdrawing proceeds from the current tranche. Owner must withdraw all funds.
     //after the owner withdraws all of the proceeds:
     //iterate to the next tranche, set the starttime, change the state to pending, reset s_votesTried to 0 and funderCalledVote to false
-    function withdrawProceeds(uint256 amount) public onlyOwner {
+    function withdrawProceeds() public onlyOwner {
         if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
         }
 
-        if (amount != tranches[tranche].amountRaised) {
-            revert PromiseFund__WithdrawProceedsNotEqualToBalance(
-                amount,
-                tranches[tranche].amountRaised
-            );
-        }
+        uint256 total = tranches[tranche].amountRaised;
 
-        s_totalFunded -= amount;
-        tranches[tranche].amountRaised -= amount;
+        s_totalFunded -= total;
+        tranches[tranche].amountRaised -= total;
 
         // Redeem tokens and send them directly to the funder
-        approveTransfer(IERC20(i_assetAddress), address(this), amount);
-        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, amount);
+        approveTransfer(IERC20(i_assetAddress), address(this), total);
+        IERC20(i_assetAddress).transferFrom(
+            address(this),
+            msg.sender,
+            total
+        );
 
         // reset all variables for following tranche if it isn't the last tranche
         // if it is the last tranche, the contract stayts in the OWNER_WITHDRAW state and no more funding
@@ -224,7 +215,7 @@ contract PromiseFund is IFund, Ownable {
             funderCalledVote = false;
         }
 
-        emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
+        emit ProceedsWithdrawn(i_owner, i_assetAddress, total);
     }
 
     // check to see if 30 days have passed... if they have and their is still more to be withdrawn

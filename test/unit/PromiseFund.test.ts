@@ -170,22 +170,22 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(deployer)
 
                 await expect(
-                    promiseFund.withdrawProceeds(1)
+                    promiseFund.withdrawProceeds()
                 ).to.be.revertedWith("PromiseFund__CantWithdrawOwner")
             })
-            it("fails when an owner tries to withdraw too much or too little", async function () {
-                await fund()
-                await callVote(true)
+            // it("fails when an owner tries to withdraw too much or too little", async function () {
+            //     await fund()
+            //     await callVote(true)
 
-                promiseFund = promiseFundContract.connect(deployer)
+            //     promiseFund = promiseFundContract.connect(deployer)
 
-                await expect(
-                    promiseFund.withdrawProceeds(fundValueWithDecimals.add(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
-                await expect(
-                    promiseFund.withdrawProceeds(fundValueWithDecimals.sub(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
-            })
+            //     await expect(
+            //         promiseFund.withdrawProceeds(fundValueWithDecimals.add(1))
+            //     ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
+            //     await expect(
+            //         promiseFund.withdrawProceeds(fundValueWithDecimals.sub(1))
+            //     ).to.be.revertedWith("PromiseFund__WithdrawProceedsNotEqualToBalance")
+            // })
             it("fails when a funder tries to withdraw in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
                 await promiseFund.startVote(15)
@@ -193,21 +193,21 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
-                    promiseFund.withdrawProceedsFunder(1)
+                    promiseFund.withdrawProceedsFunder()
                 ).to.be.revertedWith("PromiseFund__CantWithdrawFunder")
             })
-            it("fails when a funder tries to withdraw too much or too little", async function () {
-                await fund()
+            // it("fails when a funder tries to withdraw too much or too little", async function () {
+            //     await fund()
 
-                await callVote(false)
-                await callVote(false)
-                await expect(
-                    promiseFund.withdrawProceedsFunder(oneFundValueWithDecimals.add(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
-                await expect(
-                    promiseFund.withdrawProceedsFunder(oneFundValueWithDecimals.sub(1))
-                ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
-            })
+            //     await callVote(false)
+            //     await callVote(false)
+            //     await expect(
+            //         promiseFund.withdrawProceedsFunder(oneFundValueWithDecimals.add(1))
+            //     ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
+            //     await expect(
+            //         promiseFund.withdrawProceedsFunder(oneFundValueWithDecimals.sub(1))
+            //     ).to.be.revertedWith("PromiseFund__WithdrawFundsNotEqualToBalance")
+            // })
             it("fails when a funder tries to fund when the state isn't pending", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
                 await promiseFund.startVote(15)
@@ -234,7 +234,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
 
-                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount)
+                const withdrawTx = await promiseFund.withdrawProceeds()
 
                 const withdrawTxReceipt = await withdrawTx.wait(1)
                 const blockNum1 = withdrawTxReceipt.blockNumber
@@ -283,7 +283,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
                 console.log(withdrawAmount)
                 sum = sum.add(withdrawAmount)
-                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount) 
+                const withdrawTx = await promiseFund.withdrawProceeds() 
                 await withdrawTx.wait(1)
                 await callVote(true)
 
@@ -294,7 +294,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(tranche1)
                 console.log(withdrawAmount1)
                 sum = sum.add(withdrawAmount1)
-                const withdrawTx1 = await promiseFund.withdrawProceeds(withdrawAmount1) 
+                const withdrawTx1 = await promiseFund.withdrawProceeds() 
                 await withdrawTx1.wait(1)
                 await callVote(true)
 
@@ -305,7 +305,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount2 = await promiseFund.getTrancheAmountRaised(tranche2)
                 console.log(withdrawAmount2)
                 sum = sum.add(withdrawAmount2)
-                const withdrawTx2 = await promiseFund.withdrawProceeds(withdrawAmount2) 
+                const withdrawTx2 = await promiseFund.withdrawProceeds() 
                 await withdrawTx2.wait(1)
 
                 await fund() //shows how if user funds again at the end it all goes in the last tranche
@@ -320,7 +320,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount3 = await promiseFund.getTrancheAmountRaised(tranche3)
                 console.log(withdrawAmount3)
                 sum = sum.add(withdrawAmount3)
-                const withdrawTx3 = await promiseFund.withdrawProceeds(withdrawAmount3) 
+                const withdrawTx3 = await promiseFund.withdrawProceeds() 
                 await withdrawTx3.wait(1)
 
                 promiseFund = promiseFundContract.connect(deployer)
@@ -351,7 +351,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await callVote(false)
                 await callVote(false)
 
-                const withdrawTx = await promiseFund.withdrawProceedsFunder(oneFundValueWithDecimals)
+                const withdrawTx = await promiseFund.withdrawProceedsFunder()
                 await withdrawTx.wait(1)
 
                 const afterFunderBalance = await assetToken.balanceOf(user.address)
@@ -364,14 +364,14 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 //DONT DELETE COMMENTS
                 //gets tranche values before withdrawn by owner
-                // const bwithdrawAmount0 = await promiseFund.getTrancheAmountRaised(0)
-                // console.log(bwithdrawAmount0)
-                // const bwithdrawAmount1 = await promiseFund.getTrancheAmountRaised(1)
-                // console.log(bwithdrawAmount1)
-                // const bwithdrawAmount2 = await promiseFund.getTrancheAmountRaised(2)
-                // console.log(bwithdrawAmount2)
-                // const bwithdrawAmount3 = await promiseFund.getTrancheAmountRaised(3)
-                // console.log(bwithdrawAmount3)
+                const bwithdrawAmount0 = await promiseFund.getTrancheAmountRaised(0)
+                console.log(bwithdrawAmount0)
+                const bwithdrawAmount1 = await promiseFund.getTrancheAmountRaised(1)
+                console.log(bwithdrawAmount1)
+                const bwithdrawAmount2 = await promiseFund.getTrancheAmountRaised(2)
+                console.log(bwithdrawAmount2)
+                const bwithdrawAmount3 = await promiseFund.getTrancheAmountRaised(3)
+                console.log(bwithdrawAmount3)
 
                 await callVote(true)
 
@@ -382,7 +382,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const tranche = await promiseFund.getCurrentTranche()
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
                 sum = sum.add(withdrawAmount)
-                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount) 
+                const withdrawTx = await promiseFund.withdrawProceeds() 
                 await withdrawTx.wait(1)
 
 
@@ -390,21 +390,21 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 //DONT DELETE COMMENTS
                 //get tranche values after owner withdrew funds and funder funds again
-                // const tranche1 = await promiseFund.getCurrentTranche()
-                // console.log(tranche1)
-                // const withdrawAmount0 = await promiseFund.getTrancheAmountRaised(tranche)
-                // console.log(withdrawAmount0)
-                // const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(tranche1)
-                // console.log(withdrawAmount1)
-                // const withdrawAmount2 = await promiseFund.getTrancheAmountRaised(2)
-                // console.log(withdrawAmount2)
-                // const withdrawAmount3 = await promiseFund.getTrancheAmountRaised(3)
-                // console.log(withdrawAmount3)
+                const tranche1 = await promiseFund.getCurrentTranche()
+                console.log(tranche1)
+                const withdrawAmount0 = await promiseFund.getTrancheAmountRaised(tranche)
+                console.log(withdrawAmount0)
+                const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(tranche1)
+                console.log(withdrawAmount1)
+                const withdrawAmount2 = await promiseFund.getTrancheAmountRaised(2)
+                console.log(withdrawAmount2)
+                const withdrawAmount3 = await promiseFund.getTrancheAmountRaised(3)
+                console.log(withdrawAmount3)
                 
 
                 await callVote(false)
                 await callVote(false)
-                const withdrawTx1 = await promiseFund.withdrawProceedsFunder(beforeFunderBalance.sub(sum))
+                const withdrawTx1 = await promiseFund.withdrawProceedsFunder()
                 await withdrawTx1.wait(1)
 
                 promiseFund = promiseFundContract.connect(deployer)
@@ -421,7 +421,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await callVote(true)
 
                 await expect(
-                    promiseFund.withdrawProceedsFunder(1)
+                    promiseFund.withdrawProceedsFunder()
                 ).to.be.revertedWith("PromiseFund__CantWithdrawFunder")
             })
         })
@@ -445,7 +445,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(deployer)
                 const tranche = await promiseFund.getCurrentTranche()
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
-                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount) 
+                const withdrawTx = await promiseFund.withdrawProceeds() 
                 await withdrawTx.wait(1)
 
                 await expect(
@@ -589,7 +589,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const beforeContractBalance = await promiseFund.getTotalFunds()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.withdrawProceeds(withdrawAmount)
+                await promiseFund.withdrawProceeds()
 
                 const afterContractBalance = await promiseFund.getTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)

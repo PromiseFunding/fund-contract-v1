@@ -40,8 +40,8 @@ export interface IFundInterface extends utils.Interface {
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
     "getVotesPro()": FunctionFragment;
-    "withdrawProceeds(uint256)": FunctionFragment;
-    "withdrawProceedsFunder(uint256)": FunctionFragment;
+    "withdrawProceeds()": FunctionFragment;
+    "withdrawProceedsFunder()": FunctionFragment;
   };
 
   getFunction(
@@ -105,11 +105,11 @@ export interface IFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceeds",
-    values: [PromiseOrValue<BigNumberish>]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceedsFunder",
-    values: [PromiseOrValue<BigNumberish>]
+    values?: undefined
   ): string;
 
   decodeFunctionResult(
@@ -181,7 +181,7 @@ export interface FundsWithdrawnEventObject {
   funder: string;
   owner: string;
   assetAddress: string;
-  amount: BigNumber;
+  total: BigNumber;
 }
 export type FundsWithdrawnEvent = TypedEvent<
   [string, string, string, BigNumber],
@@ -193,7 +193,7 @@ export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
 export interface ProceedsWithdrawnEventObject {
   owner: string;
   assetAddress: string;
-  amount: BigNumber;
+  total: BigNumber;
 }
 export type ProceedsWithdrawnEvent = TypedEvent<
   [string, string, BigNumber],
@@ -264,12 +264,10 @@ export interface IFund extends BaseContract {
     getVotesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -308,12 +306,10 @@ export interface IFund extends BaseContract {
   getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
   withdrawProceeds(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   withdrawProceedsFunder(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -351,15 +347,9 @@ export interface IFund extends BaseContract {
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
-    withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawProceeds(overrides?: CallOverrides): Promise<void>;
 
-    withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawProceedsFunder(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -380,24 +370,24 @@ export interface IFund extends BaseContract {
       funder?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): FundsWithdrawnEventFilter;
     FundsWithdrawn(
       funder?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): FundsWithdrawnEventFilter;
 
     "ProceedsWithdrawn(address,address,uint256)"(
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): ProceedsWithdrawnEventFilter;
     ProceedsWithdrawn(
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): ProceedsWithdrawnEventFilter;
   };
 
@@ -436,12 +426,10 @@ export interface IFund extends BaseContract {
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -481,12 +469,10 @@ export interface IFund extends BaseContract {
     getVotesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

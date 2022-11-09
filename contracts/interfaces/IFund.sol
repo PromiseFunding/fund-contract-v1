@@ -23,10 +23,10 @@ interface IFund {
         address indexed funder,
         address indexed owner,
         address indexed assetAddress,
-        uint256 amount
+        uint256 total
     );
 
-    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
+    event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 total);
 
     function fund(uint256 amount) external;
 
@@ -36,9 +36,9 @@ interface IFund {
         uint256 amount
     ) external;
 
-    function withdrawProceedsFunder(uint256 amount) external;
+    function withdrawProceedsFunder() external;
 
-    function withdrawProceeds(uint256 amount) external;
+    function withdrawProceeds() external;
 
     function getFundAmount(address funder) external view returns (uint256);
 
