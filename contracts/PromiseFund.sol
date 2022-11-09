@@ -431,6 +431,14 @@ contract PromiseFund is IFund, Ownable {
         return 0;
     }
 
+    function getFunderCalledVote() public view returns (bool) {
+        return funderCalledVote;
+    }
+
+    function getVotesTried() public view returns (uint256) {
+        return s_votesTried;
+    }
+
     function getVotesPro() public view returns (uint256) {
         return s_votesPro;
     }

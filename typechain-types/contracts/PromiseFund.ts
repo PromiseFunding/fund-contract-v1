@@ -50,6 +50,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getBlockTime()": FunctionFragment;
     "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getFunderCalledVote()": FunctionFragment;
     "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
     "getMilestoneDuration()": FunctionFragment;
     "getOwner()": FunctionFragment;
@@ -61,6 +62,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
     "getVotesPro()": FunctionFragment;
+    "getVotesTried()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
     "i_milestoneDuration()": FunctionFragment;
@@ -94,6 +96,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getBlockTime"
       | "getCurrentTranche"
       | "getFundAmount"
+      | "getFunderCalledVote"
       | "getFunderTrancheAmountRaised"
       | "getMilestoneDuration"
       | "getOwner"
@@ -105,6 +108,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getVoteEnd"
       | "getVotesCon"
       | "getVotesPro"
+      | "getVotesTried"
       | "getWithdrawableProceeds"
       | "i_assetAddress"
       | "i_milestoneDuration"
@@ -159,6 +163,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getFunderCalledVote",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getFunderTrancheAmountRaised",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -194,6 +202,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getVotesPro",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVotesTried",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -299,6 +311,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getFunderCalledVote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getFunderTrancheAmountRaised",
     data: BytesLike
   ): Result;
@@ -331,6 +347,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getVotesPro",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVotesTried",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -516,6 +536,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getFunderCalledVote(overrides?: CallOverrides): Promise<[boolean]>;
+
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
       level: PromiseOrValue<BigNumberish>,
@@ -546,6 +568,8 @@ export interface PromiseFund extends BaseContract {
     getVotesCon(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getVotesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getVotesTried(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -652,6 +676,8 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
   getFunderTrancheAmountRaised(
     funder: PromiseOrValue<string>,
     level: PromiseOrValue<BigNumberish>,
@@ -682,6 +708,8 @@ export interface PromiseFund extends BaseContract {
   getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
   getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
 
   getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -786,6 +814,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
       level: PromiseOrValue<BigNumberish>,
@@ -816,6 +846,8 @@ export interface PromiseFund extends BaseContract {
     getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -967,6 +999,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getFunderCalledVote(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
       level: PromiseOrValue<BigNumberish>,
@@ -995,6 +1029,8 @@ export interface PromiseFund extends BaseContract {
     getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
 
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1094,6 +1130,10 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getFunderCalledVote(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
       level: PromiseOrValue<BigNumberish>,
@@ -1124,6 +1164,8 @@ export interface PromiseFund extends BaseContract {
     getVotesCon(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getVotesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVotesTried(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getWithdrawableProceeds(
       overrides?: CallOverrides

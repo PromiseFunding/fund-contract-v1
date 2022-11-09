@@ -230,7 +230,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 
                 
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+
                 const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount)
+
                 const withdrawTxReceipt = await withdrawTx.wait(1)
                 const blockNum1 = withdrawTxReceipt.blockNumber
                 const block = await ethers.provider.getBlock(blockNum1)
@@ -241,6 +243,10 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 const aftertranche = await promiseFund.getCurrentTranche()
                 const trancheAmountAfter = await promiseFund.getTrancheAmountRaised(tranche)
+                const votesPro = await promiseFund.getVotesPro()
+                const votesCon = await promiseFund.getVotesCon()
+                const votesTried = await promiseFund.getVotesTried()
+                const funderCallVote = await promiseFund.getFunderCalledVote()
                 const afterContractBalance = await promiseFund.getTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
                 assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
@@ -250,6 +256,86 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(timestamp, response[aftertranche].startTime.toNumber())
                 assert.equal(response[aftertranche].milestoneDuration.toNumber(), 600)
                 assert.equal(state, 0)
+                assert.equal(votesPro.toNumber(), 0)
+                assert.equal(votesCon.toNumber(), 0)
+                assert.equal(votesTried.toNumber(), 0)
+                assert.equal(funderCallVote, false)
+            })
+            it("correctly allows the owner to withdraw proceeds in the correct state with exact amount if in the last tranche", async function () {
+                //votes tried, votes pro, fund state, and tranche should all be not changing after the transaction
+                await fund()
+
+                const beforeContractBalance = await promiseFund.getTotalFunds()
+                const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
+                console.log(beforeDeployerBalance)
+
+                await callVote(true)
+
+                let sum : BigNumber = BigNumber.from("0")
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                const tranche = await promiseFund.getCurrentTranche()
+                console.log(tranche + "0")
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+                console.log(withdrawAmount)
+                sum = sum.add(withdrawAmount)
+                const withdrawTx = await promiseFund.withdrawProceeds(withdrawAmount) 
+                await withdrawTx.wait(1)
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                const tranche1 = await promiseFund.getCurrentTranche()
+                console.log(tranche1 + "1")
+                const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(tranche1)
+                console.log(withdrawAmount1)
+                sum = sum.add(withdrawAmount1)
+                const withdrawTx1 = await promiseFund.withdrawProceeds(withdrawAmount1) 
+                await withdrawTx1.wait(1)
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                const tranche2 = await promiseFund.getCurrentTranche()
+                console.log(tranche2 + "2")
+                const withdrawAmount2 = await promiseFund.getTrancheAmountRaised(tranche2)
+                console.log(withdrawAmount2)
+                sum = sum.add(withdrawAmount2)
+                const withdrawTx2 = await promiseFund.withdrawProceeds(withdrawAmount2) 
+                await withdrawTx2.wait(1)
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                 
+                const tranche3 = await promiseFund.getCurrentTranche()
+                console.log(tranche3 + "3")
+                const withdrawAmount3 = await promiseFund.getTrancheAmountRaised(tranche3)
+                console.log(withdrawAmount3)
+                sum = sum.add(withdrawAmount3)
+                const withdrawTx3 = await promiseFund.withdrawProceeds(withdrawAmount3) 
+                await withdrawTx3.wait(1)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                //went through each tranche. Now check last tranche didnt update everything
+                const trancheAmountAfter = await promiseFund.getTrancheAmountRaised(tranche3)
+                const tranche4 = await promiseFund.getCurrentTranche()
+                const state = await promiseFund.getState()
+
+                const votesPro = await promiseFund.getVotesPro()
+                const votesCon = await promiseFund.getVotesCon()
+                const votesTried = await promiseFund.getVotesTried()
+                const afterContractBalance = await promiseFund.getTotalFunds()
+                const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
+                assert.equal("0", afterContractBalance.toString()) //no funds in contract bc voted yes each time
+                assert.equal(beforeDeployerBalance.add(sum).toString(), afterDeployerBalance.toString()) //all funds with owner
+                assert.equal(trancheAmountAfter.toString(), "0") //error occuring here
+                assert.equal((tranche4).toString(), (tranche3).toString()) //tranche4 shouldnt have updated
+                assert.equal(state, 2) //state should still be owner_withdraw
+                assert.equal(votesPro.toNumber(), 1) //1 vote for pro called
+                assert.equal(votesCon.toNumber(), 0)
+                assert.equal(votesTried.toNumber(), 1) //never resets votes tried
             })
             it("correctly allows a funder to withdraw what they funded in the correct state", async function () {
                 const beforeFunderBalance = await assetToken.balanceOf(user.address)
