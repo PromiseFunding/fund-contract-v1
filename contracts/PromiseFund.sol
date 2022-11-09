@@ -11,6 +11,7 @@ error PromiseFund__FundAmountMustBeAboveZero();
 error PromiseFund__WithdrawFundsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
+error PromiseFund_FunderStateChangedOrVoteNotDone();
 error PromiseFund__WithdrawProceedsNotEqualToBalance(uint256 amount, uint256 balance);
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
@@ -130,7 +131,8 @@ contract PromiseFund is IFund, Ownable {
             } else {
                 tranches[trancheIndex].amountRaised += (amount / (i_numberOfMilestones - tranche));
                 temp -= (amount / (i_numberOfMilestones - tranche));
-                s_allFunders[msg.sender].amount[trancheIndex] += (amount / (i_numberOfMilestones-tranche));
+                s_allFunders[msg.sender].amount[trancheIndex] += (amount /
+                    (i_numberOfMilestones - tranche));
             }
         }
 
@@ -230,10 +232,15 @@ contract PromiseFund is IFund, Ownable {
     // This ensures that owner is sticking to schedule and not locking everyones money up forever
     // Current Implementation: Switches state so funders can withdraw their money
     // voteEnded bool helps make sure voteEndTime gets updated appropriately and cant call this function continuously
+    // voteEndTime only assigned value in endVote function so need boolean to help
     function ownerWithdrawPeriodExpired() public {
+        if (!voteEnded) {
+            revert PromiseFund_FunderStateChangedOrVoteNotDone();
+        }
         if (voteEnded && (block.timestamp - voteEndTime < MAX_OWNER_WITHDRAW_PERIOD)) {
             revert PromiseFund_OwnerCanStillWithdraw();
-        } else {
+        }
+        if (voteEnded && (block.timestamp - voteEndTime >= MAX_OWNER_WITHDRAW_PERIOD)) {
             s_fundState = FundState.FUNDER_WITHDRAW;
             voteEnded = false;
         }
