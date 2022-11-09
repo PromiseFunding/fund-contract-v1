@@ -277,10 +277,7 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__VoteEnded();
         }
         // They get double their votes for each consecutive vote
-        if (
-            s_allFunders[msg.sender].votes * s_votesTried <=
-            s_allFunders[msg.sender].timesVoted[tranche]
-        ) {
+        if (didFunderVote(msg.sender)) {
             revert PromiseFund__NoVotesLeft();
         }
         s_allFunders[msg.sender].timesVoted[tranche] =
@@ -418,6 +415,13 @@ contract PromiseFund is IFund, Ownable {
             return s_voteEnd - block.timestamp;
         }
         return 0;
+    }
+
+    function didFunderVote(address funder) public view returns (bool) {
+        if (s_allFunders[funder].votes * s_votesTried <= s_allFunders[funder].timesVoted[tranche]) {
+            return true;
+        }
+        return false;
     }
 
     function getFunderCalledVote() public view returns (bool) {

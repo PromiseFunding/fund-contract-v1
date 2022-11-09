@@ -44,6 +44,7 @@ export declare namespace PromiseFund {
 export interface PromiseFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
+    "didFunderVote(address)": FunctionFragment;
     "endVote()": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
@@ -90,6 +91,7 @@ export interface PromiseFundInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "approveTransfer"
+      | "didFunderVote"
       | "endVote"
       | "fund"
       | "getAssetAddress"
@@ -140,6 +142,10 @@ export interface PromiseFundInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "didFunderVote",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "endVote", values?: undefined): string;
   encodeFunctionData(
@@ -290,6 +296,10 @@ export interface PromiseFundInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "approveTransfer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "didFunderVote",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "endVote", data: BytesLike): Result;
@@ -516,6 +526,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     endVote(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -654,6 +669,11 @@ export interface PromiseFund extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  didFunderVote(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   endVote(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -791,6 +811,11 @@ export interface PromiseFund extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     endVote(overrides?: CallOverrides): Promise<void>;
 
@@ -969,6 +994,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     endVote(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1096,6 +1126,11 @@ export interface PromiseFund extends BaseContract {
       recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     endVote(
