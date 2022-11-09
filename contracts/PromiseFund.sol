@@ -128,9 +128,9 @@ contract PromiseFund is IFund, Ownable {
                 tranches[trancheIndex].amountRaised += temp;
                 s_allFunders[msg.sender].amount[trancheIndex] += temp;
             } else {
-                tranches[trancheIndex].amountRaised += (amount / i_numberOfMilestones);
-                temp -= (amount / i_numberOfMilestones);
-                s_allFunders[msg.sender].amount[trancheIndex] += (amount / i_numberOfMilestones);
+                tranches[trancheIndex].amountRaised += (amount / (i_numberOfMilestones - tranche));
+                temp -= (amount / (i_numberOfMilestones - tranche));
+                s_allFunders[msg.sender].amount[trancheIndex] += (amount / (i_numberOfMilestones-tranche));
             }
         }
 
