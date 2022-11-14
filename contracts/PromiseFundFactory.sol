@@ -28,8 +28,8 @@ contract PromiseFundFactory is Ownable {
 
     /// @notice Create a new PromiseFund
     /// @param assetAddress the address of the underlying asset
-    function createPromiseFund(address assetAddress) public {
-        PromiseFund promiseFund = new PromiseFund(assetAddress);
+    function createPromiseFund(address assetAddress, uint8 numberOfMilestones, uint256 milestoneDuration) public {
+        PromiseFund promiseFund = new PromiseFund(assetAddress, numberOfMilestones, milestoneDuration);
         s_funds_promise.push(promiseFund);
         emit Created(msg.sender, assetAddress, address(promiseFund));
     }

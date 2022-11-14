@@ -65,7 +65,7 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "total",
         type: "uint256",
       },
     ],
@@ -90,7 +90,7 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "total",
         type: "uint256",
       },
     ],
@@ -257,26 +257,14 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     name: "withdrawProceeds",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     name: "withdrawProceedsFunder",
     outputs: [],
     stateMutability: "nonpayable",

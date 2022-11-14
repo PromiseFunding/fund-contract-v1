@@ -38,7 +38,7 @@ developmentChains.includes(network.name)
         describe("Set up Promise Fund Contract", function () {
             it("Emits an event when creating a new contract", async function () {
                 await expect(
-                    promiseFactory.createPromiseFund(assetToken.address)
+                    promiseFactory.createPromiseFund(assetToken.address, 4, 600)
                 ).to.emit(promiseFactory, "Created")
 
                 const promiseFundAddress = await promiseFactory.getPromiseFund(0)

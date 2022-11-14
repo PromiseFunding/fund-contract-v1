@@ -27,27 +27,55 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace PromiseFund {
+  export type MilestoneStruct = {
+    amountRaised: PromiseOrValue<BigNumberish>;
+    startTime: PromiseOrValue<BigNumberish>;
+    milestoneDuration: PromiseOrValue<BigNumberish>;
+  };
+
+  export type MilestoneStructOutput = [BigNumber, BigNumber, BigNumber] & {
+    amountRaised: BigNumber;
+    startTime: BigNumber;
+    milestoneDuration: BigNumber;
+  };
+}
+
 export interface PromiseFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
+    "didFunderVote(address)": FunctionFragment;
     "endVote()": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
+    "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getFunderCalledVote()": FunctionFragment;
+    "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
+    "getFunderVotes(address)": FunctionFragment;
+    "getMilestoneDuration()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
     "getTotalFunds()": FunctionFragment;
+    "getTrancheAmountRaised(uint256)": FunctionFragment;
+    "getTranches()": FunctionFragment;
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
     "getVotesPro()": FunctionFragment;
+    "getVotesTried()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
+    "i_milestoneDuration()": FunctionFragment;
+    "i_numberOfMilestones()": FunctionFragment;
     "i_owner()": FunctionFragment;
+    "maxDuration()": FunctionFragment;
+    "maxMilestones()": FunctionFragment;
     "owner()": FunctionFragment;
+    "ownerWithdrawPeriodExpired()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "s_funders(address)": FunctionFragment;
+    "s_allFunders(address)": FunctionFragment;
     "s_totalFunded()": FunctionFragment;
     "s_voteEnd()": FunctionFragment;
     "s_votesCon()": FunctionFragment;
@@ -55,32 +83,47 @@ export interface PromiseFundInterface extends utils.Interface {
     "s_votesTried()": FunctionFragment;
     "startVote(uint256)": FunctionFragment;
     "submitVote(bool)": FunctionFragment;
+    "tranches(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "withdrawProceeds(uint256)": FunctionFragment;
-    "withdrawProceedsFunder(uint256)": FunctionFragment;
+    "withdrawProceeds()": FunctionFragment;
+    "withdrawProceedsFunder()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "approveTransfer"
+      | "didFunderVote"
       | "endVote"
       | "fund"
       | "getAssetAddress"
       | "getBlockTime"
+      | "getCurrentTranche"
       | "getFundAmount"
+      | "getFunderCalledVote"
+      | "getFunderTrancheAmountRaised"
+      | "getFunderVotes"
+      | "getMilestoneDuration"
       | "getOwner"
       | "getState"
       | "getTimeLeftVoting"
       | "getTotalFunds"
+      | "getTrancheAmountRaised"
+      | "getTranches"
       | "getVoteEnd"
       | "getVotesCon"
       | "getVotesPro"
+      | "getVotesTried"
       | "getWithdrawableProceeds"
       | "i_assetAddress"
+      | "i_milestoneDuration"
+      | "i_numberOfMilestones"
       | "i_owner"
+      | "maxDuration"
+      | "maxMilestones"
       | "owner"
+      | "ownerWithdrawPeriodExpired"
       | "renounceOwnership"
-      | "s_funders"
+      | "s_allFunders"
       | "s_totalFunded"
       | "s_voteEnd"
       | "s_votesCon"
@@ -88,6 +131,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "s_votesTried"
       | "startVote"
       | "submitVote"
+      | "tranches"
       | "transferOwnership"
       | "withdrawProceeds"
       | "withdrawProceedsFunder"
@@ -100,6 +144,10 @@ export interface PromiseFundInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "didFunderVote",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "endVote", values?: undefined): string;
   encodeFunctionData(
@@ -115,8 +163,28 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getCurrentTranche",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getFundAmount",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFunderCalledVote",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFunderTrancheAmountRaised",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFunderVotes",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMilestoneDuration",
+    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
@@ -126,6 +194,14 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTotalFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTrancheAmountRaised",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTranches",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -141,6 +217,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getVotesTried",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getWithdrawableProceeds",
     values?: undefined
   ): string;
@@ -148,14 +228,34 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "i_assetAddress",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "i_milestoneDuration",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "i_numberOfMilestones",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "i_owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "maxDuration",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxMilestones",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "ownerWithdrawPeriodExpired",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "s_funders",
+    functionFragment: "s_allFunders",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -184,20 +284,28 @@ export interface PromiseFundInterface extends utils.Interface {
     values: [PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
+    functionFragment: "tranches",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceeds",
-    values: [PromiseOrValue<BigNumberish>]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceedsFunder",
-    values: [PromiseOrValue<BigNumberish>]
+    values?: undefined
   ): string;
 
   decodeFunctionResult(
     functionFragment: "approveTransfer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "didFunderVote",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "endVote", data: BytesLike): Result;
@@ -211,7 +319,27 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCurrentTranche",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getFundAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFunderCalledVote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFunderTrancheAmountRaised",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFunderVotes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMilestoneDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
@@ -224,6 +352,14 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "getTotalFunds",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTrancheAmountRaised",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTranches",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getVoteEnd", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getVotesCon",
@@ -234,6 +370,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getVotesTried",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getWithdrawableProceeds",
     data: BytesLike
   ): Result;
@@ -241,13 +381,36 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "i_assetAddress",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_milestoneDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "i_numberOfMilestones",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "i_owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "maxDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxMilestones",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "ownerWithdrawPeriodExpired",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "s_funders", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "s_allFunders",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "s_totalFunded",
     data: BytesLike
@@ -261,6 +424,7 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "startVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "submitVote", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "tranches", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -304,7 +468,7 @@ export interface FundsWithdrawnEventObject {
   funder: string;
   owner: string;
   assetAddress: string;
-  amount: BigNumber;
+  total: BigNumber;
 }
 export type FundsWithdrawnEvent = TypedEvent<
   [string, string, string, BigNumber],
@@ -328,7 +492,7 @@ export type OwnershipTransferredEventFilter =
 export interface ProceedsWithdrawnEventObject {
   owner: string;
   assetAddress: string;
-  amount: BigNumber;
+  total: BigNumber;
 }
 export type ProceedsWithdrawnEvent = TypedEvent<
   [string, string, BigNumber],
@@ -372,6 +536,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     endVote(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -385,10 +554,27 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<[number]>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getFunderCalledVote(overrides?: CallOverrides): Promise<[boolean]>;
+
+    getFunderTrancheAmountRaised(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getFunderVotes(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getMilestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -398,34 +584,52 @@ export interface PromiseFund extends BaseContract {
 
     getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getTranches(
+      overrides?: CallOverrides
+    ): Promise<[PromiseFund.MilestoneStructOutput[]]>;
+
     getVoteEnd(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getVotesCon(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getVotesPro(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getVotesTried(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<[number]>;
+
     i_owner(overrides?: CallOverrides): Promise<[string]>;
 
+    maxDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<[number]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
-        amount: BigNumber;
-        entryTime: BigNumber;
-        votes: BigNumber;
-        timesVoted: BigNumber;
-      }
+      [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -448,18 +652,27 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountRaised: BigNumber;
+        startTime: BigNumber;
+        milestoneDuration: BigNumber;
+      }
+    >;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -470,6 +683,11 @@ export interface PromiseFund extends BaseContract {
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  didFunderVote(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   endVote(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -484,10 +702,27 @@ export interface PromiseFund extends BaseContract {
 
   getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getCurrentTranche(overrides?: CallOverrides): Promise<number>;
+
   getFundAmount(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
+  getFunderTrancheAmountRaised(
+    funder: PromiseOrValue<string>,
+    level: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getFunderVotes(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -497,34 +732,52 @@ export interface PromiseFund extends BaseContract {
 
   getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getTrancheAmountRaised(
+    level: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getTranches(
+    overrides?: CallOverrides
+  ): Promise<PromiseFund.MilestoneStructOutput[]>;
+
   getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
   getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
   getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
+
   getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
+  i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+  i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+
   i_owner(overrides?: CallOverrides): Promise<string>;
 
+  maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+  maxMilestones(overrides?: CallOverrides): Promise<number>;
+
   owner(overrides?: CallOverrides): Promise<string>;
+
+  ownerWithdrawPeriodExpired(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  s_funders(
+  s_allFunders(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber] & {
-      amount: BigNumber;
-      entryTime: BigNumber;
-      votes: BigNumber;
-      timesVoted: BigNumber;
-    }
+    [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
   >;
 
   s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
@@ -547,18 +800,27 @@ export interface PromiseFund extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  tranches(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      amountRaised: BigNumber;
+      startTime: BigNumber;
+      milestoneDuration: BigNumber;
+    }
+  >;
+
   transferOwnership(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   withdrawProceeds(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   withdrawProceedsFunder(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -569,6 +831,11 @@ export interface PromiseFund extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     endVote(overrides?: CallOverrides): Promise<void>;
 
@@ -581,10 +848,27 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<number>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
+    getFunderTrancheAmountRaised(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getFunderVotes(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -594,32 +878,48 @@ export interface PromiseFund extends BaseContract {
 
     getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTranches(
+      overrides?: CallOverrides
+    ): Promise<PromiseFund.MilestoneStructOutput[]>;
+
     getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+
     i_owner(overrides?: CallOverrides): Promise<string>;
+
+    maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<number>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
+    ownerWithdrawPeriodExpired(overrides?: CallOverrides): Promise<void>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber] & {
-        amount: BigNumber;
-        entryTime: BigNumber;
-        votes: BigNumber;
-        timesVoted: BigNumber;
-      }
+      [BigNumber, boolean] & { votes: BigNumber; withdrewAllFunds: boolean }
     >;
 
     s_totalFunded(overrides?: CallOverrides): Promise<BigNumber>;
@@ -642,20 +942,25 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amountRaised: BigNumber;
+        startTime: BigNumber;
+        milestoneDuration: BigNumber;
+      }
+    >;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawProceeds(overrides?: CallOverrides): Promise<void>;
 
-    withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawProceedsFunder(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -676,13 +981,13 @@ export interface PromiseFund extends BaseContract {
       funder?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): FundsWithdrawnEventFilter;
     FundsWithdrawn(
       funder?: PromiseOrValue<string> | null,
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): FundsWithdrawnEventFilter;
 
     "OwnershipTransferred(address,address)"(
@@ -697,12 +1002,12 @@ export interface PromiseFund extends BaseContract {
     "ProceedsWithdrawn(address,address,uint256)"(
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): ProceedsWithdrawnEventFilter;
     ProceedsWithdrawn(
       owner?: PromiseOrValue<string> | null,
       assetAddress?: PromiseOrValue<string> | null,
-      amount?: null
+      total?: null
     ): ProceedsWithdrawnEventFilter;
   };
 
@@ -712,6 +1017,11 @@ export interface PromiseFund extends BaseContract {
       recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     endVote(
@@ -727,10 +1037,27 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getFunderCalledVote(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFunderTrancheAmountRaised(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getFunderVotes(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -740,25 +1067,46 @@ export interface PromiseFund extends BaseContract {
 
     getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTranches(overrides?: CallOverrides): Promise<BigNumber>;
+
     getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesCon(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVotesPro(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getVotesTried(overrides?: CallOverrides): Promise<BigNumber>;
+
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
+
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    maxDuration(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -783,18 +1131,21 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -805,6 +1156,11 @@ export interface PromiseFund extends BaseContract {
       recipient: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     endVote(
@@ -820,8 +1176,29 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getCurrentTranche(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFunderCalledVote(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFunderTrancheAmountRaised(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFunderVotes(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMilestoneDuration(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -833,11 +1210,20 @@ export interface PromiseFund extends BaseContract {
 
     getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTranches(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getVoteEnd(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getVotesCon(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getVotesPro(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVotesTried(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getWithdrawableProceeds(
       overrides?: CallOverrides
@@ -845,15 +1231,31 @@ export interface PromiseFund extends BaseContract {
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    i_milestoneDuration(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    i_numberOfMilestones(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     i_owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    maxDuration(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxMilestones(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    ownerWithdrawPeriodExpired(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    s_funders(
+    s_allFunders(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -878,18 +1280,21 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    tranches(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     transferOwnership(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     withdrawProceedsFunder(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
