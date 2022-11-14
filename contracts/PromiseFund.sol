@@ -114,7 +114,7 @@ contract PromiseFund is IFund, Ownable {
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
 
-        //set entryTime if first time depositing
+        //set entryTime if first time depositing... this if statement does nothing for now
         if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
             s_allFunders[msg.sender].timesVoted[tranche] = 0;
         }
@@ -307,10 +307,23 @@ contract PromiseFund is IFund, Ownable {
             )
             : FundState.OWNER_WITHDRAW;
 
-        //used in ownerWithdrawPeriodExpired
+        // if the vote ends with more cons then pros and the duration of the milestone is up, then the state is changed to FUNDER_WITHDRAW
+        // even if 2 votes haven't taken place
+        if(s_fundState == FundState.PENDING && ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration)){
+            s_fundState == FundState.FUNDER_WITHDRAW;
+        }
+
+        // used in ownerWithdrawPeriodExpired
         if (s_fundState == FundState.OWNER_WITHDRAW) {
             voteEndTime = block.timestamp;
             voteEnded = true;
+        }
+
+        // if the state is in pending after function called, a vote has taken place and is false so we want to reset
+        // the amount of pro votes and con votes for 0 for the second vote
+        if (s_fundState == FundState.PENDING) {
+            s_votesCon = 0;
+            s_votesPro = 0;
         }
     }
 
@@ -422,6 +435,10 @@ contract PromiseFund is IFund, Ownable {
             return true;
         }
         return false;
+    }
+
+    function getFunderVotes(address funder) public view returns (uint256) {
+        return s_allFunders[funder].votes;
     }
 
     function getFunderCalledVote() public view returns (bool) {

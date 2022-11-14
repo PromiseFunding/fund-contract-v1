@@ -401,14 +401,18 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount3 = await promiseFund.getTrancheAmountRaised(3)
                 console.log(withdrawAmount3)
                 
+                // double checks getFundAmount working properly
+                const fundAmountAfterTranche10 = await promiseFund.getFundAmount(user.address)
+                console.log(fundAmountAfterTranche10) //equals 1.75 as expected
 
                 await callVote(false)
                 await callVote(false)
                 const withdrawTx1 = await promiseFund.withdrawProceedsFunder()
                 await withdrawTx1.wait(1)
 
-                promiseFund = promiseFundContract.connect(deployer)
-
+                promiseFund = promiseFundContract.connect(user)
+                const fundAmountAfterTranche1 = await promiseFund.getFundAmount(user.address)
+                console.log(fundAmountAfterTranche1) //equals 0 as expeced because Funder withdrew
 
                 const afterFunderBalance = await assetToken.balanceOf(user.address)
                 assert.equal(beforeFunderBalance.sub(sum).toString(), afterFunderBalance.toString())
@@ -459,24 +463,52 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Funder called for Vote tests after duration", function () {
+            it("correctly assigns state if owner called vote before expiry even if only one vote and false", async function () {
+                //check s_allFunders[msg.sender].timesVoted[tranche] is updating
+                promiseFund = promiseFundContract.connect(user)
+
+                //user funds here so can call for vote if time expired
+                await fund()
+                const duration = await promiseFund.getMilestoneDuration()
+
+                //vote is called by owner a second before duration ends 
+                await network.provider.send("evm_increaseTime", [duration.toNumber() - 1])
+                //instead of pending this should result in funder_withdraw because duration is up
+                await callVote(false)
+                
+                //state should be funder withdraw even tho only one vote called by owner because duration is up
+                const state = await promiseFund.getState()
+                assert.equal(state, 3)
+            })
             it("correctly assigns state if owner didn't call for vote and duration expired", async function () {
                 //check s_allFunders[msg.sender].timesVoted[tranche] is updating
                 promiseFund = promiseFundContract.connect(user)
 
+                //didnt fund so should error 
                 await expect(
                     promiseFund.submitVote(true)
-                ).to.be.revertedWith("PromiseFund__NoVotesLeft")
+                ).to.be.revertedWith("PromiseFund__StateNotVoting")
 
+                //user funds here so can call for vote if time expired
                 await fund()
                 const duration = await promiseFund.getMilestoneDuration()
-                await network.provider.send("evm_increaseTime", [duration])
+                await expect(
+                    promiseFund.startVote(15)
+                ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
+                await network.provider.send("evm_increaseTime", [duration.toNumber()])
                 promiseFund = promiseFundContract.connect(user)
+                //tests that can start vote correct here with no error
                 await promiseFund.startVote(15)
 
                 await promiseFund.submitVote(true)
 
                 const votesProAfter = await promiseFund.getVotesPro()
                 assert.equal(votesProAfter.toNumber(), 1)
+                
+                //vote still going error
+                await expect(
+                    promiseFund.endVote()
+                ).to.be.revertedWith("PromiseFund__VoteStillGoing")
 
                 const timeLeft = await promiseFund.getTimeLeftVoting()
                 await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
@@ -486,6 +518,57 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const state = await promiseFund.getState()
                 assert.equal(state, 2)
             })
+            it("correctly assigns state if owner called one vote and then duration expired", async function () {
+                //check s_allFunders[msg.sender].timesVoted[tranche] is updating
+                promiseFund = promiseFundContract.connect(user)
+
+                //didnt fund so should error 
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__StateNotVoting")
+
+                const votesTried0 = await promiseFund.getVotesTried()
+                assert.equal(votesTried0.toNumber(), 0)
+
+                //user funds here so can call for vote if time expired
+                await fund()
+                //one vote failed
+                await callVote(false)
+                //after vote is called false, we want con votes to rest to 0 and pro votes to 0 and votes tried to remain unaffected
+                const votesTried1 = await promiseFund.getVotesTried()
+                assert.equal(votesTried1.toNumber(), 1)
+                const votesconAfter = await promiseFund.getVotesCon()
+                assert.equal(votesconAfter.toNumber(), 0)
+                const votesproAfter = await promiseFund.getVotesCon()
+                assert.equal(votesproAfter.toNumber(), 0)
+
+                const duration = await promiseFund.getMilestoneDuration()
+                await network.provider.send("evm_increaseTime", [duration.toNumber()])
+                promiseFund = promiseFundContract.connect(user)
+                await promiseFund.startVote(15)
+
+                await promiseFund.submitVote(false)
+
+                //resets con votes to 0 and then adds 1 for the next con vote
+                const votesConAfter = await promiseFund.getVotesCon()
+                assert.equal(votesConAfter.toNumber(), 1)
+                
+                //vote still going error
+                await expect(
+                    promiseFund.endVote()
+                ).to.be.revertedWith("PromiseFund__VoteStillGoing")
+
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                await promiseFund.endVote()
+                
+                const votesTried = await promiseFund.getVotesTried()
+                assert.equal(votesTried.toNumber(), 2)
+                //false vote so fudner withdraw
+                const state = await promiseFund.getState()
+                assert.equal(state, 3)
+            })
         })
         describe("Voting Tests", function () {
             it("fails when a non-owner tries to call a vote prior to end of milestone", async function () {
@@ -494,6 +577,21 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await expect(
                     promiseFund.startVote(15)
                 ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
+            })
+            it("fails when a non-funder tries to submit a vote", async function () {
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                const fundAmount1 = await promiseFund.getFundAmount(user.address)
+                assert.equal(fundAmount1.toNumber(), 0)
+
+                const funderVotes = await promiseFund.getFunderVotes(user.address)
+                assert.equal(funderVotes.toNumber(), 0)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund__NoVotesLeft")
             })
             it("fails when the vote length is too short", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
@@ -583,7 +681,11 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await fund()
 
-                await callVote(false)
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await promiseFund.submitVote(false)
 
                 const votesConAfter = await promiseFund.getVotesCon()
                 assert.equal(votesConAfter.toNumber(), votesConBefore.add(1).toNumber())
