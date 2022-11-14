@@ -91,8 +91,6 @@ const config: HardhatUserConfig = {
             accounts: [PRIVATE_KEY!, SECONDARY_PRIVATE_KEY!],
             saveDeployments: true,
             chainId: 421613,
-            gas: 21000000,
-            gasPrice: 8000000000,
         },
     },
     etherscan: {

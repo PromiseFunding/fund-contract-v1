@@ -309,7 +309,10 @@ contract PromiseFund is IFund, Ownable {
 
         // if the vote ends with more cons then pros and the duration of the milestone is up, then the state is changed to FUNDER_WITHDRAW
         // even if 2 votes haven't taken place
-        if(s_fundState == FundState.PENDING && ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration)){
+        if (
+            s_fundState == FundState.PENDING &&
+            ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration)
+        ) {
             s_fundState == FundState.FUNDER_WITHDRAW;
         }
 
