@@ -45,11 +45,15 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
             const approveTx = await assetToken.approve(
                 deployer.address,
-                fundValueWithDecimals
+                fundValueWithDecimals.mul(5)
             )
             await approveTx.wait(1)
 
             assetToken.transferFrom(deployer.address, user.address, fundValueWithDecimals)
+            assetToken.transferFrom(deployer.address, accounts[1].address, fundValueWithDecimals)
+            assetToken.transferFrom(deployer.address, accounts[2].address, fundValueWithDecimals)
+            assetToken.transferFrom(deployer.address, accounts[3].address, fundValueWithDecimals)
+            assetToken.transferFrom(deployer.address, accounts[4].address, fundValueWithDecimals)
         })
 
         describe("constructor", function () {
@@ -460,6 +464,191 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await promiseFund.ownerWithdrawPeriodExpired()
                 const state = await promiseFund.getState()
                 assert.equal(state, 3)
+            })
+        })
+        describe("Multiple funders, withdrawing and voting tests", function () {
+            it("correctly accumulates the funds in the tranches from multiple funders", async function () {
+                let sum : BigNumber = BigNumber.from("0")
+                promiseFund = promiseFundContract.connect(accounts[1])
+
+                //funders original amount
+                const originalFundAmount1 = await promiseFund.getFundAmount(accounts[1].address)
+                const originalFundAmount2 = await promiseFund.getFundAmount(accounts[2].address)
+                const originalFundAmount3 = await promiseFund.getFundAmount(accounts[3].address)
+                const originalFundAmount4 = await promiseFund.getFundAmount(accounts[4].address)
+
+                //tranche and contract original amounts
+                const originalFundsRaised = await promiseFund.getTotalFunds()
+                const originalMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const originalMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const originalMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const originalMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+
+                //funding from accounts 1 to 4
+                for(let i = 1; i < 5; i++){
+                    const promiseFund = promiseFundContract.connect(accounts[i])
+                    const assetToken = assetTokenContract.connect(accounts[i])
+                    
+                    const approveTx = await assetToken.approve(
+                        promiseFund.address,
+                        fundValueWithDecimals
+                    )
+                    await approveTx.wait(1)
+        
+                    const fundTx = await promiseFund.fund(oneFundValueWithDecimals)
+                    await fundTx.wait(1)
+
+                    sum = sum.add(oneFundValueWithDecimals)
+                }
+
+                //after funders amount
+                const afterFundAmount1 = await promiseFund.getFundAmount(accounts[1].address)
+                const afterFundAmount2 = await promiseFund.getFundAmount(accounts[2].address)
+                const afterFundAmount3 = await promiseFund.getFundAmount(accounts[3].address)
+                const afterFundAmount4 = await promiseFund.getFundAmount(accounts[4].address)
+
+
+                //check from each funder... everyone funded same amount so should be equal
+                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(accounts[1].address, 0))
+                const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const afterFunderAmountInTrancheTwo = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 1))
+                const afterMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const afterFunderAmountInTrancheThree = (await promiseFund.getFunderTrancheAmountRaised(accounts[3].address, 2))
+                const afterMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const afterFunderAmountInTrancheFour = (await promiseFund.getFunderTrancheAmountRaised(accounts[4].address, 3))
+
+                // console.log(afterFunderAmountInTrancheFour)
+                // console.log(afterFundsRaised)
+                // console.log(sum)
+
+                //total funders amount accumulated correct
+                assert.equal(
+                    afterFundAmount1.toString(),
+                    originalFundAmount1.add(oneFundValueWithDecimals).toString()
+                )
+                assert.equal(
+                    afterFundAmount2.toString(),
+                    originalFundAmount2.add(oneFundValueWithDecimals).toString()
+                )
+                assert.equal(
+                    afterFundAmount3.toString(),
+                    originalFundAmount3.add(oneFundValueWithDecimals).toString()
+                )
+                assert.equal(
+                    afterFundAmount4.toString(),
+                    originalFundAmount4.add(oneFundValueWithDecimals).toString()
+                )
+
+                //tranches accumulated correct
+                assert.equal(
+                    afterFundsRaised.toString(),
+                    originalFundsRaised.add(sum).toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheOne.add(oneFundValueWithDecimals).toString(),
+                    oneFundValueWithDecimals.toString(),
+                    afterMilestoneAmountInTrancheOne.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheTwo.add(oneFundValueWithDecimals).toString(),
+                    oneFundValueWithDecimals.toString(),
+                    afterMilestoneAmountInTrancheTwo.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheThree.add(oneFundValueWithDecimals).toString(),
+                    oneFundValueWithDecimals.toString(),
+                    afterMilestoneAmountInTrancheThree.toString()
+                )
+                assert.equal(
+                    originalMilestoneAmountInTrancheFour.add(oneFundValueWithDecimals).toString(),
+                    oneFundValueWithDecimals.toString(),
+                    afterMilestoneAmountInTrancheFour.toString()
+                )
+
+                //each funder has correct amount in each tranche
+                assert.equal(
+                    afterFunderAmountInTrancheOne.add(afterFunderAmountInTrancheTwo).add(afterFunderAmountInTrancheThree).add(afterFunderAmountInTrancheFour).toString(),
+                    oneFundValueWithDecimals.toString()
+                )
+
+            })
+            it("correctly allows multiple funders to withdraw their funding amounts", async function () {
+
+                for(let i = 1; i < 5; i++){
+                    const promiseFund = promiseFundContract.connect(accounts[i])
+                    const assetToken = assetTokenContract.connect(accounts[i])
+                    
+                    const approveTx = await assetToken.approve(
+                        promiseFund.address,
+                        fundValueWithDecimals
+                    )
+                    await approveTx.wait(1)
+        
+                    const fundTx = await promiseFund.fund(oneFundValueWithDecimals)
+                    await fundTx.wait(1)
+                }
+
+                const beforeFunderBalance1 = await assetToken.balanceOf(accounts[1].address)
+                const beforeFunderBalance2 = await assetToken.balanceOf(accounts[2].address)
+                const beforeFunderBalance3 = await assetToken.balanceOf(accounts[3].address)
+                const beforeFunderBalance4 = await assetToken.balanceOf(accounts[4].address)
+
+                await callVote(false)
+                await callVote(false)
+
+                for(let i = 1; i < 5; i++){
+                    const promiseFund = promiseFundContract.connect(accounts[i])
+                    
+                    const withdrawTx1 = await promiseFund.withdrawProceedsFunder()
+                    await withdrawTx1.wait(1)
+                }
+
+
+                const afterFunderBalance1 = await assetToken.balanceOf(accounts[1].address)
+                const afterFunderBalance2 = await assetToken.balanceOf(accounts[2].address)
+                const afterFunderBalance3 = await assetToken.balanceOf(accounts[3].address)
+                const afterFunderBalance4 = await assetToken.balanceOf(accounts[4].address)
+
+                assert.equal(beforeFunderBalance1.add(oneFundValueWithDecimals).toString(), afterFunderBalance1.toString())
+                assert.equal(beforeFunderBalance2.add(oneFundValueWithDecimals).toString(), afterFunderBalance2.toString())
+                assert.equal(beforeFunderBalance3.add(oneFundValueWithDecimals).toString(), afterFunderBalance3.toString())
+                assert.equal(beforeFunderBalance4.add(oneFundValueWithDecimals).toString(), afterFunderBalance4.toString())
+                
+            })
+            it("correctly allows multiple funders to vote accordingly", async function () {
+                for(let i = 1; i < 5; i++){
+                    const promiseFund = promiseFundContract.connect(accounts[i])
+                    const assetToken = assetTokenContract.connect(accounts[i])
+                    
+                    const approveTx = await assetToken.approve(
+                        promiseFund.address,
+                        fundValueWithDecimals
+                    )
+                    await approveTx.wait(1)
+        
+                    const fundTx = await promiseFund.fund(oneFundValueWithDecimals)
+                    await fundTx.wait(1)
+                }
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+
+                for(let i = 1; i < 5; i++){
+                    const promiseFund = promiseFundContract.connect(accounts[i])
+                    await promiseFund.submitVote(false)
+                }
+
+                const votesProAfter = await promiseFund.getVotesCon()
+                assert.equal(votesProAfter.toNumber(), 4)
+
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                await promiseFund.endVote()
+                
+                const state = await promiseFund.getState()
+                assert.equal(state, 0) //back to pending
             })
         })
         describe("Funder called for Vote tests after duration", function () {
