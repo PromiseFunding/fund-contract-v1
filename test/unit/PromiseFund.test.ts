@@ -170,6 +170,52 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     afterFunderAmountInTrancheFour.toString()
                 )
             })
+            it("properly adds a current tranche funder followed by funding to all tranches", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await currentFund()
+                await fund()
+
+                const afterFundAmount = await promiseFund.getFundAmount(user.address)
+                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
+                const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const afterFunderAmountInTrancheTwo = (await promiseFund.getFunderTrancheAmountRaised(user.address, 1))
+                const afterMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const afterFunderAmountInTrancheThree = (await promiseFund.getFunderTrancheAmountRaised(user.address, 2))
+                const afterMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const afterFunderAmountInTrancheFour = (await promiseFund.getFunderTrancheAmountRaised(user.address, 3))
+
+                assert.equal(
+                    afterFundAmount.toString(),
+                    fundValueWithDecimals.toString()
+                )
+                assert.equal(
+                    afterFundsRaised.toString(),
+                    fundValueWithDecimals.toString(),
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheOne.toString(),
+                    afterFunderAmountInTrancheOne.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheTwo.toString(),
+                    afterFunderAmountInTrancheTwo.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheThree.toString(),
+                    afterFunderAmountInTrancheThree.toString()
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheFour.toString(),
+                    afterFunderAmountInTrancheFour.toString()
+                )
+                assert.equal(afterMilestoneAmountInTrancheOne.toString(), "1250000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheTwo.toString(), "250000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheThree.toString(), "250000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheFour.toString(), "250000000000000000")
+            })
             it("fails when an owner withdraws in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
@@ -794,6 +840,88 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     promiseFund.submitVote(true)
                 ).to.be.revertedWith("PromiseFund_FunderDidNotFundThisMilestone")
             })
+            it("fails when a current tranche funder tries to submit a vote in next milestone", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await currentFund()
+                
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                const tranche = await promiseFund.getCurrentTranche()
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+                console.log(withdrawAmount)
+                const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(1)
+                console.log(withdrawAmount1)
+                const withdrawTx = await promiseFund.withdrawProceeds() 
+                await withdrawTx.wait(1)
+
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund_FunderDidNotFundThisMilestone")
+            })
+            it("fails when a current tranche funder tries to submit a vote in next milestone then succeeds when funds to all milestones", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await currentFund()
+                
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                const tranche = await promiseFund.getCurrentTranche()
+                const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
+                console.log(withdrawAmount)
+                const withdrawAmount1 = await promiseFund.getTrancheAmountRaised(1)
+                console.log(withdrawAmount1)
+                const withdrawTx = await promiseFund.withdrawProceeds() 
+                await withdrawTx.wait(1)
+
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+
+                await expect(
+                    promiseFund.submitVote(true)
+                ).to.be.revertedWith("PromiseFund_FunderDidNotFundThisMilestone")
+
+                //end voting
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+                await promiseFund.endVote()
+
+                const state = await promiseFund.getState()
+                assert.equal(state, 2) //tie is owner withdraws
+
+                promiseFund = promiseFundContract.connect(deployer)
+                const withdrawTx1 = await promiseFund.withdrawProceeds() 
+                await withdrawTx1.wait(1)
+
+                //testing current funding and fund to make sure tranches are updated
+                promiseFund = promiseFundContract.connect(user)
+                //await currentFund()
+                await fund()
+
+                await callVote(true)
+                const bwithdrawAmount = await promiseFund.getTrancheAmountRaised(1)
+                console.log(bwithdrawAmount)
+                const bwithdrawAmount1 = await promiseFund.getTrancheAmountRaised(2)
+                console.log(bwithdrawAmount1)
+                const bwithdrawAmount2 = await promiseFund.getTrancheAmountRaised(3)
+                console.log(bwithdrawAmount2)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                const bwithdrawTx = await promiseFund.withdrawProceeds() 
+                await bwithdrawTx.wait(1)
+
+                assert.equal(bwithdrawAmount.toString(), "0")
+                assert.equal(bwithdrawAmount1.toString(), "500000000000000000") //.5 with 18 decimals
+                assert.equal(bwithdrawAmount2.toString(), "500000000000000000")
+                
+            })
             it("fails when the vote length is too short", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
@@ -966,6 +1094,21 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             await approveTx.wait(1)
 
             const fundTx = await promiseFund.fund(oneFundValueWithDecimals)
+            await fundTx.wait(1)
+        }
+
+        // Fund from the user account using the fundValue specified at the beginning of the file.
+        async function currentFund() {
+            promiseFund = promiseFundContract.connect(user)
+            assetToken = assetTokenContract.connect(user)
+
+            const approveTx = await assetToken.approve(
+                promiseFund.address,
+                fundValueWithDecimals
+            )
+            await approveTx.wait(1)
+
+            const fundTx =  await promiseFund.fundCurrentTrancheOnly(oneFundValueWithDecimals)
             await fundTx.wait(1)
         }
     })
