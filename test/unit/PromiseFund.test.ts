@@ -439,16 +439,20 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await expect(
                     promiseFund.ownerWithdrawPeriodExpired()
-                ).to.be.revertedWith("PromiseFund_FunderStateChangedOrVoteNotDone")
+                ).to.be.revertedWith("PromiseFund_OwnerWithdrewOrVoteNotDone")
 
                 await fund()
                 await callVote(false)
 
                 await expect(
                     promiseFund.ownerWithdrawPeriodExpired()
-                ).to.be.revertedWith("PromiseFund_FunderStateChangedOrVoteNotDone")
+                ).to.be.revertedWith("PromiseFund_OwnerWithdrewOrVoteNotDone")
 
                 await callVote(true)
+
+                await expect(
+                    promiseFund.ownerWithdrawPeriodExpired()
+                ).to.be.revertedWith("PromiseFund_OwnerCanStillWithdraw")
 
                 promiseFund = promiseFundContract.connect(deployer)
                 const tranche = await promiseFund.getCurrentTranche()
@@ -458,9 +462,17 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await expect(
                     promiseFund.ownerWithdrawPeriodExpired()
-                ).to.be.revertedWith("PromiseFund_OwnerCanStillWithdraw")
+                ).to.be.revertedWith("PromiseFund_OwnerWithdrewOrVoteNotDone")
                 
-                await network.provider.send("evm_increaseTime", [50])
+                //now make it so that it is possible for funders to call function
+                await fund()
+                await callVote(false)
+                await callVote(true)
+
+                await expect(
+                    promiseFund.ownerWithdrawPeriodExpired()
+                ).to.be.revertedWith("PromiseFund_OwnerCanStillWithdraw")
+                await network.provider.send("evm_increaseTime", [86400*30])
                 await promiseFund.ownerWithdrawPeriodExpired()
                 const state = await promiseFund.getState()
                 assert.equal(state, 3)
@@ -780,7 +792,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await expect(
                     promiseFund.submitVote(true)
-                ).to.be.revertedWith("PromiseFund__NoVotesLeft")
+                ).to.be.revertedWith("PromiseFund_FunderDidNotFundThisMilestone")
             })
             it("fails when the vote length is too short", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
@@ -806,11 +818,15 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 ).to.be.revertedWith("PromiseFund__StateNotVoting")
             })
             it("fails when the vote period has ended", async function () {
+                promiseFund = promiseFundContract.connect(user)
+                await fund()
                 promiseFund = promiseFundContract.connect(deployer)
 
                 await promiseFund.startVote(15)
                 const timeLeft = await promiseFund.getTimeLeftVoting()
                 await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                promiseFund = promiseFundContract.connect(user)
 
                 await expect(
                     promiseFund.submitVote(true)

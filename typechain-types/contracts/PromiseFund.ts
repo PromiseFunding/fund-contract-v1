@@ -47,6 +47,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "didFunderVote(address)": FunctionFragment;
     "endVote()": FunctionFragment;
     "fund(uint256)": FunctionFragment;
+    "fundCurrentTrancheOnly(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
     "getCurrentTranche()": FunctionFragment;
@@ -95,6 +96,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "didFunderVote"
       | "endVote"
       | "fund"
+      | "fundCurrentTrancheOnly"
       | "getAssetAddress"
       | "getBlockTime"
       | "getCurrentTranche"
@@ -152,6 +154,10 @@ export interface PromiseFundInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "endVote", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fund",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fundCurrentTrancheOnly",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -310,6 +316,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "endVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "fundCurrentTrancheOnly",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getAssetAddress",
     data: BytesLike
@@ -550,6 +560,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    fundCurrentTrancheOnly(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
 
     getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -698,6 +713,11 @@ export interface PromiseFund extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  fundCurrentTrancheOnly(
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
   getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
@@ -840,6 +860,11 @@ export interface PromiseFund extends BaseContract {
     endVote(overrides?: CallOverrides): Promise<void>;
 
     fund(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    fundCurrentTrancheOnly(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1033,6 +1058,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    fundCurrentTrancheOnly(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1168,6 +1198,11 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     fund(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    fundCurrentTrancheOnly(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
