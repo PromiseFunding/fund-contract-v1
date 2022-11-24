@@ -216,6 +216,73 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(afterMilestoneAmountInTrancheThree.toString(), "250000000000000000")
                 assert.equal(afterMilestoneAmountInTrancheFour.toString(), "250000000000000000")
             })
+            it("properly adds a current tranche funder followed by funding to all tranches starting at second tranche", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                //first funder funds
+                await fund()
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                promiseFund.withdrawProceeds()
+
+                promiseFund = promiseFundContract.connect(accounts[2])
+                const assetToken = assetTokenContract.connect(accounts[2])
+                    
+                const approveTx = await assetToken.approve(
+                    promiseFund.address,
+                    fundValueWithDecimals
+                )
+                await approveTx.wait(1)
+    
+                //second funder funds... testing current funding when tranche is automatically updated
+                const fundTx = await promiseFund.fund(oneFundValueWithDecimals)
+                await fundTx.wait(1)
+
+                const fundTx1 = await promiseFund.fundCurrentTrancheOnly(oneFundValueWithDecimals)
+                await fundTx1.wait(1)
+
+                const afterFundAmount = await promiseFund.getFundAmount(accounts[2].address)
+                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 0))
+                const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const afterFunderAmountInTrancheTwo = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 1))
+                const afterMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const afterFunderAmountInTrancheThree = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 2))
+                const afterMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const afterFunderAmountInTrancheFour = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 3))
+
+                assert.equal(
+                    afterFundAmount.toString(),
+                    fundValueWithDecimals.toString() // user 2 funded completely
+                )
+                assert.equal(
+                    afterFundsRaised.toString(),
+                    "2750000000000000000", //funded 3 total but .25 was withdrawn
+                )
+                assert.equal(
+                    afterMilestoneAmountInTrancheOne.toString(),
+                    afterFunderAmountInTrancheOne.toString()
+                )
+                assert.equal(
+                    "1333333333333333333",
+                    afterFunderAmountInTrancheTwo.toString()
+                )
+                assert.equal(
+                    "333333333333333333",
+                    afterFunderAmountInTrancheThree.toString()
+                )
+                assert.equal(
+                    "333333333333333334", // rounds off correctly
+                    afterFunderAmountInTrancheFour.toString()
+                )
+                assert.equal(afterMilestoneAmountInTrancheOne.toString(), "0")
+                assert.equal(afterMilestoneAmountInTrancheTwo.toString(), "1583333333333333333") //funded 1 current and .33 and .25 from first funder
+                assert.equal(afterMilestoneAmountInTrancheThree.toString(), "583333333333333333")
+                assert.equal(afterMilestoneAmountInTrancheFour.toString(), "583333333333333334")
+            })
             it("fails when an owner withdraws in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
