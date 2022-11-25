@@ -10,7 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 error PromiseFund__FundAmountMustBeAboveZero();
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
-error PromiseFund_FunderStateChangedOrVoteNotDone();
+error PromiseFund_OwnerWithdrewOrVoteNotDone();
+error PromiseFund_FunderDidNotFundThisMilestone();
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 error PromiseFund__CantWithdrawFunder();
 error PromiseFund__CantWithdrawOwner();
@@ -39,6 +40,7 @@ contract PromiseFund is IFund, Ownable {
         uint256 votes;
         uint256[5] timesVoted;
         bool withdrewAllFunds;
+        bool[5] fundMilestone; //this initializes to all false and blocks ability to submit vote unless made true
     }
 
     struct Milestone {
@@ -100,7 +102,7 @@ contract PromiseFund is IFund, Ownable {
         voteEnded = false;
     }
 
-    /// @notice Fund the contract with a token
+    /// @notice Fund the contract with a token and evenly splits it between tranches for you
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
     function fund(uint256 amount) public {
@@ -112,16 +114,20 @@ contract PromiseFund is IFund, Ownable {
         }
         // Set initial amount for funder
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
-        // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
 
-        //set entryTime if first time depositing... this if statement does nothing for now
+        //set entryTime if first time depositing eventually
+        //set bool array to true if funder hasn't funded like this before
         if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
             s_allFunders[msg.sender].timesVoted[tranche] = 0;
+            for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
+                s_allFunders[msg.sender].fundMilestone[trancheIndex] = true;
+            }
         }
         //useful for rounding errors with division. Can do decimals in future but this works for now.
         uint256 temp = amount;
         //loop through tranches and update the amount funded. uniform split of funds
         for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
+            
             //not perfect division so give last tranche rest of funds if extra decimals exist
             if (trancheIndex + 1 == tranches.length) {
                 tranches[trancheIndex].amountRaised += temp;
@@ -137,11 +143,48 @@ contract PromiseFund is IFund, Ownable {
         //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
         // Set the number of votes to 1 for now. Will be weighted in the future.
+        // allows for voting at all milestones
         s_allFunders[msg.sender].votes = 1;
         //set withdrewAllFunds to false (can we do this in constructor?)
         s_allFunders[msg.sender].withdrewAllFunds = false;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
+    }
+
+    /// @notice Fund the current tranche or milestone period with a token
+    /// @dev Possibly a way to make it more gas efficient with different variables
+    /// @param amount the amount to be funded to the tranche
+    function fundCurrentTrancheOnly(uint256 amount) public {
+        if (s_fundState != FundState.PENDING) {
+            revert PromiseFund__NotFundingPeriod();
+        }
+        if (amount == 0) {
+            revert PromiseFund__FundAmountMustBeAboveZero();
+        }
+
+        // Transferring from sender to contract
+        IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
+
+        //set entryTime if first time depositing... this if statement does nothing for now
+        if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
+            s_allFunders[msg.sender].timesVoted[tranche] = 0;
+        }
+
+        //increments the current tranche with amount for both funder and milestone array
+        tranches[tranche].amountRaised += amount;
+        s_allFunders[msg.sender].amount[tranche] += amount;
+
+        //add to total deposits and user deposits
+        s_totalFunded = s_totalFunded + amount;
+        // Want to limit voting ability only for current tranche but still need this
+        s_allFunders[msg.sender].votes = 1;
+        //set withdrewAllFunds to false (can we do this in constructor?)
+        s_allFunders[msg.sender].withdrewAllFunds = false;
+        // set fundMilestone to true even if redundant for current tranche
+        s_allFunders[msg.sender].fundMilestone[tranche] = true;
+
+        emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
+
     }
 
     /// @notice Approve a recipient to spend the supplied token
@@ -173,6 +216,7 @@ contract PromiseFund is IFund, Ownable {
         s_allFunders[msg.sender].withdrewAllFunds = true;
         s_totalFunded -= total;
 
+        // Have to give allowance for contract to send funds
         approveTransfer(IERC20(i_assetAddress), address(this), total);
         IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
 
@@ -181,7 +225,7 @@ contract PromiseFund is IFund, Ownable {
 
     //withdrawing proceeds from the current tranche. Owner must withdraw all funds.
     //after the owner withdraws all of the proceeds:
-    //iterate to the next tranche, set the starttime, change the state to pending, reset s_votesTried to 0 and funderCalledVote to false
+    //iterate to the next tranche, set the starttime, change the state to pending, reset s_votesTried to 0 and calledVoteAfterExpiry to false
     function withdrawProceeds() public onlyOwner {
         if (s_fundState != FundState.OWNER_WITHDRAW) {
             revert PromiseFund__CantWithdrawOwner();
@@ -211,6 +255,9 @@ contract PromiseFund is IFund, Ownable {
             calledVoteAfterExpiry = false;
         }
 
+        // after the owner withdraws, funders can't call ownerWithdrawPeriodExpired
+        voteEnded = false;
+
         emit ProceedsWithdrawn(i_owner, i_assetAddress, total);
     }
 
@@ -219,15 +266,16 @@ contract PromiseFund is IFund, Ownable {
     // This ensures that owner is sticking to schedule and not locking everyones money up forever
     // Current Implementation: Switches state so funders can withdraw their money
     // voteEnded bool helps make sure voteEndTime gets updated appropriately and cant call this function continuously
+    // and if owner does withdraw can't call function
     // voteEndTime only assigned value in endVote function so need boolean to help
     function ownerWithdrawPeriodExpired() public {
         if (!voteEnded) {
-            revert PromiseFund_FunderStateChangedOrVoteNotDone();
+            revert PromiseFund_OwnerWithdrewOrVoteNotDone();
         }
-        if (voteEnded && (block.timestamp - voteEndTime < MAX_OWNER_WITHDRAW_PERIOD)) {
+        if (voteEnded && (block.timestamp - voteEndTime < (MAX_OWNER_WITHDRAW_PERIOD * 86400))) {
             revert PromiseFund_OwnerCanStillWithdraw();
         }
-        if (voteEnded && (block.timestamp - voteEndTime >= MAX_OWNER_WITHDRAW_PERIOD)) {
+        if (voteEnded && (block.timestamp - voteEndTime >= (MAX_OWNER_WITHDRAW_PERIOD * 86400))) {
             s_fundState = FundState.FUNDER_WITHDRAW;
             voteEnded = false;
         }
@@ -272,6 +320,9 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.VOTING) {
             revert PromiseFund__StateNotVoting();
         }
+        if (!s_allFunders[msg.sender].fundMilestone[tranche]){
+            revert PromiseFund_FunderDidNotFundThisMilestone();
+        }
         if (s_voteEnd < block.timestamp) {
             endVote();
             revert PromiseFund__VoteEnded();
@@ -280,6 +331,7 @@ contract PromiseFund is IFund, Ownable {
         if (didFunderVote(msg.sender)) {
             revert PromiseFund__NoVotesLeft();
         }
+
         s_allFunders[msg.sender].timesVoted[tranche] =
             s_allFunders[msg.sender].votes *
             s_votesTried;
