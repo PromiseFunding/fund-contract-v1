@@ -29,7 +29,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             assetTokenContract = await ethers.getContract("MockERC20Token")
             assetToken = await assetTokenContract.connect(deployer)
             const createPromiseFundTx = await fundFactory.createPromiseFund(
-                assetToken.address, 4, 600
+                assetToken.address, [100, 400, 20368000, 100]
             )
             const txReceipt = await createPromiseFundTx.wait(1)
             const blockNum = txReceipt.blockNumber
@@ -82,7 +82,10 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const response = await promiseFund.getTranches()
                 //set duration of milestones correctly
                 //assert.equal(response[0].milestoneDuration.toNumber(), 10368000) -test if over maxDuration works
-                assert.equal(response[0].milestoneDuration.toNumber(), 600)
+                assert.equal(response[0].milestoneDuration.toNumber(), 100)
+                assert.equal(response[1].milestoneDuration.toNumber(), 400)
+                assert.equal(response[2].milestoneDuration.toNumber(), 10368000) //test if over maxDuration works
+                assert.equal(response[3].milestoneDuration.toNumber(), 100)
 
             })
         })
@@ -374,7 +377,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(trancheAmountAfter.toString(), "0")
                 assert.equal(tranche.toString(), (aftertranche-1).toString())
                 assert.equal(timestamp, response[aftertranche].startTime.toNumber())
-                assert.equal(response[aftertranche].milestoneDuration.toNumber(), 600)
+                assert.equal(response[aftertranche].milestoneDuration.toNumber(), 400)
                 assert.equal(state, 0)
                 assert.equal(votesPro.toNumber(), 0)
                 assert.equal(votesCon.toNumber(), 0)
@@ -783,7 +786,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 //user funds here so can call for vote if time expired
                 await fund()
-                const duration = await promiseFund.getMilestoneDuration()
+                const duration = await promiseFund.getMilestoneDuration(0)
 
                 //vote is called by owner a second before duration ends 
                 await network.provider.send("evm_increaseTime", [duration.toNumber() - 1])
@@ -805,7 +808,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 //user funds here so can call for vote if time expired
                 await fund()
-                const duration = await promiseFund.getMilestoneDuration()
+                const duration = await promiseFund.getMilestoneDuration(0)
                 await expect(
                     promiseFund.startVote(15)
                 ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
@@ -856,7 +859,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const votesproAfter = await promiseFund.getVotesCon()
                 assert.equal(votesproAfter.toNumber(), 0)
 
-                const duration = await promiseFund.getMilestoneDuration()
+                const duration = await promiseFund.getMilestoneDuration(0)
                 await network.provider.send("evm_increaseTime", [duration.toNumber()])
                 promiseFund = promiseFundContract.connect(user)
                 await promiseFund.startVote(15)

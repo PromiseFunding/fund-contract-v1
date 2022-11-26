@@ -29,7 +29,7 @@ import type {
 
 export interface PromiseFundFactoryInterface extends utils.Interface {
   functions: {
-    "createPromiseFund(address,uint8,uint256)": FunctionFragment;
+    "createPromiseFund(address,uint256[])": FunctionFragment;
     "getAllPromiseFund()": FunctionFragment;
     "getPromiseFund(uint256)": FunctionFragment;
     "i_owner()": FunctionFragment;
@@ -53,11 +53,7 @@ export interface PromiseFundFactoryInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "createPromiseFund",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getAllPromiseFund",
@@ -171,8 +167,7 @@ export interface PromiseFundFactory extends BaseContract {
   functions: {
     createPromiseFund(
       assetAddress: PromiseOrValue<string>,
-      numberOfMilestones: PromiseOrValue<BigNumberish>,
-      milestoneDuration: PromiseOrValue<BigNumberish>,
+      milestoneDuration: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -204,8 +199,7 @@ export interface PromiseFundFactory extends BaseContract {
 
   createPromiseFund(
     assetAddress: PromiseOrValue<string>,
-    numberOfMilestones: PromiseOrValue<BigNumberish>,
-    milestoneDuration: PromiseOrValue<BigNumberish>,
+    milestoneDuration: PromiseOrValue<BigNumberish>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -237,8 +231,7 @@ export interface PromiseFundFactory extends BaseContract {
   callStatic: {
     createPromiseFund(
       assetAddress: PromiseOrValue<string>,
-      numberOfMilestones: PromiseOrValue<BigNumberish>,
-      milestoneDuration: PromiseOrValue<BigNumberish>,
+      milestoneDuration: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -291,8 +284,7 @@ export interface PromiseFundFactory extends BaseContract {
   estimateGas: {
     createPromiseFund(
       assetAddress: PromiseOrValue<string>,
-      numberOfMilestones: PromiseOrValue<BigNumberish>,
-      milestoneDuration: PromiseOrValue<BigNumberish>,
+      milestoneDuration: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -325,8 +317,7 @@ export interface PromiseFundFactory extends BaseContract {
   populateTransaction: {
     createPromiseFund(
       assetAddress: PromiseOrValue<string>,
-      numberOfMilestones: PromiseOrValue<BigNumberish>,
-      milestoneDuration: PromiseOrValue<BigNumberish>,
+      milestoneDuration: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

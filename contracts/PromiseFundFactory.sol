@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 error PromiseFundFactory__CantHaveTwoFunds();
+error PromiseFundFactory_TooManyMilestones();
 
 /// @title PromiseFundFactory
 /// @author Silas Lenihan and Dylan Paul
@@ -28,8 +29,11 @@ contract PromiseFundFactory is Ownable {
 
     /// @notice Create a new PromiseFund
     /// @param assetAddress the address of the underlying asset
-    function createPromiseFund(address assetAddress, uint8 numberOfMilestones, uint256 milestoneDuration) public {
-        PromiseFund promiseFund = new PromiseFund(assetAddress, numberOfMilestones, milestoneDuration);
+    function createPromiseFund(address assetAddress, uint256[] memory milestoneDuration) public {
+        if(milestoneDuration.length > 5){
+            revert PromiseFundFactory_TooManyMilestones();
+        }
+        PromiseFund promiseFund = new PromiseFund(assetAddress, milestoneDuration);
         s_funds_promise.push(promiseFund);
         emit Created(msg.sender, assetAddress, address(promiseFund));
     }
