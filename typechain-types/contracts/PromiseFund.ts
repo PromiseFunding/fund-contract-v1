@@ -43,6 +43,7 @@ export declare namespace PromiseFund {
 
 export interface PromiseFundInterface extends utils.Interface {
   functions: {
+    "addMilestone(uint256)": FunctionFragment;
     "approveTransfer(address,address,uint256)": FunctionFragment;
     "didFunderVote(address)": FunctionFragment;
     "endVote()": FunctionFragment;
@@ -91,6 +92,7 @@ export interface PromiseFundInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "addMilestone"
       | "approveTransfer"
       | "didFunderVote"
       | "endVote"
@@ -137,6 +139,10 @@ export interface PromiseFundInterface extends utils.Interface {
       | "withdrawProceedsFunder"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "addMilestone",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
   encodeFunctionData(
     functionFragment: "approveTransfer",
     values: [
@@ -300,6 +306,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "addMilestone",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "approveTransfer",
     data: BytesLike
@@ -529,6 +539,11 @@ export interface PromiseFund extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    addMilestone(
+      duration: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
@@ -682,6 +697,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  addMilestone(
+    duration: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   approveTransfer(
     token: PromiseOrValue<string>,
@@ -837,6 +857,11 @@ export interface PromiseFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    addMilestone(
+      duration: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
@@ -1030,6 +1055,11 @@ export interface PromiseFund extends BaseContract {
   };
 
   estimateGas: {
+    addMilestone(
+      duration: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
@@ -1175,6 +1205,11 @@ export interface PromiseFund extends BaseContract {
   };
 
   populateTransaction: {
+    addMilestone(
+      duration: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     approveTransfer(
       token: PromiseOrValue<string>,
       recipient: PromiseOrValue<string>,
