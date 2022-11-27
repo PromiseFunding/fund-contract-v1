@@ -55,7 +55,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getFunderCalledVote()": FunctionFragment;
     "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
     "getFunderVotes(address)": FunctionFragment;
-    "getMilestoneDuration()": FunctionFragment;
+    "getMilestoneDuration(uint256)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
@@ -68,7 +68,6 @@ export interface PromiseFundInterface extends utils.Interface {
     "getVotesTried()": FunctionFragment;
     "getWithdrawableProceeds()": FunctionFragment;
     "i_assetAddress()": FunctionFragment;
-    "i_milestoneDuration()": FunctionFragment;
     "i_numberOfMilestones()": FunctionFragment;
     "i_owner()": FunctionFragment;
     "maxDuration()": FunctionFragment;
@@ -117,7 +116,6 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getVotesTried"
       | "getWithdrawableProceeds"
       | "i_assetAddress"
-      | "i_milestoneDuration"
       | "i_numberOfMilestones"
       | "i_owner"
       | "maxDuration"
@@ -190,7 +188,7 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getMilestoneDuration",
-    values?: undefined
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
@@ -232,10 +230,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "i_assetAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "i_milestoneDuration",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -389,10 +383,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "i_assetAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "i_milestoneDuration",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -589,7 +579,10 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getMilestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getMilestoneDuration(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -620,9 +613,7 @@ export interface PromiseFund extends BaseContract {
 
     i_assetAddress(overrides?: CallOverrides): Promise<[string]>;
 
-    i_milestoneDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    i_numberOfMilestones(overrides?: CallOverrides): Promise<[number]>;
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     i_owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -742,7 +733,10 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+  getMilestoneDuration(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -773,9 +767,7 @@ export interface PromiseFund extends BaseContract {
 
   i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
-  i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
-
-  i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+  i_numberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
   i_owner(overrides?: CallOverrides): Promise<string>;
 
@@ -893,7 +885,10 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+    getMilestoneDuration(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -924,9 +919,7 @@ export interface PromiseFund extends BaseContract {
 
     i_assetAddress(overrides?: CallOverrides): Promise<string>;
 
-    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
-
-    i_numberOfMilestones(overrides?: CallOverrides): Promise<number>;
+    i_numberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1087,7 +1080,10 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getMilestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
+    getMilestoneDuration(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1115,8 +1111,6 @@ export interface PromiseFund extends BaseContract {
     getWithdrawableProceeds(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    i_milestoneDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_numberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1234,6 +1228,7 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getMilestoneDuration(
+      index: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1265,10 +1260,6 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     i_assetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    i_milestoneDuration(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     i_numberOfMilestones(
       overrides?: CallOverrides

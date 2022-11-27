@@ -52,8 +52,7 @@ contract PromiseFund is IFund, Ownable {
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
-    uint8 public i_numberOfMilestones;
-    uint256 public i_milestoneDuration;
+    uint256 public i_numberOfMilestones;
     uint256 public s_totalFunded;
     uint256 public s_voteEnd;
     uint256 public s_votesTried;
@@ -78,22 +77,19 @@ contract PromiseFund is IFund, Ownable {
 
     constructor(
         address assetAddress,
-        uint8 numberOfMilestones,
-        uint256 milestoneDuration
+        uint256[] memory milestoneDuration
     ) {
         i_owner = payable(tx.origin);
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
-        i_numberOfMilestones = numberOfMilestones < maxMilestones
-            ? numberOfMilestones
-            : maxMilestones;
-        i_milestoneDuration = milestoneDuration < maxDuration ? milestoneDuration : maxDuration;
-        for (uint256 i = 0; i < numberOfMilestones; i++) {
+        i_numberOfMilestones = milestoneDuration.length;
+        for (uint256 i = 0; i < i_numberOfMilestones; i++) {
             Milestone memory temp;
+            //pre-set milestone durations
+            temp.milestoneDuration = milestoneDuration[i] < maxDuration ? milestoneDuration[i] : maxDuration;
             tranches.push(temp);
         }
         tranches[0].startTime = block.timestamp;
-        tranches[0].milestoneDuration = i_milestoneDuration;
         tranche = 0;
         s_totalFunded = 0;
         s_votesTried = 0;
@@ -247,7 +243,6 @@ contract PromiseFund is IFund, Ownable {
         if (tranche != i_numberOfMilestones - 1) {
             tranche += 1;
             tranches[tranche].startTime = block.timestamp;
-            tranches[tranche].milestoneDuration = i_milestoneDuration;
             s_fundState = FundState.PENDING;
             s_votesTried = 0;
             s_votesCon = 0;
@@ -447,9 +442,9 @@ contract PromiseFund is IFund, Ownable {
     }
 
     /// @notice Get the milestone duration that is currently uniformly set on deployment
-    /// @return The milestone duration or time to end
-    function getMilestoneDuration() public view returns (uint256) {
-        return i_milestoneDuration;
+    /// @return The milestone duration or time to end for specific tranche
+    function getMilestoneDuration(uint index) public view returns (uint256) {
+        return tranches[index].milestoneDuration;
     }
 
     /// @notice Get the total amount raised for a single Milestone level
