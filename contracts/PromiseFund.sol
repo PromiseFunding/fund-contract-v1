@@ -53,7 +53,6 @@ contract PromiseFund is IFund, Ownable {
     address payable public i_owner;
     address public i_assetAddress;
     uint256 public i_numberOfMilestones;
-    //uint256 public i_milestoneDuration;
     uint256 public s_totalFunded;
     uint256 public s_voteEnd;
     uint256 public s_votesTried;

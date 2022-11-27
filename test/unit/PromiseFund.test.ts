@@ -55,7 +55,17 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             assetToken.transferFrom(deployer.address, accounts[3].address, fundValueWithDecimals)
             assetToken.transferFrom(deployer.address, accounts[4].address, fundValueWithDecimals)
         })
-
+        
+        describe("deployment test for duration", function () {
+            it("fails when milestone array is over 5", async function () {
+                const fundFactory = await ethers.getContract("PromiseFundFactory")
+                await expect(
+                    fundFactory.createPromiseFund(
+                        assetToken.address, [100, 400, 20368000, 100, 200, 2]
+                )).to.be.revertedWith("PromiseFundFactory_TooManyMilestones()")
+            })
+            
+        })
         describe("constructor", function () {
             it("correctly sets the state", async function () {
                 const state = await promiseFund.getState()
@@ -378,6 +388,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(tranche.toString(), (aftertranche-1).toString())
                 assert.equal(timestamp, response[aftertranche].startTime.toNumber())
                 assert.equal(response[aftertranche].milestoneDuration.toNumber(), 400)
+                assert.equal(response[aftertranche+1].milestoneDuration.toNumber(), 10368000)
                 assert.equal(state, 0)
                 assert.equal(votesPro.toNumber(), 0)
                 assert.equal(votesCon.toNumber(), 0)
