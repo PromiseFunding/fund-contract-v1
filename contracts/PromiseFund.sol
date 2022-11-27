@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 error PromiseFund__FundAmountMustBeAboveZero();
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
+error PromiseFund_MaxAmountOfMilestones();
 error PromiseFund_OwnerWithdrewOrVoteNotDone();
 error PromiseFund_FunderDidNotFundThisMilestone();
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
@@ -375,6 +376,21 @@ contract PromiseFund is IFund, Ownable {
             s_votesCon = 0;
             s_votesPro = 0;
         }
+    }
+
+    /// @notice Allows the owner of a contract to add a milestone if they haven't already had 5 milestones
+    /// @param duration the amount of time for the next milestone
+    // should there be a specific state that this function is limited to, ex: Owner_Withdraw
+    function addMilestone(uint256 duration) public onlyOwner{
+        if (tranches.length >= 5) {
+            revert PromiseFund_MaxAmountOfMilestones();
+        }
+
+        Milestone memory temp;
+        temp.milestoneDuration = duration < maxDuration ? duration : maxDuration;
+        tranches.push(temp);
+
+        i_numberOfMilestones += 1;
     }
 
     /** Getter Functions */

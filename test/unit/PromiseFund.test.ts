@@ -605,6 +605,131 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(state, 3)
             })
         })
+        describe("Add milestone test", function () {
+            it("adds the milestone correctly and funding disperses to new tranche and can't add another milestone if 5 milestones already", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                await fund()
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.addMilestone(1000000000)
+
+                promiseFund = promiseFundContract.connect(user)
+
+                await fund()
+
+                const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
+                const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
+                const afterMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
+                const afterMilestoneAmountInTrancheFour = (await promiseFund.getTrancheAmountRaised(3))
+                const afterMilestoneAmountInTrancheFive = (await promiseFund.getTrancheAmountRaised(4))
+
+                assert.equal(afterMilestoneAmountInTrancheOne.toString(), "450000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheTwo.toString(), "450000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheThree.toString(), "450000000000000000")
+                assert.equal(afterMilestoneAmountInTrancheFour.toString(), "450000000000000000") //first four tranches gets .25 then .2
+                assert.equal(afterMilestoneAmountInTrancheFive.toString(), "200000000000000000") //last tranche only gets .2
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await expect(
+                    promiseFund.addMilestone(1000)
+                ).to.be.revertedWith("PromiseFund_MaxAmountOfMilestones")
+
+                //check if milestone duration added is correct
+                const dur = await promiseFund.getMilestoneDuration(4)
+                assert.equal(dur.toNumber(), 10368000)
+                
+            })
+            it("adds the milestone after owner withdraws for last time, so owner has to withdraw again to change state to pending ", async function () {
+                promiseFund = promiseFundContract.connect(user)
+
+                //first funder funds
+                await fund()
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.withdrawProceeds()
+
+                //now in 2nd tranche
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.withdrawProceeds()
+
+                //now in third tranche              
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.withdrawProceeds()
+
+                //now in fourth and last tranche              
+                await callVote(true)
+
+                promiseFund = promiseFundContract.connect(deployer)
+
+                await promiseFund.withdrawProceeds()
+
+                const tranche = await promiseFund.getCurrentTranche()
+                assert.equal(tranche, 3) //tranche not added bc last tranche
+                const state = await promiseFund.getState()
+                assert.equal(state, 2) //stays in owner withdraw because the last tranche
+
+                await promiseFund.addMilestone(1000000000) //owner adds a milestone
+                assert.equal(state, 2)
+
+                promiseFund.withdrawProceeds() //should trigger 5th tranche and pending state
+                const state1 = await promiseFund.getState()
+                assert.equal(state1, 0)      
+                const tranche1 = await promiseFund.getCurrentTranche()
+                assert.equal(tranche1, 4) //now tranche added
+
+                const dur = await promiseFund.getMilestoneDuration(tranche1)
+                assert.equal(dur.toNumber(), 10368000)
+
+                //test if voting is updated too: commented out section works and returns false for voting
+                
+                // await promiseFund.startVote(15)
+                // promiseFund = promiseFundContract.connect(user)
+
+                // await expect(
+                //     promiseFund.submitVote(true)
+                // ).to.be.revertedWith("PromiseFund_FunderDidNotFundThisMilestone")
+
+                promiseFund = promiseFundContract.connect(user)
+                await fund()
+
+                promiseFund = promiseFundContract.connect(deployer)
+                await promiseFund.startVote(15)
+                promiseFund = promiseFundContract.connect(user)
+                promiseFund.submitVote(true)
+
+                const votesProAfter = await promiseFund.getVotesPro()
+                assert.equal(votesProAfter.toNumber(), 1)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                const timeLeft = await promiseFund.getTimeLeftVoting()
+                await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                await promiseFund.endVote()
+
+                await promiseFund.withdrawProceeds()
+                const state2 = await promiseFund.getState()
+                assert.equal(state2, 2)  //state stays in owner_withdraw   
+                const tranche2 = await promiseFund.getCurrentTranche()
+                assert.equal(tranche2, 4) //stays at tranche
+
+                //cant add another milestone now
+                await expect(
+                    promiseFund.addMilestone(1000)
+                ).to.be.revertedWith("PromiseFund_MaxAmountOfMilestones")
+
+            })
+        })
         describe("Multiple funders, withdrawing and voting tests", function () {
             it("correctly accumulates the funds in the tranches from multiple funders", async function () {
                 let sum : BigNumber = BigNumber.from("0")
