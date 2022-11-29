@@ -76,10 +76,7 @@ contract PromiseFund is IFund, Ownable {
 
     // Events
 
-    constructor(
-        address assetAddress,
-        uint256[] memory milestoneDuration
-    ) {
+    constructor(address assetAddress, uint256[] memory milestoneDuration) {
         i_owner = payable(tx.origin);
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
@@ -87,7 +84,9 @@ contract PromiseFund is IFund, Ownable {
         for (uint256 i = 0; i < i_numberOfMilestones; i++) {
             Milestone memory temp;
             //pre-set milestone durations
-            temp.milestoneDuration = milestoneDuration[i] < maxDuration ? milestoneDuration[i] : maxDuration;
+            temp.milestoneDuration = milestoneDuration[i] < maxDuration
+                ? milestoneDuration[i]
+                : maxDuration;
             tranches.push(temp);
         }
         tranches[0].startTime = block.timestamp;
@@ -124,7 +123,6 @@ contract PromiseFund is IFund, Ownable {
         uint256 temp = amount;
         //loop through tranches and update the amount funded. uniform split of funds
         for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
-            
             //not perfect division so give last tranche rest of funds if extra decimals exist
             if (trancheIndex + 1 == tranches.length) {
                 tranches[trancheIndex].amountRaised += temp;
@@ -181,7 +179,6 @@ contract PromiseFund is IFund, Ownable {
         s_allFunders[msg.sender].fundMilestone[tranche] = true;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
-
     }
 
     /// @notice Approve a recipient to spend the supplied token
@@ -316,7 +313,7 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.VOTING) {
             revert PromiseFund__StateNotVoting();
         }
-        if (!s_allFunders[msg.sender].fundMilestone[tranche]){
+        if (!s_allFunders[msg.sender].fundMilestone[tranche]) {
             revert PromiseFund_FunderDidNotFundThisMilestone();
         }
         if (s_voteEnd < block.timestamp) {
@@ -381,7 +378,7 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Allows the owner of a contract to add a milestone if they haven't already had 5 milestones
     /// @param duration the amount of time for the next milestone
     // should there be a specific state that this function is limited to, ex: Owner_Withdraw
-    function addMilestone(uint256 duration) public onlyOwner{
+    function addMilestone(uint256 duration) public onlyOwner {
         if (tranches.length >= 5) {
             revert PromiseFund_MaxAmountOfMilestones();
         }
@@ -459,8 +456,19 @@ contract PromiseFund is IFund, Ownable {
 
     /// @notice Get the milestone duration that is currently uniformly set on deployment
     /// @return The milestone duration or time to end for specific tranche
-    function getMilestoneDuration(uint index) public view returns (uint256) {
+    function getMilestoneDuration(uint256 index) public view returns (uint256) {
         return tranches[index].milestoneDuration;
+    }
+
+    /// @notice Get the array of milestone durations
+    /// @return The milestone durations or time to end for all tranches
+    function getMilestoneDurations() public view returns (uint256[] memory) {
+        uint256[] memory temp = new uint256[](tranches.length);
+        for (uint8 i = 0; i < tranches.length; i++) {
+            temp[i] = tranches[i].milestoneDuration;
+        }
+
+        return temp;
     }
 
     /// @notice Get the total amount raised for a single Milestone level
