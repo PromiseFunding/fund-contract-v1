@@ -472,6 +472,15 @@ contract PromiseFund is IFund, Ownable {
     }
 
     /// @notice Get the total amount raised for a single Milestone level
+    /// @return The amount of time left in the milestone
+    function getTimeLeftMilestone() public view returns (uint256) {
+        if ((block.timestamp - tranches[tranche].startTime) < tranches[tranche].milestoneDuration) {
+            return tranches[tranche].milestoneDuration - (block.timestamp - tranches[tranche].startTime);
+        }
+        return 0;
+    }
+
+    /// @notice Get the total amount raised for a single Milestone level
     /// @param level the 'tranche' number. Ex: first milestone, second milestone...
     /// @return The uint256 amount raised in that specific tranche
     function getTrancheAmountRaised(uint256 level) public view returns (uint256) {

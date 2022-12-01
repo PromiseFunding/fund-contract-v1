@@ -60,6 +60,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getMilestoneDurations()": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getState()": FunctionFragment;
+    "getTimeLeftMilestone()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
     "getTotalFunds()": FunctionFragment;
     "getTrancheAmountRaised(uint256)": FunctionFragment;
@@ -110,6 +111,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getMilestoneDurations"
       | "getOwner"
       | "getState"
+      | "getTimeLeftMilestone"
       | "getTimeLeftVoting"
       | "getTotalFunds"
       | "getTrancheAmountRaised"
@@ -204,6 +206,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getTimeLeftMilestone",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getTimeLeftVoting",
     values?: undefined
@@ -368,6 +374,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getTimeLeftMilestone",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLeftVoting",
     data: BytesLike
@@ -615,6 +625,8 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<[number]>;
 
+    getTimeLeftMilestone(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getTimeLeftVoting(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -776,6 +788,8 @@ export interface PromiseFund extends BaseContract {
 
   getState(overrides?: CallOverrides): Promise<number>;
 
+  getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
+
   getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
@@ -934,6 +948,8 @@ export interface PromiseFund extends BaseContract {
     getOwner(overrides?: CallOverrides): Promise<string>;
 
     getState(overrides?: CallOverrides): Promise<number>;
+
+    getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1137,6 +1153,8 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
+
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1292,6 +1310,10 @@ export interface PromiseFund extends BaseContract {
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getTimeLeftMilestone(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
