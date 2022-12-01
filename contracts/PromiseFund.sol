@@ -11,6 +11,7 @@ error PromiseFund__FundAmountMustBeAboveZero();
 error PromiseFund_AlreadyWithdrewAllFunds();
 error PromiseFund__NotOwner();
 error PromiseFund_MaxAmountOfMilestones();
+error PromiseFund__StateNotAbleToAddMilestone();
 error PromiseFund_OwnerWithdrewOrVoteNotDone();
 error PromiseFund_FunderDidNotFundThisMilestone();
 error PromiseFund__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
@@ -375,10 +376,12 @@ contract PromiseFund is IFund, Ownable {
         }
     }
 
-    /// @notice Allows the owner of a contract to add a milestone if they haven't already had 5 milestones
+    /// @notice Allows the owner of a contract to add a milestone if they haven't already had 5 milestones limited to pending state and owner_withdraw
     /// @param duration the amount of time for the next milestone
-    // should there be a specific state that this function is limited to, ex: Owner_Withdraw
     function addMilestone(uint256 duration) public onlyOwner {
+        if (s_fundState == FundState.VOTING || s_fundState == FundState.FUNDER_WITHDRAW) {
+            revert PromiseFund__StateNotAbleToAddMilestone();
+        }
         if (tranches.length >= 5) {
             revert PromiseFund_MaxAmountOfMilestones();
         }
@@ -469,6 +472,15 @@ contract PromiseFund is IFund, Ownable {
         }
 
         return temp;
+    }
+
+    /// @notice Get the total amount raised for a single Milestone level
+    /// @return The amount of time left in the milestone
+    function getTimeLeftMilestone() public view returns (uint256) {
+        if ((block.timestamp - tranches[tranche].startTime) < tranches[tranche].milestoneDuration) {
+            return tranches[tranche].milestoneDuration - (block.timestamp - tranches[tranche].startTime);
+        }
+        return 0;
     }
 
     /// @notice Get the total amount raised for a single Milestone level
