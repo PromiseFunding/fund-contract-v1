@@ -318,7 +318,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             // })
             it("fails when a funder tries to withdraw in the wrong state", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 promiseFund = promiseFundContract.connect(user)
 
@@ -340,7 +340,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             // })
             it("fails when a funder tries to fund when the state isn't pending", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 promiseFund = promiseFundContract.connect(user)
 
@@ -653,7 +653,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 //test if voting is updated too: commented out section works and returns false for voting
 
-                // await promiseFund.startVote(15)
+                // await promiseFund.startVote(8)
                 // promiseFund = promiseFundContract.connect(user)
 
                 // await expect(
@@ -664,7 +664,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
                 promiseFund.submitVote(true)
 
@@ -852,7 +852,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                     await fundTx.wait(1)
                 }
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 for (let i = 1; i < 5; i++) {
                     const promiseFund = promiseFundContract.connect(accounts[i])
@@ -902,12 +902,12 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
                 const duration = await promiseFund.getMilestoneDuration(0)
                 await expect(
-                    promiseFund.startVote(15)
+                    promiseFund.startVote(8)
                 ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
                 await network.provider.send("evm_increaseTime", [duration.toNumber()])
                 promiseFund = promiseFundContract.connect(user)
                 //tests that can start vote correct here with no error
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 await promiseFund.submitVote(true)
 
@@ -954,7 +954,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const duration = await promiseFund.getMilestoneDuration(0)
                 await network.provider.send("evm_increaseTime", [duration.toNumber()])
                 promiseFund = promiseFundContract.connect(user)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 await promiseFund.submitVote(false)
 
@@ -984,12 +984,12 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
-                    promiseFund.startVote(15)
+                    promiseFund.startVote(8)
                 ).to.be.revertedWith("PromiseFund_FunderCannotCallForVote")
             })
             it("fails when a non-funder tries to submit a vote", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 const fundAmount1 = await promiseFund.getFundAmount(user.address)
@@ -1015,7 +1015,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawTx = await promiseFund.withdrawProceeds()
                 await withdrawTx.wait(1)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
@@ -1034,7 +1034,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawTx = await promiseFund.withdrawProceeds()
                 await withdrawTx.wait(1)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 await expect(
@@ -1082,10 +1082,10 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             it("fails when the fund state isn't pending", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
 
                 await expect(
-                    promiseFund.startVote(15)
+                    promiseFund.startVote(8)
                 ).to.be.revertedWith("PromiseFund__StateNotPending")
             })
             it("fails when the fund state isn't voting and a user tries to vote", async function () {
@@ -1100,7 +1100,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
                 promiseFund = promiseFundContract.connect(deployer)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 const timeLeft = await promiseFund.getTimeLeftVoting()
                 await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
 
@@ -1114,7 +1114,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 await promiseFund.submitVote(true)
@@ -1133,7 +1133,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             it("fails if someone tries to end the vote while it is still in the voting period", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 await expect(
                     promiseFund.endVote()
                 ).to.be.revertedWith("PromiseFund__VoteStillGoing")
@@ -1141,7 +1141,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             it("properly sets the end date", async function () {
                 promiseFund = promiseFundContract.connect(deployer)
 
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 const voteEnd = await promiseFund.getVoteEnd()
                 assert.notEqual(voteEnd.toNumber(), 0)
             })
@@ -1151,7 +1151,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 await promiseFund.submitVote(true)
@@ -1165,7 +1165,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
 
                 promiseFund = promiseFundContract.connect(deployer)
-                await promiseFund.startVote(15)
+                await promiseFund.startVote(8)
                 promiseFund = promiseFundContract.connect(user)
 
                 await promiseFund.submitVote(false)
@@ -1221,7 +1221,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         // if voteResult is true and against if voteResult is false
         async function callVote(voteResult: boolean) {
             promiseFund = promiseFundContract.connect(deployer)
-            await promiseFund.startVote(15)
+            await promiseFund.startVote(8)
             promiseFund = promiseFundContract.connect(user)
 
             await promiseFund.submitVote(voteResult)
