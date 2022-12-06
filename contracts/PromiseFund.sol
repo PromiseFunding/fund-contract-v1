@@ -28,6 +28,8 @@ error PromiseFund__StateNotVoting();
 error PromiseFund__NoVotesLeft();
 error PromiseFund__VoteEnded();
 error PromiseFund__VoteStillGoing();
+error PromiseFund_NothingToWithdraw();
+error PromiseFund_NotInteractingWithContractCorrectly();
 
 /// @title PromiseFund
 /// @author Silas Lenihan and Dylan Paul
@@ -38,7 +40,6 @@ contract PromiseFund is IFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256[5] amount; //max amount of milestones
-        //uint256 entryTime; //need to implement in future with interest generating
         uint256 votes;
         uint256[5] timesVoted;
         bool withdrewAllFunds;
@@ -48,50 +49,48 @@ contract PromiseFund is IFund, Ownable {
     struct Milestone {
         uint256 amountRaised;
         uint256 startTime;
-        uint256 milestoneDuration; //useful in future if we have different lengths of milestones
+        uint256 milestoneDuration;
     }
 
     // State variables
-    address payable public i_owner;
-    address public i_assetAddress;
-    uint256 public i_numberOfMilestones;
-    uint256 public s_totalFunded;
-    uint256 public s_voteEnd;
-    uint256 public s_votesTried;
-    uint256 public s_votesPro;
-    uint256 public s_votesCon;
+    address payable private immutable i_owner;
+    address private immutable i_assetAddress;
+    uint256 private s_numberOfMilestones;
+    uint256 private s_totalFunded;
+    uint256 private s_voteEnd;
+    uint256 private s_votesTried;
+    uint256 private s_votesPro;
+    uint256 private s_votesCon;
     FundState private s_fundState;
-    uint8 private tranche;
-    uint256 public maxDuration = 10368000; //for now 120 days for each milestone
-    uint8 public maxMilestones = 5;
-    bool calledVoteAfterExpiry; //checks to see if the funders are the ones who called the vote
-    uint256 voteEndTime; //helps in ownerWithdraw function make sure owner cant not withdraw forever
-    bool voteEnded; //used for helping define voteEndTime
-    Milestone[] public tranches; //determine if we want this public?
-    mapping(address => Funder) public s_allFunders;
+    uint8 private s_tranche;
+    bool private calledVoteAfterExpiry; //checks to see if the funders are the ones who called the vote
+    uint256 private voteEndTime; //helps in ownerWithdraw function make sure owner cant not withdraw forever
+    bool private voteEnded; //used for helping define voteEndTime
+    Milestone[] private s_tranches;
+    mapping(address => Funder) private s_allFunders;
 
     // Constants
-    uint256 MIN_VOTE_LENGTH = 14;
-    uint256 MAX_VOTE_LENGTH = 21;
-    uint256 MAX_OWNER_WITHDRAW_PERIOD = 30;
-
-    // Events
+    uint256 private constant MIN_VOTE_LENGTH = 7;
+    uint256 private constant MAX_VOTE_LENGTH = 14;
+    uint256 private constant MAX_OWNER_WITHDRAW_PERIOD = 30;
+    uint256 private constant MAX_DURATION = 10368000; //for now 120 days for each milestone
+    uint8 private constant MAX_MILESTONES = 5;
 
     constructor(address assetAddress, uint256[] memory milestoneDuration) {
         i_owner = payable(tx.origin);
         transferOwnership(i_owner);
         i_assetAddress = assetAddress;
-        i_numberOfMilestones = milestoneDuration.length;
-        for (uint256 i = 0; i < i_numberOfMilestones; i++) {
+        s_numberOfMilestones = milestoneDuration.length;
+        for (uint256 i = 0; i < s_numberOfMilestones; i++) {
             Milestone memory temp;
             //pre-set milestone durations
-            temp.milestoneDuration = milestoneDuration[i] < maxDuration
+            temp.milestoneDuration = milestoneDuration[i] < MAX_DURATION
                 ? milestoneDuration[i]
-                : maxDuration;
-            tranches.push(temp);
+                : MAX_DURATION;
+            s_tranches.push(temp);
         }
-        tranches[0].startTime = block.timestamp;
-        tranche = 0;
+        s_tranches[0].startTime = block.timestamp;
+        s_tranche = 0;
         s_totalFunded = 0;
         s_votesTried = 0;
         s_fundState = FundState.PENDING;
@@ -106,33 +105,32 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.PENDING) {
             revert PromiseFund__NotFundingPeriod();
         }
-        if (amount == 0) {
+        if (amount <= 0) {
             revert PromiseFund__FundAmountMustBeAboveZero();
         }
-        // Set initial amount for funder
+
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
 
-        //set entryTime if first time depositing eventually
         //set bool array to true if funder hasn't funded like this before
-        if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
-            s_allFunders[msg.sender].timesVoted[tranche] = 0;
-            for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
+        if (s_allFunders[msg.sender].amount[s_numberOfMilestones - 1] == 0) {
+            s_allFunders[msg.sender].timesVoted[s_tranche] = 0;
+            for (uint256 trancheIndex = s_tranche; trancheIndex < s_tranches.length; trancheIndex++) {
                 s_allFunders[msg.sender].fundMilestone[trancheIndex] = true;
             }
         }
         //useful for rounding errors with division. Can do decimals in future but this works for now.
         uint256 temp = amount;
         //loop through tranches and update the amount funded. uniform split of funds
-        for (uint256 trancheIndex = tranche; trancheIndex < tranches.length; trancheIndex++) {
+        for (uint256 trancheIndex = s_tranche; trancheIndex < s_tranches.length; trancheIndex++) {
             //not perfect division so give last tranche rest of funds if extra decimals exist
-            if (trancheIndex + 1 == tranches.length) {
-                tranches[trancheIndex].amountRaised += temp;
+            if (trancheIndex + 1 == s_tranches.length) {
+                s_tranches[trancheIndex].amountRaised += temp;
                 s_allFunders[msg.sender].amount[trancheIndex] += temp;
             } else {
-                tranches[trancheIndex].amountRaised += (amount / (i_numberOfMilestones - tranche));
-                temp -= (amount / (i_numberOfMilestones - tranche));
+                s_tranches[trancheIndex].amountRaised += (amount / (s_numberOfMilestones - s_tranche));
+                temp -= (amount / (s_numberOfMilestones - s_tranche));
                 s_allFunders[msg.sender].amount[trancheIndex] += (amount /
-                    (i_numberOfMilestones - tranche));
+                    (s_numberOfMilestones - s_tranche));
             }
         }
 
@@ -154,7 +152,7 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.PENDING) {
             revert PromiseFund__NotFundingPeriod();
         }
-        if (amount == 0) {
+        if (amount <= 0) {
             revert PromiseFund__FundAmountMustBeAboveZero();
         }
 
@@ -162,22 +160,22 @@ contract PromiseFund is IFund, Ownable {
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
 
         //set entryTime if first time depositing... this if statement does nothing for now
-        if (s_allFunders[msg.sender].amount[i_numberOfMilestones - 1] == 0) {
-            s_allFunders[msg.sender].timesVoted[tranche] = 0;
+        if (s_allFunders[msg.sender].amount[s_numberOfMilestones - 1] == 0) {
+            s_allFunders[msg.sender].timesVoted[s_tranche] = 0;
         }
 
         //increments the current tranche with amount for both funder and milestone array
-        tranches[tranche].amountRaised += amount;
-        s_allFunders[msg.sender].amount[tranche] += amount;
+        s_tranches[s_tranche].amountRaised += amount;
+        s_allFunders[msg.sender].amount[s_tranche] += amount;
 
         //add to total deposits and user deposits
         s_totalFunded = s_totalFunded + amount;
         // Want to limit voting ability only for current tranche but still need this
         s_allFunders[msg.sender].votes = 1;
-        //set withdrewAllFunds to false (can we do this in constructor?)
+        //set withdrewAllFunds to false
         s_allFunders[msg.sender].withdrewAllFunds = false;
         // set fundMilestone to true even if redundant for current tranche
-        s_allFunders[msg.sender].fundMilestone[tranche] = true;
+        s_allFunders[msg.sender].fundMilestone[s_tranche] = true;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -206,8 +204,11 @@ contract PromiseFund is IFund, Ownable {
         //test if this works if a non-funder calls function
         uint256 total = getFundAmount(msg.sender);
 
+        if (total <= 0) {
+            revert PromiseFund_NothingToWithdraw();
+        }
+
         // Before actual transfer to deter reentrancy (I think)
-        // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_allFunders[msg.sender].withdrewAllFunds = true;
         s_totalFunded -= total;
 
@@ -226,22 +227,29 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__CantWithdrawOwner();
         }
 
-        uint256 total = tranches[tranche].amountRaised;
+        uint256 total = s_tranches[s_tranche].amountRaised;
+
+        //if total equals 0 and the fundraiser still wants to add another milestone, they can
+        if (total < 0) {
+            revert PromiseFund_NothingToWithdraw();
+        }
 
         s_totalFunded -= total;
-        tranches[tranche].amountRaised -= total;
+        s_tranches[s_tranche].amountRaised -= total;
 
         // Redeem tokens and send them directly to the funder
-        approveTransfer(IERC20(i_assetAddress), address(this), total);
-        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
+        if (total > 0){
+            approveTransfer(IERC20(i_assetAddress), address(this), total);
+            IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
+        }
 
         // reset all variables for following tranche if it isn't the last tranche
         // if it is the last tranche, the contract stayts in the OWNER_WITHDRAW state and no more funding
         // or withdrawing can take place, thereby rendering the functionality useless
         // need to reset vote counting variables (Silas) as well as vote amount!
-        if (tranche != i_numberOfMilestones - 1) {
-            tranche += 1;
-            tranches[tranche].startTime = block.timestamp;
+        if (s_tranche != s_numberOfMilestones - 1) {
+            s_tranche += 1;
+            s_tranches[s_tranche].startTime = block.timestamp;
             s_fundState = FundState.PENDING;
             s_votesTried = 0;
             s_votesCon = 0;
@@ -292,12 +300,12 @@ contract PromiseFund is IFund, Ownable {
         //Funder can call for vote only if time has expired in the current tranche
         if (
             msg.sender != i_owner &&
-            (block.timestamp - tranches[tranche].startTime) < tranches[tranche].milestoneDuration
+            (block.timestamp - s_tranches[s_tranche].startTime) < s_tranches[s_tranche].milestoneDuration
         ) {
             revert PromiseFund_FunderCannotCallForVote();
         }
 
-        if ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration) {
+        if ((block.timestamp - s_tranches[s_tranche].startTime) > s_tranches[s_tranche].milestoneDuration) {
             calledVoteAfterExpiry = true;
         }
 
@@ -314,7 +322,7 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState != FundState.VOTING) {
             revert PromiseFund__StateNotVoting();
         }
-        if (!s_allFunders[msg.sender].fundMilestone[tranche]) {
+        if (!s_allFunders[msg.sender].fundMilestone[s_tranche]) {
             revert PromiseFund_FunderDidNotFundThisMilestone();
         }
         if (s_voteEnd < block.timestamp) {
@@ -326,7 +334,7 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__NoVotesLeft();
         }
 
-        s_allFunders[msg.sender].timesVoted[tranche] =
+        s_allFunders[msg.sender].timesVoted[s_tranche] =
             s_allFunders[msg.sender].votes *
             s_votesTried;
         support ? s_votesPro += 1 : s_votesCon += 1;
@@ -357,7 +365,7 @@ contract PromiseFund is IFund, Ownable {
         // even if 2 votes haven't taken place
         if (
             s_fundState == FundState.PENDING &&
-            ((block.timestamp - tranches[tranche].startTime) > tranches[tranche].milestoneDuration)
+            ((block.timestamp - s_tranches[s_tranche].startTime) > s_tranches[s_tranche].milestoneDuration)
         ) {
             s_fundState == FundState.FUNDER_WITHDRAW;
         }
@@ -382,15 +390,37 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState == FundState.VOTING || s_fundState == FundState.FUNDER_WITHDRAW) {
             revert PromiseFund__StateNotAbleToAddMilestone();
         }
-        if (tranches.length >= 5) {
+        if (s_tranches.length >= 5) {
             revert PromiseFund_MaxAmountOfMilestones();
         }
 
         Milestone memory temp;
-        temp.milestoneDuration = duration < maxDuration ? duration : maxDuration;
-        tranches.push(temp);
+        temp.milestoneDuration = duration < MAX_DURATION ? duration : MAX_DURATION;
+        s_tranches.push(temp);
 
-        i_numberOfMilestones += 1;
+        //if the owner withdrew already at the last milestone and then decides to add another milestone
+        //voteEnded is only false while fundState is in Owner_withdraw if it was withdrawn on last milestone
+        if ((s_fundState == FundState.OWNER_WITHDRAW ) && (s_tranche == s_numberOfMilestones - 1) && (voteEnded == false)) {
+            s_tranche += 1;
+            s_tranches[s_tranche].startTime = block.timestamp;
+            s_fundState = FundState.PENDING;
+            s_votesTried = 0;
+            s_votesCon = 0;
+            s_votesPro = 0;
+            calledVoteAfterExpiry = false;
+        }
+
+        s_numberOfMilestones += 1;
+    }
+
+    // receive function reverts transaction
+    receive() external payable {
+        revert PromiseFund_NotInteractingWithContractCorrectly();
+    }
+
+    // fallback function reverts transaction
+    fallback() external payable {
+        revert PromiseFund_NotInteractingWithContractCorrectly();
     }
 
     /** Getter Functions */
@@ -403,7 +433,7 @@ contract PromiseFund is IFund, Ownable {
             return 0;
         }
         uint256 sum = 0;
-        for (uint256 i = tranche; i < s_allFunders[funder].amount.length; i++) {
+        for (uint256 i = s_tranche; i < s_allFunders[funder].amount.length; i++) {
             sum += s_allFunders[funder].amount[i];
         }
         return sum;
@@ -413,6 +443,24 @@ contract PromiseFund is IFund, Ownable {
     /// @return assetAddress
     function getAssetAddress() public view returns (address) {
         return i_assetAddress;
+    }
+
+    /// @notice Gets the max duration for a milestone
+    /// @return maxDuration
+    function getMaxDuration() public pure returns (uint256) {
+        return MAX_DURATION;
+    }
+
+    /// @notice Gets the max number of milestones
+    /// @return maxMilestones
+    function getMaxMilestones() public pure returns (uint8) {
+        return MAX_MILESTONES;
+    }
+
+    /// @notice Gets the current number of milestones
+    /// @return i_numberOfMilestones
+    function getNumberOfMilestones() public view returns (uint256) {
+        return s_numberOfMilestones;
     }
 
     /// @notice Gets the block time... Useing this function for testing purposes. Can be removed later
@@ -448,27 +496,27 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Get the current tranche
     /// @return The current tranche
     function getCurrentTranche() public view returns (uint8) {
-        return tranche;
+        return s_tranche;
     }
 
     /// @notice Get the Milestone Array that keeps track of amount raised, duration, and startTime
     /// @return The entire Milestone tranches array
     function getTranches() public view returns (Milestone[] memory) {
-        return tranches;
+        return s_tranches;
     }
 
     /// @notice Get the milestone duration that is currently uniformly set on deployment
     /// @return The milestone duration or time to end for specific tranche
     function getMilestoneDuration(uint256 index) public view returns (uint256) {
-        return tranches[index].milestoneDuration;
+        return s_tranches[index].milestoneDuration;
     }
 
     /// @notice Get the array of milestone durations
     /// @return The milestone durations or time to end for all tranches
     function getMilestoneDurations() public view returns (uint256[] memory) {
-        uint256[] memory temp = new uint256[](tranches.length);
-        for (uint8 i = 0; i < tranches.length; i++) {
-            temp[i] = tranches[i].milestoneDuration;
+        uint256[] memory temp = new uint256[](s_tranches.length);
+        for (uint8 i = 0; i < s_tranches.length; i++) {
+            temp[i] = s_tranches[i].milestoneDuration;
         }
 
         return temp;
@@ -477,8 +525,8 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Get the total amount raised for a single Milestone level
     /// @return The amount of time left in the milestone
     function getTimeLeftMilestone() public view returns (uint256) {
-        if ((block.timestamp - tranches[tranche].startTime) < tranches[tranche].milestoneDuration) {
-            return tranches[tranche].milestoneDuration - (block.timestamp - tranches[tranche].startTime);
+        if ((block.timestamp - s_tranches[s_tranche].startTime) < s_tranches[s_tranche].milestoneDuration) {
+            return s_tranches[s_tranche].milestoneDuration - (block.timestamp - s_tranches[s_tranche].startTime);
         }
         return 0;
     }
@@ -487,7 +535,7 @@ contract PromiseFund is IFund, Ownable {
     /// @param level the 'tranche' number. Ex: first milestone, second milestone...
     /// @return The uint256 amount raised in that specific tranche
     function getTrancheAmountRaised(uint256 level) public view returns (uint256) {
-        return tranches[level].amountRaised;
+        return s_tranches[level].amountRaised;
     }
 
     /// @notice Get the the specific amount raised in a funders 'tranche'
@@ -517,7 +565,7 @@ contract PromiseFund is IFund, Ownable {
     }
 
     function didFunderVote(address funder) public view returns (bool) {
-        if (s_allFunders[funder].votes * s_votesTried <= s_allFunders[funder].timesVoted[tranche]) {
+        if (s_allFunders[funder].votes * s_votesTried <= s_allFunders[funder].timesVoted[s_tranche]) {
             return true;
         }
         return false;

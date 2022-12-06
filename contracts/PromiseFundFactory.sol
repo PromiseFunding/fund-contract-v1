@@ -6,8 +6,8 @@ import {PromiseFund} from "./PromiseFund.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error PromiseFundFactory__CantHaveTwoFunds();
 error PromiseFundFactory_TooManyMilestones();
+error PromiseFundFactory_NeedToAddAMilestone();
 
 /// @title PromiseFundFactory
 /// @author Silas Lenihan and Dylan Paul
@@ -32,6 +32,9 @@ contract PromiseFundFactory is Ownable {
     function createPromiseFund(address assetAddress, uint256[] memory milestoneDuration) public {
         if(milestoneDuration.length > 5){
             revert PromiseFundFactory_TooManyMilestones();
+        }
+        if(milestoneDuration.length < 1){
+            revert PromiseFundFactory_NeedToAddAMilestone();
         }
         PromiseFund promiseFund = new PromiseFund(assetAddress, milestoneDuration);
         s_funds_promise.push(promiseFund);
