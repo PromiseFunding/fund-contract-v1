@@ -56,6 +56,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getFunderCalledVote()": FunctionFragment;
     "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
     "getFunderVotes(address)": FunctionFragment;
+    "getLifeTimeAmountFunded()": FunctionFragment;
     "getMaxDuration()": FunctionFragment;
     "getMaxMilestones()": FunctionFragment;
     "getMilestoneDuration(uint256)": FunctionFragment;
@@ -99,6 +100,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getFunderCalledVote"
       | "getFunderTrancheAmountRaised"
       | "getFunderVotes"
+      | "getLifeTimeAmountFunded"
       | "getMaxDuration"
       | "getMaxMilestones"
       | "getMilestoneDuration"
@@ -179,6 +181,10 @@ export interface PromiseFundInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getFunderVotes",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLifeTimeAmountFunded",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getMaxDuration",
@@ -320,6 +326,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFunderVotes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLifeTimeAmountFunded",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -555,6 +565,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getMaxDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getMaxMilestones(overrides?: CallOverrides): Promise<[number]>;
@@ -688,6 +700,8 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
   getMaxDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
   getMaxMilestones(overrides?: CallOverrides): Promise<number>;
@@ -818,6 +832,8 @@ export interface PromiseFund extends BaseContract {
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
 
     getMaxDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -993,6 +1009,8 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
     getMaxDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     getMaxMilestones(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1124,6 +1142,10 @@ export interface PromiseFund extends BaseContract {
 
     getFunderVotes(
       funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getLifeTimeAmountFunded(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

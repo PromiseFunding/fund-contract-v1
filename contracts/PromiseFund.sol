@@ -59,6 +59,7 @@ contract PromiseFund is IFund, Ownable {
     uint256 private immutable i_preFundingDuration;
     uint256 private immutable i_preFundingStartTime;
     uint256 private s_numberOfMilestones;
+    uint256 private s_currentFunded;
     uint256 private s_totalFunded;
     uint256 private s_voteEnd;
     uint256 private s_votesTried;
@@ -95,6 +96,7 @@ contract PromiseFund is IFund, Ownable {
         }
         i_preFundingStartTime = block.timestamp;
         s_tranche = 0;
+        s_currentFunded = 0;
         s_totalFunded = 0;
         s_votesTried = 0;
         s_fundState = FundState.PREFUNDING;
@@ -117,7 +119,7 @@ contract PromiseFund is IFund, Ownable {
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
 
         if (s_fundState == FundState.PREFUNDING) {
-            s_totalFunded = s_totalFunded + amount;
+            s_currentFunded = s_currentFunded + amount;
         }
         else{
             //set bool array to true if funder hasn't funded like this before
@@ -144,7 +146,7 @@ contract PromiseFund is IFund, Ownable {
             }
 
             //add to total deposits and user deposits
-            s_totalFunded = s_totalFunded + amount;
+            s_currentFunded = s_currentFunded + amount;
             // Set the number of votes to 1 for now. Will be weighted in the future.
             // allows for voting at all milestones
             s_allFunders[msg.sender].votes = 1;
@@ -153,6 +155,8 @@ contract PromiseFund is IFund, Ownable {
 
             emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
         }
+        //tracks total funded
+        s_totalFunded += amount;
     }
 
     /// @notice Fund the current tranche or milestone period with a token
@@ -179,13 +183,15 @@ contract PromiseFund is IFund, Ownable {
         s_allFunders[msg.sender].amount[s_tranche] += amount;
 
         //add to total deposits and user deposits
-        s_totalFunded = s_totalFunded + amount;
+        s_currentFunded = s_currentFunded + amount;
         // Want to limit voting ability only for current tranche but still need this
         s_allFunders[msg.sender].votes = 1;
         //set withdrewAllFunds to false
         s_allFunders[msg.sender].withdrewAllFunds = false;
         // set fundMilestone to true even if redundant for current tranche
         s_allFunders[msg.sender].fundMilestone[s_tranche] = true;
+        //increment total funded
+        s_totalFunded += amount;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -220,7 +226,7 @@ contract PromiseFund is IFund, Ownable {
 
         // Before actual transfer to deter reentrancy (I think)
         s_allFunders[msg.sender].withdrewAllFunds = true;
-        s_totalFunded -= total;
+        s_currentFunded -= total;
 
         // Have to give allowance for contract to send funds
         approveTransfer(IERC20(i_assetAddress), address(this), total);
@@ -244,8 +250,8 @@ contract PromiseFund is IFund, Ownable {
         uint256 total;
 
         if (s_fundState == FundState.PREFUNDING) {
-            total = s_totalFunded;
-            s_totalFunded = 0;
+            total = s_currentFunded;
+            s_currentFunded = 0;
             if (total < 0) {
                 revert PromiseFund_NothingToWithdraw();
             }
@@ -265,7 +271,7 @@ contract PromiseFund is IFund, Ownable {
                 revert PromiseFund_NothingToWithdraw();
             }
 
-            s_totalFunded -= total;
+            s_currentFunded -= total;
             s_tranches[s_tranche].amountRaised -= total;
 
             // Redeem tokens and send them directly to the funder
@@ -516,15 +522,15 @@ contract PromiseFund is IFund, Ownable {
     /// @return The amount of withdrawable proceeds
     function getWithdrawableProceeds() public view returns (uint256) {
         if (s_fundState == FundState.OWNER_WITHDRAW) {
-            return s_totalFunded;
+            return s_currentFunded;
         }
         return 0;
     }
 
-    /// @notice Get the total amount donated to contract/fundraiser
-    /// @return The total amount in contract
+    /// @notice Get the total current amount donated to contract/fundraiser
+    /// @return The total current amount in contract at the moment
     function getTotalFunds() public view returns (uint256) {
-        return s_totalFunded;
+        return s_currentFunded;
     }
 
     /// @notice Get the current tranche
@@ -626,5 +632,9 @@ contract PromiseFund is IFund, Ownable {
 
     function getVotesCon() public view returns (uint256) {
         return s_votesCon;
+    }
+
+    function getLifeTimeAmountFunded() public view returns (uint256) {
+        return s_totalFunded;
     }
 }
