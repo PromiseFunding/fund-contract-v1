@@ -29,7 +29,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             assetTokenContract = await ethers.getContract("MockERC20Token")
             assetToken = await assetTokenContract.connect(deployer)
             const createPromiseFundTx = await fundFactory.createPromiseFund(
-                assetToken.address, [100, 400, 20368000, 100]
+                assetToken.address, [100, 400, 20368000, 100], 5184000
             )
             const txReceipt = await createPromiseFundTx.wait(1)
             const blockNum = txReceipt.blockNumber
@@ -57,15 +57,18 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         })
 
         describe("deployment test for duration", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("fails when milestone array is over 5 or 0", async function () {
                 const fundFactory = await ethers.getContract("PromiseFundFactory")
                 await expect(
                     fundFactory.createPromiseFund(
-                        assetToken.address, [100, 400, 20368000, 100, 200, 2]
+                        assetToken.address, [100, 400, 20368000, 100, 200, 2], 5184000
                     )).to.be.revertedWith("PromiseFundFactory_TooManyMilestones()")
                 await expect(
                     fundFactory.createPromiseFund(
-                        assetToken.address, []
+                        assetToken.address, [], 5184000
                     )).to.be.revertedWith("PromiseFundFactory_NeedToAddAMilestone()")
             })
 
@@ -73,7 +76,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         describe("constructor", function () {
             it("correctly sets the state", async function () {
                 const state = await promiseFund.getState()
-                assert.equal(state, 0)
+                assert.equal(state, 4) //pre-funding state
             })
             it("initializes the asset address correctly", async () => {
                 promiseFund = await promiseFundContract.connect(user)
@@ -89,7 +92,8 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 //set length of milestones correctly
                 assert.equal(response.length, 4)
                 //sets time of beginning of tranche correctly
-                assert.equal(response[0].startTime.toNumber(), timestamp)
+                const time = await promiseFund.getPreStartTime()
+                assert.equal(time.toNumber(), timestamp)
             })
             it("sets milestone duration correctly", async () => {
                 promiseFund = await promiseFundContract.connect(user)
@@ -106,6 +110,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
 
         describe("Funding and Withdrawal Tests", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("properly adds a funder", async function () {
                 promiseFund = promiseFundContract.connect(user)
                 assetToken = assetTokenContract.connect(user)
@@ -525,6 +532,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Owner Withdraw period expired tests", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("fails when a funder tries to call function before vote ends", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
@@ -570,6 +580,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Add milestone test", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("adds the milestone correctly and funding disperses to new tranche and can't add another milestone if 5 milestones already", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
@@ -726,6 +739,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Multiple funders, withdrawing and voting tests", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("correctly accumulates the funds in the tranches from multiple funders", async function () {
                 let sum: BigNumber = BigNumber.from("0")
                 promiseFund = promiseFundContract.connect(accounts[1])
@@ -907,6 +923,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Funder called for Vote tests after duration", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("correctly assigns state if owner called vote before expiry even if only one vote and false", async function () {
                 //check s_allFunders[msg.sender].timesVoted[tranche] is updating
                 promiseFund = promiseFundContract.connect(user)
@@ -966,7 +985,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 //check s_allFunders[msg.sender].timesVoted[tranche] is updating
                 promiseFund = promiseFundContract.connect(user)
 
-                //didnt fund so should error 
+                //didnt fund so should error
                 await expect(
                     promiseFund.submitVote(true)
                 ).to.be.revertedWith("PromiseFund__StateNotVoting")
@@ -1015,6 +1034,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             })
         })
         describe("Voting Tests", function () {
+            beforeEach(async function () {
+                await skipPreFund()
+            })
             it("fails when a non-owner tries to call a vote prior to end of milestone", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
@@ -1246,6 +1268,44 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
             })
         })
+        describe("Pre Funding Tests", function () {
+            it("funds correctly to the contract", async function () {
+                promiseFund = promiseFundContract.connect(user)
+                assetToken = assetTokenContract.connect(user)
+                await fund()
+                const totalRaised = await promiseFund.getTotalFunds()
+                assert.equal(totalRaised.toString(), oneFundValueWithDecimals.toString())
+                //console.log(await assetToken.balanceOf(promiseFund.address))
+                assert.equal(totalRaised.toString(), await assetToken.balanceOf(promiseFund.address))
+                await expect(
+                    promiseFund.startVote(8)
+                ).to.be.revertedWith("PromiseFund__StateNotPending()")
+                const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
+
+                promiseFund = promiseFundContract.connect(deployer)
+                await expect(
+                    promiseFund.withdrawProceeds()
+                ).to.be.revertedWith("PromiseFund_OwnerMustWaitForPreFundingToEnd()")
+
+                await skipPreFund()
+
+                const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
+
+                assert.equal(beforeDeployerBalance.add(oneFundValueWithDecimals).toString(), afterDeployerBalance.toString())
+                const totalRaised1 = await promiseFund.getTotalFunds()
+                assert.equal(totalRaised1.toString(), "0")
+
+                const state = await promiseFund.getState()
+                assert.equal(state, 0)//pending
+
+                //start time of first tranche is set correctly
+                const startTime = await promiseFund.getBlockTime()
+                const tranches = await promiseFund.getTranches()
+                const time = tranches[0].startTime
+                assert.equal(startTime.toString(), time.toString())
+
+            })
+        })
 
         // --------------------------------------------------------------------------
         // HELPER FUNCTIONS - These two we're called over and over again, so to save
@@ -1295,6 +1355,16 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
             const fundTx = await promiseFund.fundCurrentTrancheOnly(oneFundValueWithDecimals)
             await fundTx.wait(1)
+        }
+
+        // Fund from the user account using the fundValue specified at the beginning of the file.
+        async function skipPreFund() {
+            promiseFund = promiseFundContract.connect(deployer)
+            const timeLeft = await promiseFund.getTimeLeftMilestone()
+            await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+            //should initialize milestone funding as usual
+            await promiseFund.withdrawProceeds()
         }
     })
 

@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 error PromiseFundFactory_TooManyMilestones();
 error PromiseFundFactory_NeedToAddAMilestone();
+error PromiseFundFactory_PreFundingTooLong();
 
 /// @title PromiseFundFactory
 /// @author Silas Lenihan and Dylan Paul
@@ -29,14 +30,18 @@ contract PromiseFundFactory is Ownable {
 
     /// @notice Create a new PromiseFund
     /// @param assetAddress the address of the underlying asset
-    function createPromiseFund(address assetAddress, uint256[] memory milestoneDuration) public {
+    function createPromiseFund(address assetAddress, uint256[] memory milestoneDuration, uint256 preFundingDuration) public {
         if(milestoneDuration.length > 5){
             revert PromiseFundFactory_TooManyMilestones();
         }
         if(milestoneDuration.length < 1){
             revert PromiseFundFactory_NeedToAddAMilestone();
         }
-        PromiseFund promiseFund = new PromiseFund(assetAddress, milestoneDuration);
+        //make prefunding maximum of 60 days for now
+        if(preFundingDuration > 5184000){
+            revert PromiseFundFactory_PreFundingTooLong();
+        }
+        PromiseFund promiseFund = new PromiseFund(assetAddress, milestoneDuration, preFundingDuration);
         s_funds_promise.push(promiseFund);
         emit Created(msg.sender, assetAddress, address(promiseFund));
     }
