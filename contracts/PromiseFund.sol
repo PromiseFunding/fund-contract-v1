@@ -230,7 +230,8 @@ contract PromiseFund is IFund, Ownable {
 
         uint256 total = s_tranches[s_tranche].amountRaised;
 
-        if (total <= 0) {
+        //if total equals 0 and the fundraiser still wants to add another milestone, they can
+        if (total < 0) {
             revert PromiseFund_NothingToWithdraw();
         }
 
@@ -238,8 +239,10 @@ contract PromiseFund is IFund, Ownable {
         s_tranches[s_tranche].amountRaised -= total;
 
         // Redeem tokens and send them directly to the funder
-        approveTransfer(IERC20(i_assetAddress), address(this), total);
-        IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
+        if (total > 0){
+            approveTransfer(IERC20(i_assetAddress), address(this), total);
+            IERC20(i_assetAddress).transferFrom(address(this), msg.sender, total);
+        }
 
         // reset all variables for following tranche if it isn't the last tranche
         // if it is the last tranche, the contract stayts in the OWNER_WITHDRAW state and no more funding
@@ -395,6 +398,18 @@ contract PromiseFund is IFund, Ownable {
         Milestone memory temp;
         temp.milestoneDuration = duration < MAX_DURATION ? duration : MAX_DURATION;
         s_tranches.push(temp);
+
+        //if the owner withdrew already at the last milestone and then decides to add another milestone
+        //voteEnded is only false while fundState is in Owner_withdraw if it was withdrawn on last milestone
+        if ((s_fundState == FundState.OWNER_WITHDRAW ) && (s_tranche == s_numberOfMilestones - 1) && (voteEnded == false)) {
+            s_tranche += 1;
+            s_tranches[s_tranche].startTime = block.timestamp;
+            s_fundState = FundState.PENDING;
+            s_votesTried = 0;
+            s_votesCon = 0;
+            s_votesPro = 0;
+            calledVoteAfterExpiry = false;
+        }
 
         s_numberOfMilestones += 1;
     }

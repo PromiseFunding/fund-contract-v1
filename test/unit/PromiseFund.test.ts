@@ -602,7 +602,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 assert.equal(dur.toNumber(), 10368000)
 
             })
-            it("adds the milestone after owner withdraws for last time, so owner has to withdraw again to change state to pending ", async function () {
+            it("adds the milestone after owner withdraws for last time, and it automatically updates state to pending and milestone array ", async function () {
                 promiseFund = promiseFundContract.connect(user)
 
                 //first funder funds
@@ -632,6 +632,8 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 promiseFund = promiseFundContract.connect(deployer)
 
+                //owner adds milestone after withdrawing for last tranche: works correctly (KEEP COMMENTED)
+
                 await promiseFund.withdrawProceeds()
 
                 const tranche = await promiseFund.getCurrentTranche()
@@ -639,19 +641,45 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const state = await promiseFund.getState()
                 assert.equal(state, 2) //stays in owner withdraw because the last tranche
 
-                await promiseFund.addMilestone(1000000000) //owner adds a milestone
-                assert.equal(state, 2)
+                await promiseFund.addMilestone(1000000000) //owner adds a milestone and it updates everything for owner
 
-                promiseFund.withdrawProceeds() //should trigger 5th tranche and pending state
                 const state1 = await promiseFund.getState()
-                assert.equal(state1, 0)
+                assert.equal(state1, 0) //updates state to pending
                 const tranche1 = await promiseFund.getCurrentTranche()
                 assert.equal(tranche1, 4) //now tranche added
+                const number = await promiseFund.getNumberOfMilestones()
+                assert.equal(number.toNumber(), 5)
 
                 const dur = await promiseFund.getMilestoneDuration(tranche1)
                 assert.equal(dur.toNumber(), 10368000)
 
-                //test if voting is updated too: commented out section works and returns false for voting
+                await expect(
+                    promiseFund.withdrawProceeds()
+                ).to.be.revertedWith("PromiseFund__CantWithdrawOwner()")
+
+
+                //owner adds milestone before withdrawing at last milestone (KEEP COMMENTED)
+                // await promiseFund.addMilestone(1000000000) //owner adds a milestone and it doesn't update state or tranche number yet
+                // const tranche = await promiseFund.getCurrentTranche()
+                // assert.equal(tranche, 3) //tranche not added bc haven't withdrawn yet
+                // const state = await promiseFund.getState()
+                // assert.equal(state, 2) //stays in owner withdraw
+                // await promiseFund.withdrawProceeds()
+                // const state1 = await promiseFund.getState()
+                // assert.equal(state1, 0) //updates state to pending
+                // const tranche1 = await promiseFund.getCurrentTranche()
+                // assert.equal(tranche1, 4) //now tranche added
+                // const number = await promiseFund.getNumberOfMilestones()
+                // assert.equal(number, 5)
+
+                // const dur = await promiseFund.getMilestoneDuration(tranche1)
+                // assert.equal(dur.toNumber(), 10368000)
+
+                // await expect(
+                //     promiseFund.withdrawProceeds()
+                // ).to.be.revertedWith("PromiseFund__CantWithdrawOwner()")
+
+                //test if voting is updated too: commented out section works and returns false for voting (KEEP COMMENTED)
 
                 // await promiseFund.startVote(8)
                 // promiseFund = promiseFundContract.connect(user)
@@ -665,6 +693,9 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 promiseFund = promiseFundContract.connect(deployer)
                 await promiseFund.startVote(8)
+                await expect( //can't add while voting
+                    promiseFund.addMilestone(1000)
+                ).to.be.revertedWith("PromiseFund__StateNotAbleToAddMilestone()")
                 promiseFund = promiseFundContract.connect(user)
                 promiseFund.submitVote(true)
 
@@ -679,7 +710,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
                 await promiseFund.withdrawProceeds()
                 const state2 = await promiseFund.getState()
-                assert.equal(state2, 2)  //state stays in owner_withdraw   
+                assert.equal(state2, 2)  //state stays in owner_withdraw
                 const tranche2 = await promiseFund.getCurrentTranche()
                 assert.equal(tranche2, 4) //stays at tranche
 
