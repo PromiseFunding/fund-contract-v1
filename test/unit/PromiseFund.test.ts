@@ -57,12 +57,16 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         })
 
         describe("deployment test for duration", function () {
-            it("fails when milestone array is over 5", async function () {
+            it("fails when milestone array is over 5 or 0", async function () {
                 const fundFactory = await ethers.getContract("PromiseFundFactory")
                 await expect(
                     fundFactory.createPromiseFund(
                         assetToken.address, [100, 400, 20368000, 100, 200, 2]
                     )).to.be.revertedWith("PromiseFundFactory_TooManyMilestones()")
+                await expect(
+                    fundFactory.createPromiseFund(
+                        assetToken.address, []
+                    )).to.be.revertedWith("PromiseFundFactory_NeedToAddAMilestone()")
             })
 
         })

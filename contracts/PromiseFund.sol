@@ -209,7 +209,6 @@ contract PromiseFund is IFund, Ownable {
         }
 
         // Before actual transfer to deter reentrancy (I think)
-        // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_allFunders[msg.sender].withdrewAllFunds = true;
         s_totalFunded -= total;
 
