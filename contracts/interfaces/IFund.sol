@@ -8,7 +8,8 @@ interface IFund {
         PENDING,
         VOTING,
         OWNER_WITHDRAW,
-        FUNDER_WITHDRAW
+        FUNDER_WITHDRAW,
+        PREFUNDING
     }
 
     event FunderAdded(

@@ -62,6 +62,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getMilestoneDurations()": FunctionFragment;
     "getNumberOfMilestones()": FunctionFragment;
     "getOwner()": FunctionFragment;
+    "getPreStartTime()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftMilestone()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
@@ -104,6 +105,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getMilestoneDurations"
       | "getNumberOfMilestones"
       | "getOwner"
+      | "getPreStartTime"
       | "getState"
       | "getTimeLeftMilestone"
       | "getTimeLeftVoting"
@@ -199,6 +201,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getPreStartTime",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getTimeLeftMilestone",
@@ -337,6 +343,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPreStartTime",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLeftMilestone",
@@ -560,6 +570,8 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
+    getPreStartTime(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getState(overrides?: CallOverrides): Promise<[number]>;
 
     getTimeLeftMilestone(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -691,6 +703,8 @@ export interface PromiseFund extends BaseContract {
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
+  getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
+
   getState(overrides?: CallOverrides): Promise<number>;
 
   getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
@@ -819,6 +833,8 @@ export interface PromiseFund extends BaseContract {
     getNumberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
+
+    getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<number>;
 
@@ -992,6 +1008,8 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
+
     getState(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1127,6 +1145,8 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getPreStartTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
