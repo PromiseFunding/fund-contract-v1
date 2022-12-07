@@ -53,6 +53,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "addMilestone(uint256)": FunctionFragment;
     "approveTransfer(address,address,uint256)": FunctionFragment;
     "didFunderVote(address)": FunctionFragment;
+    "didFunderWithdrawFunds(address)": FunctionFragment;
     "endVote()": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "fundCurrentTrancheOnly(uint256)": FunctionFragment;
@@ -74,7 +75,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getPreMilestoneTotalFunds()": FunctionFragment;
     "getPreStartTime()": FunctionFragment;
     "getState()": FunctionFragment;
-    "getTimeLeftMilestone()": FunctionFragment;
+    "getTimeLeftRound()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
     "getTrancheAmountRaised(uint256)": FunctionFragment;
     "getTranches()": FunctionFragment;
@@ -98,6 +99,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "addMilestone"
       | "approveTransfer"
       | "didFunderVote"
+      | "didFunderWithdrawFunds"
       | "endVote"
       | "fund"
       | "fundCurrentTrancheOnly"
@@ -119,7 +121,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getPreMilestoneTotalFunds"
       | "getPreStartTime"
       | "getState"
-      | "getTimeLeftMilestone"
+      | "getTimeLeftRound"
       | "getTimeLeftVoting"
       | "getTrancheAmountRaised"
       | "getTranches"
@@ -152,6 +154,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "didFunderVote",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "didFunderWithdrawFunds",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "endVote", values?: undefined): string;
@@ -230,7 +236,7 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getState", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "getTimeLeftMilestone",
+    functionFragment: "getTimeLeftRound",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -307,6 +313,10 @@ export interface PromiseFundInterface extends utils.Interface {
     functionFragment: "didFunderVote",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "didFunderWithdrawFunds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "endVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
   decodeFunctionResult(
@@ -380,7 +390,7 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getTimeLeftMilestone",
+    functionFragment: "getTimeLeftRound",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -544,6 +554,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    didFunderWithdrawFunds(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     endVote(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -607,7 +622,7 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<[number]>;
 
-    getTimeLeftMilestone(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getTimeLeftRound(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -681,6 +696,11 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  didFunderWithdrawFunds(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   endVote(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -744,7 +764,7 @@ export interface PromiseFund extends BaseContract {
 
   getState(overrides?: CallOverrides): Promise<number>;
 
-  getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
+  getTimeLeftRound(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -818,6 +838,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    didFunderWithdrawFunds(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     endVote(overrides?: CallOverrides): Promise<void>;
 
     fund(
@@ -879,7 +904,7 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<number>;
 
-    getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
+    getTimeLeftRound(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -994,6 +1019,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    didFunderWithdrawFunds(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     endVote(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1057,7 +1087,7 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
+    getTimeLeftRound(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1126,6 +1156,11 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     didFunderVote(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    didFunderWithdrawFunds(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1205,9 +1240,7 @@ export interface PromiseFund extends BaseContract {
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getTimeLeftMilestone(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    getTimeLeftRound(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

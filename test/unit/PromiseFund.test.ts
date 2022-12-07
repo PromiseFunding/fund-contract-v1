@@ -1360,7 +1360,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         // Fund from the user account using the fundValue specified at the beginning of the file.
         async function skipPreFund() {
             promiseFund = promiseFundContract.connect(deployer)
-            const timeLeft = await promiseFund.getTimeLeftMilestone()
+            const timeLeft = await promiseFund.getTimeLeftRound()
             await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
 
             //should initialize milestone funding as usual
