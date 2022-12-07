@@ -48,7 +48,11 @@ interface IFund {
 
     function getState() external view returns (FundState);
 
-    function getTotalFunds() external view returns (uint256);
+    function getCurrentTotalFunds() external view returns (uint256);
+
+    function getLifeTimeAmountFunded() external view returns (uint256);
+
+     function getPreMilestoneTotalFunds() external view returns (uint256);
 
     function getVoteEnd() external view returns (uint256);
 

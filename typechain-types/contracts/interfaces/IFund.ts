@@ -32,11 +32,13 @@ export interface IFundInterface extends utils.Interface {
     "approveTransfer(address,address,uint256)": FunctionFragment;
     "fund(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
+    "getCurrentTotalFunds()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
+    "getLifeTimeAmountFunded()": FunctionFragment;
     "getOwner()": FunctionFragment;
+    "getPreMilestoneTotalFunds()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
-    "getTotalFunds()": FunctionFragment;
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
     "getVotesPro()": FunctionFragment;
@@ -49,11 +51,13 @@ export interface IFundInterface extends utils.Interface {
       | "approveTransfer"
       | "fund"
       | "getAssetAddress"
+      | "getCurrentTotalFunds"
       | "getFundAmount"
+      | "getLifeTimeAmountFunded"
       | "getOwner"
+      | "getPreMilestoneTotalFunds"
       | "getState"
       | "getTimeLeftVoting"
-      | "getTotalFunds"
       | "getVoteEnd"
       | "getVotesCon"
       | "getVotesPro"
@@ -78,17 +82,25 @@ export interface IFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getFundAmount",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "getState", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getTimeLeftVoting",
+    functionFragment: "getCurrentTotalFunds",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getTotalFunds",
+    functionFragment: "getFundAmount",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLifeTimeAmountFunded",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getPreMilestoneTotalFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "getState", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getTimeLeftVoting",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -122,17 +134,25 @@ export interface IFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCurrentTotalFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getFundAmount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLifeTimeAmountFunded",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPreMilestoneTotalFunds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getState", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLeftVoting",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTotalFunds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getVoteEnd", data: BytesLike): Result;
@@ -244,18 +264,22 @@ export interface IFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getOwner(overrides?: CallOverrides): Promise<[string]>;
+
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getVoteEnd(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -286,18 +310,22 @@ export interface IFund extends BaseContract {
 
   getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
+  getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
   getFundAmount(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
   getOwner(overrides?: CallOverrides): Promise<string>;
+
+  getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   getState(overrides?: CallOverrides): Promise<number>;
 
   getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-  getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -328,18 +356,22 @@ export interface IFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<string>;
+
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<number>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -406,18 +438,22 @@ export interface IFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getLifeTimeAmountFunded(overrides?: CallOverrides): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -449,18 +485,28 @@ export interface IFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getCurrentTotalFunds(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getFundAmount(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getLifeTimeAmountFunded(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getPreMilestoneTotalFunds(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getVoteEnd(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

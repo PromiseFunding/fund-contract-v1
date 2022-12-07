@@ -122,7 +122,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 //ex: user donates 1 dollar. Milestones 1-4 each have .25 and the users amount array in indices 0-3 have 0.25
                 //to keep track of which rounds they funded to
                 const originalFundAmount = await promiseFund.getFundAmount(user.address)
-                const originalFundsRaised = await promiseFund.getTotalFunds()
+                const originalFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const originalMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const originalFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
                 const originalMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
@@ -142,7 +142,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fundTx.wait(1)
 
                 const afterFundAmount = await promiseFund.getFundAmount(user.address)
-                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
                 const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
@@ -201,7 +201,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fund()
 
                 const afterFundAmount = await promiseFund.getFundAmount(user.address)
-                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(user.address, 0))
                 const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
@@ -268,7 +268,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 await fundTx1.wait(1)
 
                 const afterFundAmount = await promiseFund.getFundAmount(accounts[2].address)
-                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(accounts[2].address, 0))
                 const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
@@ -362,7 +362,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
             it("correctly allows the owner to withdraw proceeds in the correct state with exact amount if not last tranche", async function () {
                 await fund()
 
-                const beforeContractBalance = await promiseFund.getTotalFunds()
+                const beforeContractBalance = await promiseFund.getCurrentTotalFunds()
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
 
                 await callVote(true)
@@ -387,7 +387,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const votesCon = await promiseFund.getVotesCon()
                 const votesTried = await promiseFund.getVotesTried()
                 const funderCallVote = await promiseFund.getFunderCalledVote()
-                const afterContractBalance = await promiseFund.getTotalFunds()
+                const afterContractBalance = await promiseFund.getCurrentTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
                 assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
                 assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
@@ -406,7 +406,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 //votes tried, votes pro, fund state, and tranche should all be not changing after the transaction
                 await fund()
 
-                const beforeContractBalance = await promiseFund.getTotalFunds()
+                const beforeContractBalance = await promiseFund.getCurrentTotalFunds()
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
 
                 await callVote(true)
@@ -462,7 +462,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const votesPro = await promiseFund.getVotesPro()
                 const votesCon = await promiseFund.getVotesCon()
                 const votesTried = await promiseFund.getVotesTried()
-                const afterContractBalance = await promiseFund.getTotalFunds()
+                const afterContractBalance = await promiseFund.getCurrentTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
                 assert.equal("0", afterContractBalance.toString()) //no funds in contract bc voted yes each time
                 assert.equal(beforeDeployerBalance.add(sum).toString(), afterDeployerBalance.toString()) //all funds with owner
@@ -753,7 +753,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const originalFundAmount4 = await promiseFund.getFundAmount(accounts[4].address)
 
                 //tranche and contract original amounts
-                const originalFundsRaised = await promiseFund.getTotalFunds()
+                const originalFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const originalMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const originalMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
                 const originalMilestoneAmountInTrancheThree = (await promiseFund.getTrancheAmountRaised(2))
@@ -784,7 +784,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
 
 
                 //check from each funder... everyone funded same amount so should be equal
-                const afterFundsRaised = await promiseFund.getTotalFunds()
+                const afterFundsRaised = await promiseFund.getCurrentTotalFunds()
                 const afterMilestoneAmountInTrancheOne = (await promiseFund.getTrancheAmountRaised(0))
                 const afterFunderAmountInTrancheOne = (await promiseFund.getFunderTrancheAmountRaised(accounts[1].address, 0))
                 const afterMilestoneAmountInTrancheTwo = (await promiseFund.getTrancheAmountRaised(1))
@@ -1257,12 +1257,12 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const withdrawAmount = await promiseFund.getTrancheAmountRaised(tranche)
 
                 const beforeDeployerBalance = await assetToken.balanceOf(deployer.address)
-                const beforeContractBalance = await promiseFund.getTotalFunds()
+                const beforeContractBalance = await promiseFund.getCurrentTotalFunds()
 
                 promiseFund = promiseFundContract.connect(deployer)
                 await promiseFund.withdrawProceeds()
 
-                const afterContractBalance = await promiseFund.getTotalFunds()
+                const afterContractBalance = await promiseFund.getCurrentTotalFunds()
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
                 assert.equal(beforeContractBalance.sub(withdrawAmount).toString(), afterContractBalance.toString())
                 assert.equal(beforeDeployerBalance.add(withdrawAmount).toString(), afterDeployerBalance.toString())
@@ -1273,7 +1273,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 promiseFund = promiseFundContract.connect(user)
                 assetToken = assetTokenContract.connect(user)
                 await fund()
-                const totalRaised = await promiseFund.getTotalFunds()
+                const totalRaised = await promiseFund.getPreMilestoneTotalFunds()
                 assert.equal(totalRaised.toString(), oneFundValueWithDecimals.toString())
                 //console.log(await assetToken.balanceOf(promiseFund.address))
                 assert.equal(totalRaised.toString(), await assetToken.balanceOf(promiseFund.address))
@@ -1292,7 +1292,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
                 const afterDeployerBalance = await assetToken.balanceOf(deployer.address)
 
                 assert.equal(beforeDeployerBalance.add(oneFundValueWithDecimals).toString(), afterDeployerBalance.toString())
-                const totalRaised1 = await promiseFund.getTotalFunds()
+                const totalRaised1 = await promiseFund.getCurrentTotalFunds()
                 assert.equal(totalRaised1.toString(), "0")
 
                 const state = await promiseFund.getState()
@@ -1360,7 +1360,7 @@ import { networkConfig, DEFAULT_ASSET_ADDRESS } from "../../helper-hardhat-confi
         // Fund from the user account using the fundValue specified at the beginning of the file.
         async function skipPreFund() {
             promiseFund = promiseFundContract.connect(deployer)
-            const timeLeft = await promiseFund.getTimeLeftMilestone()
+            const timeLeft = await promiseFund.getTimeLeftRound()
             await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
 
             //should initialize milestone funding as usual
