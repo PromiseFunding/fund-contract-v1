@@ -147,6 +147,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getCurrentTotalFunds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -155,6 +168,19 @@ const _abi = [
       },
     ],
     name: "getFundAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getLifeTimeAmountFunded",
     outputs: [
       {
         internalType: "uint256",
@@ -180,6 +206,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getPreMilestoneTotalFunds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getState",
     outputs: [
       {
@@ -194,19 +233,6 @@ const _abi = [
   {
     inputs: [],
     name: "getTimeLeftVoting",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getTotalFunds",
     outputs: [
       {
         internalType: "uint256",

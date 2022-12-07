@@ -29,13 +29,20 @@ import type {
 
 export declare namespace PromiseFund {
   export type MilestoneStruct = {
-    amountRaised: PromiseOrValue<BigNumberish>;
+    activeRaised: PromiseOrValue<BigNumberish>;
+    totalRaised: PromiseOrValue<BigNumberish>;
     startTime: PromiseOrValue<BigNumberish>;
     milestoneDuration: PromiseOrValue<BigNumberish>;
   };
 
-  export type MilestoneStructOutput = [BigNumber, BigNumber, BigNumber] & {
-    amountRaised: BigNumber;
+  export type MilestoneStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    activeRaised: BigNumber;
+    totalRaised: BigNumber;
     startTime: BigNumber;
     milestoneDuration: BigNumber;
   };
@@ -51,6 +58,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "fundCurrentTrancheOnly(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getBlockTime()": FunctionFragment;
+    "getCurrentTotalFunds()": FunctionFragment;
     "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getFunderCalledVote()": FunctionFragment;
@@ -63,11 +71,11 @@ export interface PromiseFundInterface extends utils.Interface {
     "getMilestoneDurations()": FunctionFragment;
     "getNumberOfMilestones()": FunctionFragment;
     "getOwner()": FunctionFragment;
+    "getPreMilestoneTotalFunds()": FunctionFragment;
     "getPreStartTime()": FunctionFragment;
     "getState()": FunctionFragment;
     "getTimeLeftMilestone()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
-    "getTotalFunds()": FunctionFragment;
     "getTrancheAmountRaised(uint256)": FunctionFragment;
     "getTranches()": FunctionFragment;
     "getVoteEnd()": FunctionFragment;
@@ -95,6 +103,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "fundCurrentTrancheOnly"
       | "getAssetAddress"
       | "getBlockTime"
+      | "getCurrentTotalFunds"
       | "getCurrentTranche"
       | "getFundAmount"
       | "getFunderCalledVote"
@@ -107,11 +116,11 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getMilestoneDurations"
       | "getNumberOfMilestones"
       | "getOwner"
+      | "getPreMilestoneTotalFunds"
       | "getPreStartTime"
       | "getState"
       | "getTimeLeftMilestone"
       | "getTimeLeftVoting"
-      | "getTotalFunds"
       | "getTrancheAmountRaised"
       | "getTranches"
       | "getVoteEnd"
@@ -163,6 +172,10 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getCurrentTotalFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getCurrentTranche",
     values?: undefined
   ): string;
@@ -208,6 +221,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "getPreMilestoneTotalFunds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPreStartTime",
     values?: undefined
   ): string;
@@ -218,10 +235,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTimeLeftVoting",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getTotalFunds",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -309,6 +322,10 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCurrentTotalFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getCurrentTranche",
     data: BytesLike
   ): Result;
@@ -354,6 +371,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getPreMilestoneTotalFunds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getPreStartTime",
     data: BytesLike
   ): Result;
@@ -364,10 +385,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTimeLeftVoting",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getTotalFunds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -545,6 +562,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getCurrentTranche(overrides?: CallOverrides): Promise<[number]>;
 
     getFundAmount(
@@ -582,6 +601,8 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     getPreStartTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getState(overrides?: CallOverrides): Promise<[number]>;
@@ -589,8 +610,6 @@ export interface PromiseFund extends BaseContract {
     getTimeLeftMilestone(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTrancheAmountRaised(
       level: PromiseOrValue<BigNumberish>,
@@ -680,6 +699,8 @@ export interface PromiseFund extends BaseContract {
 
   getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+  getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
   getCurrentTranche(overrides?: CallOverrides): Promise<number>;
 
   getFundAmount(
@@ -717,6 +738,8 @@ export interface PromiseFund extends BaseContract {
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
+  getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
   getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
 
   getState(overrides?: CallOverrides): Promise<number>;
@@ -724,8 +747,6 @@ export interface PromiseFund extends BaseContract {
   getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-  getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTrancheAmountRaised(
     level: PromiseOrValue<BigNumberish>,
@@ -813,6 +834,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getCurrentTranche(overrides?: CallOverrides): Promise<number>;
 
     getFundAmount(
@@ -850,6 +873,8 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<number>;
@@ -857,8 +882,6 @@ export interface PromiseFund extends BaseContract {
     getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTrancheAmountRaised(
       level: PromiseOrValue<BigNumberish>,
@@ -989,6 +1012,8 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getCurrentTranche(overrides?: CallOverrides): Promise<BigNumber>;
 
     getFundAmount(
@@ -1026,6 +1051,8 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
+
     getPreStartTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     getState(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1033,8 +1060,6 @@ export interface PromiseFund extends BaseContract {
     getTimeLeftMilestone(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTrancheAmountRaised(
       level: PromiseOrValue<BigNumberish>,
@@ -1123,6 +1148,10 @@ export interface PromiseFund extends BaseContract {
 
     getBlockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getCurrentTotalFunds(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getCurrentTranche(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getFundAmount(
@@ -1168,6 +1197,10 @@ export interface PromiseFund extends BaseContract {
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    getPreMilestoneTotalFunds(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getPreStartTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getState(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1177,8 +1210,6 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTotalFunds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTrancheAmountRaised(
       level: PromiseOrValue<BigNumberish>,

@@ -106,6 +106,7 @@ const config: HardhatUserConfig = {
         outputFile: "gas-report.txt",
         noColors: true,
         coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+        token: "AVAX",
     },
     namedAccounts: {
         deployer: {
