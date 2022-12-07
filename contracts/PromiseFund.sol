@@ -611,6 +611,13 @@ contract PromiseFund is IFund, Ownable {
         return s_tranches[level].activeRaised;
     }
 
+    /// @notice Get the total amount raised for a single Milestone level
+    /// @param level the 'tranche' number. Ex: first milestone, second milestone...
+    /// @return The total uint256 amount raised in that specific tranche
+    function getTrancheAmountTotalRaised(uint256 level) public view returns (uint256) {
+        return s_tranches[level].totalRaised;
+    }
+
     /// @notice Get the the specific amount raised in a funders 'tranche'
     /// @param funder the address of the funder you are trying to check
     /// @param level the amount donated to a specific tranche by the donor

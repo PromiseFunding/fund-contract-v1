@@ -78,6 +78,7 @@ export interface PromiseFundInterface extends utils.Interface {
     "getTimeLeftRound()": FunctionFragment;
     "getTimeLeftVoting()": FunctionFragment;
     "getTrancheAmountRaised(uint256)": FunctionFragment;
+    "getTrancheAmountTotalRaised(uint256)": FunctionFragment;
     "getTranches()": FunctionFragment;
     "getVoteEnd()": FunctionFragment;
     "getVotesCon()": FunctionFragment;
@@ -124,6 +125,7 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getTimeLeftRound"
       | "getTimeLeftVoting"
       | "getTrancheAmountRaised"
+      | "getTrancheAmountTotalRaised"
       | "getTranches"
       | "getVoteEnd"
       | "getVotesCon"
@@ -245,6 +247,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getTrancheAmountRaised",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getTrancheAmountTotalRaised",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -399,6 +405,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTrancheAmountRaised",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getTrancheAmountTotalRaised",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -631,6 +641,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getTrancheAmountTotalRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getTranches(
       overrides?: CallOverrides
     ): Promise<[PromiseFund.MilestoneStructOutput[]]>;
@@ -773,6 +788,11 @@ export interface PromiseFund extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getTrancheAmountTotalRaised(
+    level: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   getTranches(
     overrides?: CallOverrides
   ): Promise<PromiseFund.MilestoneStructOutput[]>;
@@ -909,6 +929,11 @@ export interface PromiseFund extends BaseContract {
     getTimeLeftVoting(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getTrancheAmountTotalRaised(
       level: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1096,6 +1121,11 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getTrancheAmountTotalRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getTranches(overrides?: CallOverrides): Promise<BigNumber>;
 
     getVoteEnd(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1245,6 +1275,11 @@ export interface PromiseFund extends BaseContract {
     getTimeLeftVoting(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTrancheAmountRaised(
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getTrancheAmountTotalRaised(
       level: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
