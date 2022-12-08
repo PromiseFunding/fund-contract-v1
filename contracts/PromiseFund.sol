@@ -551,6 +551,13 @@ contract PromiseFund is IFund, Ownable {
     function getPreStartTime() public view returns (uint256) {
         return i_preFundingStartTime;
     }
+
+    /// @notice Get the seed round duration
+    /// @return Duration in seconds
+    function getPreDuration() public view returns (uint256) {
+        return i_preFundingDuration;
+    }
+
     /// @notice Get the amount of proceeds that the owner can withdraw
     /// @return The amount of withdrawable proceeds
     function getWithdrawableProceeds() public view returns (uint256) {
@@ -572,7 +579,7 @@ contract PromiseFund is IFund, Ownable {
         return s_tranches;
     }
 
-    /// @notice Get the milestone duration that is currently uniformly set on deployment
+    /// @notice Get the milestone duration for each tranche
     /// @return The milestone duration or time to end for specific tranche
     function getMilestoneDuration(uint256 index) public view returns (uint256) {
         return s_tranches[index].milestoneDuration;
