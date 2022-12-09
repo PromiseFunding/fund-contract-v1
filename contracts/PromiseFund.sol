@@ -54,6 +54,16 @@ contract PromiseFund is IFund, Ownable {
         uint256 milestoneDuration;
     }
 
+    struct MilestoneSummary {
+        Milestone[] milestones;
+        uint8 currentTranche;
+        address assetAddress;
+        FundState state;
+        uint256 preTotalFunds;
+        uint256 preDuration;
+        uint256 lifeTimeRaised;
+    }
+
     // State variables
     address payable private immutable i_owner;
     address private immutable i_assetAddress;
@@ -676,5 +686,18 @@ contract PromiseFund is IFund, Ownable {
 
     function getVotesCon() public view returns (uint256) {
         return s_votesCon;
+    }
+
+    function getMilestoneSummary() public view returns (MilestoneSummary memory) {
+        MilestoneSummary memory summary = MilestoneSummary(
+            s_tranches,
+            s_tranche,
+            i_assetAddress,
+            s_fundState,
+            s_preMilestoneFunded,
+            i_preFundingDuration,
+            s_totalFunded
+        );
+        return summary;
     }
 }

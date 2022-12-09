@@ -46,6 +46,34 @@ export declare namespace PromiseFund {
     startTime: BigNumber;
     milestoneDuration: BigNumber;
   };
+
+  export type MilestoneSummaryStruct = {
+    milestones: PromiseFund.MilestoneStruct[];
+    currentTranche: PromiseOrValue<BigNumberish>;
+    assetAddress: PromiseOrValue<string>;
+    state: PromiseOrValue<BigNumberish>;
+    preTotalFunds: PromiseOrValue<BigNumberish>;
+    preDuration: PromiseOrValue<BigNumberish>;
+    lifeTimeRaised: PromiseOrValue<BigNumberish>;
+  };
+
+  export type MilestoneSummaryStructOutput = [
+    PromiseFund.MilestoneStructOutput[],
+    number,
+    string,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    milestones: PromiseFund.MilestoneStructOutput[];
+    currentTranche: number;
+    assetAddress: string;
+    state: number;
+    preTotalFunds: BigNumber;
+    preDuration: BigNumber;
+    lifeTimeRaised: BigNumber;
+  };
 }
 
 export interface PromiseFundInterface extends utils.Interface {
@@ -70,8 +98,10 @@ export interface PromiseFundInterface extends utils.Interface {
     "getMaxMilestones()": FunctionFragment;
     "getMilestoneDuration(uint256)": FunctionFragment;
     "getMilestoneDurations()": FunctionFragment;
+    "getMilestoneSummary()": FunctionFragment;
     "getNumberOfMilestones()": FunctionFragment;
     "getOwner()": FunctionFragment;
+    "getPreDuration()": FunctionFragment;
     "getPreMilestoneTotalFunds()": FunctionFragment;
     "getPreStartTime()": FunctionFragment;
     "getState()": FunctionFragment;
@@ -117,8 +147,10 @@ export interface PromiseFundInterface extends utils.Interface {
       | "getMaxMilestones"
       | "getMilestoneDuration"
       | "getMilestoneDurations"
+      | "getMilestoneSummary"
       | "getNumberOfMilestones"
       | "getOwner"
+      | "getPreDuration"
       | "getPreMilestoneTotalFunds"
       | "getPreStartTime"
       | "getState"
@@ -224,10 +256,18 @@ export interface PromiseFundInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getMilestoneSummary",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getNumberOfMilestones",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getPreDuration",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "getPreMilestoneTotalFunds",
     values?: undefined
@@ -382,10 +422,18 @@ export interface PromiseFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getMilestoneSummary",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getNumberOfMilestones",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPreDuration",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPreMilestoneTotalFunds",
     data: BytesLike
@@ -622,9 +670,15 @@ export interface PromiseFund extends BaseContract {
 
     getMilestoneDurations(overrides?: CallOverrides): Promise<[BigNumber[]]>;
 
+    getMilestoneSummary(
+      overrides?: CallOverrides
+    ): Promise<[PromiseFund.MilestoneSummaryStructOutput]>;
+
     getNumberOfMilestones(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
+
+    getPreDuration(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -769,9 +823,15 @@ export interface PromiseFund extends BaseContract {
 
   getMilestoneDurations(overrides?: CallOverrides): Promise<BigNumber[]>;
 
+  getMilestoneSummary(
+    overrides?: CallOverrides
+  ): Promise<PromiseFund.MilestoneSummaryStructOutput>;
+
   getNumberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
   getOwner(overrides?: CallOverrides): Promise<string>;
+
+  getPreDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
   getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -914,9 +974,15 @@ export interface PromiseFund extends BaseContract {
 
     getMilestoneDurations(overrides?: CallOverrides): Promise<BigNumber[]>;
 
+    getMilestoneSummary(
+      overrides?: CallOverrides
+    ): Promise<PromiseFund.MilestoneSummaryStructOutput>;
+
     getNumberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
+
+    getPreDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1102,9 +1168,13 @@ export interface PromiseFund extends BaseContract {
 
     getMilestoneDurations(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getMilestoneSummary(overrides?: CallOverrides): Promise<BigNumber>;
+
     getNumberOfMilestones(overrides?: CallOverrides): Promise<BigNumber>;
 
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getPreDuration(overrides?: CallOverrides): Promise<BigNumber>;
 
     getPreMilestoneTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1256,11 +1326,17 @@ export interface PromiseFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getMilestoneSummary(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getNumberOfMilestones(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getPreDuration(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getPreMilestoneTotalFunds(
       overrides?: CallOverrides
