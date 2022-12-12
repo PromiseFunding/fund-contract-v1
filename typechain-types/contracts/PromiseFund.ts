@@ -86,7 +86,6 @@ export interface PromiseFundInterface extends utils.Interface {
     "fund(uint256)": FunctionFragment;
     "fundCurrentTrancheOnly(uint256)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
-    "getBlockTime()": FunctionFragment;
     "getCurrentTotalFunds()": FunctionFragment;
     "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
@@ -135,7 +134,6 @@ export interface PromiseFundInterface extends utils.Interface {
       | "fund"
       | "fundCurrentTrancheOnly"
       | "getAssetAddress"
-      | "getBlockTime"
       | "getCurrentTotalFunds"
       | "getCurrentTranche"
       | "getFundAmount"
@@ -205,10 +203,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getBlockTime",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -371,10 +365,6 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getAssetAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getBlockTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -633,8 +623,6 @@ export interface PromiseFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
 
-    getBlockTime(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     getCurrentTotalFunds(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getCurrentTranche(overrides?: CallOverrides): Promise<[number]>;
@@ -786,8 +774,6 @@ export interface PromiseFund extends BaseContract {
 
   getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
-  getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
-
   getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
   getCurrentTranche(overrides?: CallOverrides): Promise<number>;
@@ -936,8 +922,6 @@ export interface PromiseFund extends BaseContract {
     ): Promise<void>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<string>;
-
-    getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1131,8 +1115,6 @@ export interface PromiseFund extends BaseContract {
 
     getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getBlockTime(overrides?: CallOverrides): Promise<BigNumber>;
-
     getCurrentTotalFunds(overrides?: CallOverrides): Promise<BigNumber>;
 
     getCurrentTranche(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1280,8 +1262,6 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getBlockTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getCurrentTotalFunds(
       overrides?: CallOverrides
