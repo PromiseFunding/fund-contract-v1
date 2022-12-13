@@ -28,7 +28,7 @@ interface IFund {
 
     event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 total);
 
-    function fund(uint256 amount) external;
+    function fund(uint256 amount, bool current) external;
 
     function approveTransfer(
         IERC20 token,
@@ -52,7 +52,7 @@ interface IFund {
 
     function getLifeTimeAmountFunded() external view returns (uint256);
 
-     function getPreMilestoneTotalFunds() external view returns (uint256);
+    function getPreMilestoneTotalFunds() external view returns (uint256);
 
     function getVoteEnd() external view returns (uint256);
 

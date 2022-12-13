@@ -28,6 +28,31 @@ import type {
 } from "../common";
 
 export declare namespace PromiseFund {
+  export type FunderSummaryStruct = {
+    didFunderWithdraw: PromiseOrValue<boolean>;
+    didFunderVote: PromiseOrValue<boolean>;
+    funderTrancheAmountRaised: PromiseOrValue<BigNumberish>;
+    trancheAmountRaised: PromiseOrValue<BigNumberish>;
+    trancheTotalAmountRaised: PromiseOrValue<BigNumberish>;
+    fundAmount: PromiseOrValue<BigNumberish>;
+  };
+
+  export type FunderSummaryStructOutput = [
+    boolean,
+    boolean,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    didFunderWithdraw: boolean;
+    didFunderVote: boolean;
+    funderTrancheAmountRaised: BigNumber;
+    trancheAmountRaised: BigNumber;
+    trancheTotalAmountRaised: BigNumber;
+    fundAmount: BigNumber;
+  };
+
   export type MilestoneStruct = {
     activeRaised: PromiseOrValue<BigNumberish>;
     totalRaised: PromiseOrValue<BigNumberish>;
@@ -55,6 +80,13 @@ export declare namespace PromiseFund {
     preTotalFunds: PromiseOrValue<BigNumberish>;
     preDuration: PromiseOrValue<BigNumberish>;
     lifeTimeRaised: PromiseOrValue<BigNumberish>;
+    owner: PromiseOrValue<string>;
+    timeLeftRound: PromiseOrValue<BigNumberish>;
+    votesTried: PromiseOrValue<BigNumberish>;
+    timeLeftVoting: PromiseOrValue<BigNumberish>;
+    funderCalledVote: PromiseOrValue<boolean>;
+    preMilestoneTotalFunded: PromiseOrValue<BigNumberish>;
+    preFundingDuration: PromiseOrValue<BigNumberish>;
   };
 
   export type MilestoneSummaryStructOutput = [
@@ -63,6 +95,13 @@ export declare namespace PromiseFund {
     string,
     number,
     BigNumber,
+    BigNumber,
+    BigNumber,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean,
     BigNumber,
     BigNumber
   ] & {
@@ -73,6 +112,13 @@ export declare namespace PromiseFund {
     preTotalFunds: BigNumber;
     preDuration: BigNumber;
     lifeTimeRaised: BigNumber;
+    owner: string;
+    timeLeftRound: BigNumber;
+    votesTried: BigNumber;
+    timeLeftVoting: BigNumber;
+    funderCalledVote: boolean;
+    preMilestoneTotalFunded: BigNumber;
+    preFundingDuration: BigNumber;
   };
 }
 
@@ -83,13 +129,13 @@ export interface PromiseFundInterface extends utils.Interface {
     "didFunderVote(address)": FunctionFragment;
     "didFunderWithdrawFunds(address)": FunctionFragment;
     "endVote()": FunctionFragment;
-    "fund(uint256)": FunctionFragment;
-    "fundCurrentTrancheOnly(uint256)": FunctionFragment;
+    "fund(uint256,bool)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getCurrentTotalFunds()": FunctionFragment;
     "getCurrentTranche()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
     "getFunderCalledVote()": FunctionFragment;
+    "getFunderSummary(address,uint256)": FunctionFragment;
     "getFunderTrancheAmountRaised(address,uint256)": FunctionFragment;
     "getFunderVotes(address)": FunctionFragment;
     "getLifeTimeAmountFunded()": FunctionFragment;
@@ -132,12 +178,12 @@ export interface PromiseFundInterface extends utils.Interface {
       | "didFunderWithdrawFunds"
       | "endVote"
       | "fund"
-      | "fundCurrentTrancheOnly"
       | "getAssetAddress"
       | "getCurrentTotalFunds"
       | "getCurrentTranche"
       | "getFundAmount"
       | "getFunderCalledVote"
+      | "getFunderSummary"
       | "getFunderTrancheAmountRaised"
       | "getFunderVotes"
       | "getLifeTimeAmountFunded"
@@ -195,11 +241,7 @@ export interface PromiseFundInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "endVote", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fund",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "fundCurrentTrancheOnly",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
@@ -220,6 +262,10 @@ export interface PromiseFundInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getFunderCalledVote",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFunderSummary",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "getFunderTrancheAmountRaised",
@@ -360,10 +406,6 @@ export interface PromiseFundInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "endVote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "fundCurrentTrancheOnly",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getAssetAddress",
     data: BytesLike
   ): Result;
@@ -381,6 +423,10 @@ export interface PromiseFundInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFunderCalledVote",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFunderSummary",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -613,11 +659,7 @@ export interface PromiseFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    fundCurrentTrancheOnly(
-      amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -633,6 +675,12 @@ export interface PromiseFund extends BaseContract {
     ): Promise<[BigNumber]>;
 
     getFunderCalledVote(overrides?: CallOverrides): Promise<[boolean]>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[PromiseFund.FunderSummaryStructOutput]>;
 
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
@@ -764,11 +812,7 @@ export interface PromiseFund extends BaseContract {
 
   fund(
     amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  fundCurrentTrancheOnly(
-    amount: PromiseOrValue<BigNumberish>,
+    current: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -784,6 +828,12 @@ export interface PromiseFund extends BaseContract {
   ): Promise<BigNumber>;
 
   getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
+  getFunderSummary(
+    funder: PromiseOrValue<string>,
+    level: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<PromiseFund.FunderSummaryStructOutput>;
 
   getFunderTrancheAmountRaised(
     funder: PromiseOrValue<string>,
@@ -913,11 +963,7 @@ export interface PromiseFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    fundCurrentTrancheOnly(
-      amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -933,6 +979,12 @@ export interface PromiseFund extends BaseContract {
     ): Promise<BigNumber>;
 
     getFunderCalledVote(overrides?: CallOverrides): Promise<boolean>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PromiseFund.FunderSummaryStructOutput>;
 
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
@@ -1105,11 +1157,7 @@ export interface PromiseFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    fundCurrentTrancheOnly(
-      amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1125,6 +1173,12 @@ export interface PromiseFund extends BaseContract {
     ): Promise<BigNumber>;
 
     getFunderCalledVote(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getFunderTrancheAmountRaised(
       funder: PromiseOrValue<string>,
@@ -1253,11 +1307,7 @@ export interface PromiseFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    fundCurrentTrancheOnly(
-      amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1275,6 +1325,12 @@ export interface PromiseFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getFunderCalledVote(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      level: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
