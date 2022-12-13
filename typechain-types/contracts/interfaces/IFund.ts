@@ -30,7 +30,7 @@ import type {
 export interface IFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
-    "fund(uint256)": FunctionFragment;
+    "fund(uint256,bool)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
     "getCurrentTotalFunds()": FunctionFragment;
     "getFundAmount(address)": FunctionFragment;
@@ -75,7 +75,7 @@ export interface IFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "fund",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
@@ -259,6 +259,7 @@ export interface IFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -305,6 +306,7 @@ export interface IFund extends BaseContract {
 
   fund(
     amount: PromiseOrValue<BigNumberish>,
+    current: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -351,6 +353,7 @@ export interface IFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -433,6 +436,7 @@ export interface IFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -480,6 +484,7 @@ export interface IFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      current: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -65,6 +65,22 @@ contract PromiseFund is IFund, Ownable {
         uint256 preTotalFunds;
         uint256 preDuration;
         uint256 lifeTimeRaised;
+        address owner;
+        uint256 timeLeftRound;
+        uint256 votesTried;
+        uint256 timeLeftVoting;
+        bool funderCalledVote;
+        uint256 preMilestoneTotalFunded;
+        uint256 preFundingDuration;
+    }
+
+    struct FunderSummary {
+        bool didFunderWithdraw;
+        bool didFunderVote;
+        uint256 funderTrancheAmountRaised;
+        uint256 trancheAmountRaised;
+        uint256 trancheTotalAmountRaised;
+        uint256 fundAmount;
     }
 
     // State variables
@@ -127,7 +143,7 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Fund the contract with a token and evenly splits it between tranches for you if in PENDING state and holds it if in PREFUNDING state
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
-    function fund(uint256 amount) public {
+    function fund(uint256 amount, bool current) public {
         if (s_fundState != FundState.PENDING && s_fundState != FundState.PREFUNDING) {
             revert PromiseFund__NotFundingPeriod();
         }
@@ -146,6 +162,7 @@ contract PromiseFund is IFund, Ownable {
 
         // Transferring from sender to contract
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
+        uint256 length = current ? s_tranche + 1 : s_tranches.length;
 
         if (s_fundState == FundState.PREFUNDING) {
             s_activeFunded = s_activeFunded + amount;
@@ -154,35 +171,25 @@ contract PromiseFund is IFund, Ownable {
             //set bool array to true if funder hasn't funded like this before
             if (s_allFunders[msg.sender].amount[s_numberOfMilestones - 1] == 0) {
                 s_allFunders[msg.sender].timesVoted[s_tranche] = 0;
-                for (
-                    uint256 trancheIndex = s_tranche;
-                    trancheIndex < s_tranches.length;
-                    trancheIndex++
-                ) {
+                for (uint256 trancheIndex = s_tranche; trancheIndex < length; trancheIndex++) {
                     s_allFunders[msg.sender].fundMilestone[trancheIndex] = true;
                 }
             }
             //useful for rounding errors with division
             uint256 temp = amount;
             //loop through tranches and update the amount funded. uniform split of funds
-            for (
-                uint256 trancheIndex = s_tranche;
-                trancheIndex < s_tranches.length;
-                trancheIndex++
-            ) {
+            for (uint256 trancheIndex = s_tranche; trancheIndex < length; trancheIndex++) {
                 //not perfect division so give last tranche rest of funds if extra decimals exist
                 if (trancheIndex + 1 == s_tranches.length) {
                     s_tranches[trancheIndex].activeRaised += temp;
                     s_tranches[trancheIndex].totalRaised += temp; //accounting purposes
                     s_allFunders[msg.sender].amount[trancheIndex] += temp;
                 } else {
-                    s_tranches[trancheIndex].activeRaised += (amount /
-                        (s_numberOfMilestones - s_tranche));
-                    s_tranches[trancheIndex].totalRaised += (amount /
-                        (s_numberOfMilestones - s_tranche)); //accounting purposes
-                    temp -= (amount / (s_numberOfMilestones - s_tranche));
+                    s_tranches[trancheIndex].activeRaised += (amount / (length - s_tranche));
+                    s_tranches[trancheIndex].totalRaised += (amount / (length - s_tranche)); //accounting purposes
+                    temp -= (amount / (length - s_tranche));
                     s_allFunders[msg.sender].amount[trancheIndex] += (amount /
-                        (s_numberOfMilestones - s_tranche));
+                        (length - s_tranche));
                 }
             }
 
@@ -198,50 +205,6 @@ contract PromiseFund is IFund, Ownable {
         }
         //tracks total funded
         s_totalFunded += amount;
-    }
-
-    /// @notice Fund the current tranche or milestone period with a token
-    /// @dev Possibly a way to make it more gas efficient with different variables
-    /// @param amount the amount to be funded to the tranche
-    function fundCurrentTrancheOnly(uint256 amount) public {
-        if (s_fundState != FundState.PENDING) {
-            revert PromiseFund__NotFundingPeriod();
-        }
-        if (
-            (block.timestamp - s_tranches[s_tranche].startTime) >
-            s_tranches[s_tranche].milestoneDuration
-        ) {
-            revert PromiseFund_CannotFundRoundEnded();
-        }
-        if (amount <= 0) {
-            revert PromiseFund__FundAmountMustBeAboveZero();
-        }
-
-        // Transferring from sender to contract
-        IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
-
-        //set entryTime if first time depositing... this if statement does nothing for now
-        if (s_allFunders[msg.sender].amount[s_numberOfMilestones - 1] == 0) {
-            s_allFunders[msg.sender].timesVoted[s_tranche] = 0;
-        }
-
-        //increments the current tranche with amount for both funder and milestone array
-        s_tranches[s_tranche].activeRaised += amount;
-        s_tranches[s_tranche].totalRaised += amount; //accounting purposes
-        s_allFunders[msg.sender].amount[s_tranche] += amount;
-
-        //add to total deposits and user deposits
-        s_activeFunded = s_activeFunded + amount;
-        // Want to limit voting ability only for current tranche but still need this
-        s_allFunders[msg.sender].votes = 1;
-        //set withdrewAllFunds to false
-        s_allFunders[msg.sender].withdrewAllFunds = false;
-        // set fundMilestone to true even if redundant for current tranche
-        s_allFunders[msg.sender].fundMilestone[s_tranche] = true;
-        //increment total funded
-        s_totalFunded += amount;
-
-        emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
 
     /// @notice Approve a recipient to spend the supplied token
@@ -342,7 +305,6 @@ contract PromiseFund is IFund, Ownable {
                 s_votesPro = 0;
                 calledVoteAfterExpiry = false;
             }
-
             // after the owner withdraws, funders can't call ownerWithdrawPeriodExpired
             voteEnded = false;
         }
@@ -746,8 +708,31 @@ contract PromiseFund is IFund, Ownable {
             s_fundState,
             s_preMilestoneFunded,
             i_preFundingDuration,
-            s_totalFunded
+            s_totalFunded,
+            i_owner,
+            getTimeLeftRound(),
+            s_votesTried,
+            getTimeLeftVoting(),
+            calledVoteAfterExpiry,
+            s_preMilestoneFunded,
+            i_preFundingDuration
         );
         return summary;
+    }
+
+    function getFunderSummary(address funder, uint256 level)
+        public
+        view
+        returns (FunderSummary memory)
+    {
+        return
+            FunderSummary(
+                didFunderWithdrawFunds(funder),
+                didFunderVote(funder),
+                level <= 5 ? getFunderTrancheAmountRaised(funder, level) : 0,
+                level <= 5 ? getTrancheAmountRaised(level) : 0,
+                level <= 5 ? getTrancheAmountTotalRaised(level) : 0,
+                getFundAmount(funder)
+            );
     }
 }

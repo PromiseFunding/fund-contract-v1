@@ -127,6 +127,11 @@ const _abi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        internalType: "bool",
+        name: "current",
+        type: "bool",
+      },
     ],
     name: "fund",
     outputs: [],
