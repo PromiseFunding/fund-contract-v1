@@ -78,7 +78,6 @@ export declare namespace PromiseFund {
     assetAddress: PromiseOrValue<string>;
     state: PromiseOrValue<BigNumberish>;
     preTotalFunds: PromiseOrValue<BigNumberish>;
-    preDuration: PromiseOrValue<BigNumberish>;
     lifeTimeRaised: PromiseOrValue<BigNumberish>;
     owner: PromiseOrValue<string>;
     timeLeftRound: PromiseOrValue<BigNumberish>;
@@ -87,6 +86,8 @@ export declare namespace PromiseFund {
     funderCalledVote: PromiseOrValue<boolean>;
     preMilestoneTotalFunded: PromiseOrValue<BigNumberish>;
     preFundingDuration: PromiseOrValue<BigNumberish>;
+    preFundingEnd: PromiseOrValue<BigNumberish>;
+    roundEnd: PromiseOrValue<BigNumberish>;
   };
 
   export type MilestoneSummaryStructOutput = [
@@ -96,12 +97,13 @@ export declare namespace PromiseFund {
     number,
     BigNumber,
     BigNumber,
-    BigNumber,
     string,
     BigNumber,
     BigNumber,
     BigNumber,
     boolean,
+    BigNumber,
+    BigNumber,
     BigNumber,
     BigNumber
   ] & {
@@ -110,7 +112,6 @@ export declare namespace PromiseFund {
     assetAddress: string;
     state: number;
     preTotalFunds: BigNumber;
-    preDuration: BigNumber;
     lifeTimeRaised: BigNumber;
     owner: string;
     timeLeftRound: BigNumber;
@@ -119,6 +120,8 @@ export declare namespace PromiseFund {
     funderCalledVote: boolean;
     preMilestoneTotalFunded: BigNumber;
     preFundingDuration: BigNumber;
+    preFundingEnd: BigNumber;
+    roundEnd: BigNumber;
   };
 }
 

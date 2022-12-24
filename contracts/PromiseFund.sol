@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 //locking solidity version
-pragma solidity 0.8.10;
+pragma solidity >=0.4.22 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
@@ -63,7 +63,6 @@ contract PromiseFund is IFund, Ownable {
         address assetAddress;
         FundState state;
         uint256 preTotalFunds;
-        uint256 preDuration;
         uint256 lifeTimeRaised;
         address owner;
         uint256 timeLeftRound;
@@ -72,6 +71,8 @@ contract PromiseFund is IFund, Ownable {
         bool funderCalledVote;
         uint256 preMilestoneTotalFunded;
         uint256 preFundingDuration;
+        uint256 preFundingEnd;
+        uint256 roundEnd;
     }
 
     struct FunderSummary {
@@ -707,7 +708,6 @@ contract PromiseFund is IFund, Ownable {
             i_assetAddress,
             s_fundState,
             s_preMilestoneFunded,
-            i_preFundingDuration,
             s_totalFunded,
             i_owner,
             getTimeLeftRound(),
@@ -715,7 +715,9 @@ contract PromiseFund is IFund, Ownable {
             getTimeLeftVoting(),
             calledVoteAfterExpiry,
             s_preMilestoneFunded,
-            i_preFundingDuration
+            i_preFundingDuration,
+            i_preFundingStartTime + i_preFundingDuration,
+            s_tranches[s_tranche].startTime + s_tranches[s_tranche].milestoneDuration
         );
         return summary;
     }
