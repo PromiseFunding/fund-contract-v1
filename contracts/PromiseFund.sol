@@ -46,6 +46,7 @@ contract PromiseFund is IFund, Ownable {
         uint256[5] amount; //max amount of milestones is 5
         uint256 votes;
         uint256[5] timesVoted;
+        bool withdrewAllFunds;
         bool[5] fundMilestone; //this initializes to all false and blocks ability to submit vote unless made true
     }
 
@@ -198,6 +199,8 @@ contract PromiseFund is IFund, Ownable {
             // Set the number of votes to 1 for now. Will be weighted in the future.
             // allows for voting at all milestones
             s_allFunders[msg.sender].votes = 1;
+            //set withdrewAllFunds to false
+            s_allFunders[msg.sender].withdrewAllFunds = false;
 
             emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
         }
@@ -223,12 +226,18 @@ contract PromiseFund is IFund, Ownable {
             revert PromiseFund__CantWithdrawFunder();
         }
 
+        if (s_allFunders[msg.sender].withdrewAllFunds) {
+            revert PromiseFund_AlreadyWithdrewAllFunds();
+        }
+        //test if this works if a non-funder calls function
         uint256 total = getFundAmount(msg.sender);
 
         if (total <= 0) {
             revert PromiseFund_NothingToWithdraw();
         }
 
+        // Before actual transfer to deter reentrancy (I think)
+        s_allFunders[msg.sender].withdrewAllFunds = true;
         s_activeFunded -= total;
 
         // Have to give allowance for contract to send funds
@@ -461,6 +470,9 @@ contract PromiseFund is IFund, Ownable {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded/ is entitled to withdraw if milestones end
     function getFundAmount(address funder) public view returns (uint256) {
+        if (s_allFunders[funder].withdrewAllFunds) {
+            return 0;
+        }
         uint256 sum = 0;
         for (uint256 i = s_tranche; i < s_allFunders[funder].amount.length; i++) {
             sum += s_allFunders[funder].amount[i];
@@ -489,7 +501,7 @@ contract PromiseFund is IFund, Ownable {
     /// @notice Get whether or not the user withdrew their funds yet
     /// @return True if yes, False if no
     function didFunderWithdrawFunds(address funder) public view returns (bool) {
-        return getFundAmount(funder) <= 0;
+        return s_allFunders[funder].withdrewAllFunds;
     }
 
     /// @notice Gets the asset address of this contract
