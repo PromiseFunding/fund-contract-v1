@@ -88,6 +88,7 @@ export declare namespace PromiseFund {
     preFundingDuration: PromiseOrValue<BigNumberish>;
     preFundingEnd: PromiseOrValue<BigNumberish>;
     roundEnd: PromiseOrValue<BigNumberish>;
+    withdrawExpired: PromiseOrValue<boolean>;
   };
 
   export type MilestoneSummaryStructOutput = [
@@ -105,7 +106,8 @@ export declare namespace PromiseFund {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber
+    BigNumber,
+    boolean
   ] & {
     milestones: PromiseFund.MilestoneStructOutput[];
     currentTranche: number;
@@ -122,6 +124,7 @@ export declare namespace PromiseFund {
     preFundingDuration: BigNumber;
     preFundingEnd: BigNumber;
     roundEnd: BigNumber;
+    withdrawExpired: boolean;
   };
 }
 
