@@ -73,6 +73,7 @@ contract PromiseFund is IFund, Ownable {
         uint256 preFundingDuration;
         uint256 preFundingEnd;
         uint256 roundEnd;
+        bool withdrawExpired;
     }
 
     struct FunderSummary {
@@ -717,7 +718,8 @@ contract PromiseFund is IFund, Ownable {
             s_preMilestoneFunded,
             i_preFundingDuration,
             i_preFundingStartTime + i_preFundingDuration,
-            s_tranches[s_tranche].startTime + s_tranches[s_tranche].milestoneDuration
+            s_tranches[s_tranche].startTime + s_tranches[s_tranche].milestoneDuration,
+            voteEnded && (block.timestamp - voteEndTime >= (MAX_OWNER_WITHDRAW_PERIOD * 86400))
         );
         return summary;
     }
