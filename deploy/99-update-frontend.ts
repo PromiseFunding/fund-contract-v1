@@ -19,10 +19,17 @@ async function updateAbi() {
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
     const promiseFundAddress = await promiseFactory.getPromiseFund(0)
     const promiseFund = await ethers.getContractAt("PromiseFund", promiseFundAddress)
+    const yieldFundAddress = await promiseFactory.getYieldFundAAVE(0)
+    const yieldFund = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
 
     fs.writeFileSync(
-        `${frontEndAbiLocation1}FundFactory.json`,
+        `${frontEndAbiLocation2}YieldFundFactory.json`,
         fundFactory.interface.format(ethers.utils.FormatTypes.json).toString()
+    )
+
+    fs.writeFileSync(
+        `${frontEndAbiLocation2}YieldFund.json`,
+        yieldFund.interface.format(ethers.utils.FormatTypes.json).toString()
     )
 
     fs.writeFileSync(
