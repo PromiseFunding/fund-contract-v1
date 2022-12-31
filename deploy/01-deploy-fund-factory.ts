@@ -37,6 +37,10 @@ const deployFundFactory: DeployFunction = async function (hre: HardhatRuntimeEnv
     const promiseFundFactory = await ethers.getContract("PromiseFundFactory")
     const createTx = await promiseFundFactory.createPromiseFund(networkConfig[chainId].assetAddress, [100, 400, 20368000, 100], 5184000)
     await createTx.wait(1)
+
+    const yieldFundFactory = await ethers.getContract("FundFactory")
+    const createTxYield = await yieldFundFactory.createYieldFundAAVE(100, networkConfig[chainId].assetAddress, networkConfig[chainId].aaveTokenAddress, networkConfig[chainId].poolAddress)
+    await createTxYield.wait(1)
 }
 
 export default deployFundFactory

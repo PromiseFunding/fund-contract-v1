@@ -19,7 +19,7 @@ async function updateAbi() {
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
     const promiseFundAddress = await promiseFactory.getPromiseFund(0)
     const promiseFund = await ethers.getContractAt("PromiseFund", promiseFundAddress)
-    const yieldFundAddress = await promiseFactory.getYieldFundAAVE(0)
+    const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
     const yieldFund = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
 
     fs.writeFileSync(
@@ -48,7 +48,7 @@ async function updateContractAddresses() {
     const fundFactory = await ethers.getContract("FundFactory")
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
 
-    const contractAddresses1 = JSON.parse(fs.readFileSync(frontEndContractsFile1, "utf8"))
+    const contractAddresses1 = JSON.parse(fs.readFileSync(frontEndContractsFile2, "utf8"))
     if (chainId in contractAddresses1) {
         contractAddresses1[chainId]["FundFactory"] = [fundFactory.address]
     } else {
