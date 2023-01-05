@@ -35,6 +35,14 @@ export declare namespace PromiseFund {
     trancheAmountRaised: PromiseOrValue<BigNumberish>;
     trancheTotalAmountRaised: PromiseOrValue<BigNumberish>;
     fundAmount: PromiseOrValue<BigNumberish>;
+    seedFundAmount: PromiseOrValue<BigNumberish>;
+    amounts: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ];
   };
 
   export type FunderSummaryStructOutput = [
@@ -43,7 +51,9 @@ export declare namespace PromiseFund {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber
+    BigNumber,
+    BigNumber,
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]
   ] & {
     didFunderWithdraw: boolean;
     didFunderVote: boolean;
@@ -51,6 +61,8 @@ export declare namespace PromiseFund {
     trancheAmountRaised: BigNumber;
     trancheTotalAmountRaised: BigNumber;
     fundAmount: BigNumber;
+    seedFundAmount: BigNumber;
+    amounts: [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber];
   };
 
   export type MilestoneStruct = {
