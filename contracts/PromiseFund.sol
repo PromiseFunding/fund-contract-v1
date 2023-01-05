@@ -44,6 +44,7 @@ contract PromiseFund is IFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256[5] amount; //max amount of milestones is 5
+        uint256 seedFundAmount;
         uint256 votes;
         uint256[5] timesVoted;
         bool withdrewAllFunds;
@@ -83,6 +84,8 @@ contract PromiseFund is IFund, Ownable {
         uint256 trancheAmountRaised;
         uint256 trancheTotalAmountRaised;
         uint256 fundAmount;
+        uint256 seedFundAmount;
+        uint256[5] amounts;
     }
 
     // State variables
@@ -169,6 +172,7 @@ contract PromiseFund is IFund, Ownable {
         if (s_fundState == FundState.PREFUNDING) {
             s_activeFunded = s_activeFunded + amount;
             s_preMilestoneFunded = s_preMilestoneFunded + amount;
+            s_allFunders[msg.sender].seedFundAmount += amount;
         } else {
             //set bool array to true if funder hasn't funded like this before
             if (s_allFunders[msg.sender].amount[s_numberOfMilestones - 1] == 0) {
@@ -736,7 +740,9 @@ contract PromiseFund is IFund, Ownable {
                 level <= 5 ? getFunderTrancheAmountRaised(funder, level) : 0,
                 level <= 5 ? getTrancheAmountRaised(level) : 0,
                 level <= 5 ? getTrancheAmountTotalRaised(level) : 0,
-                getFundAmount(funder)
+                getFundAmount(funder),
+                s_allFunders[funder].seedFundAmount,
+                s_allFunders[funder].amount
             );
     }
 }
