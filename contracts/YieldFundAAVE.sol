@@ -33,8 +33,11 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     address public i_poolAddress;
     mapping(address => Funder) public s_funders;
     uint256 public s_totalActiveFunded;
-    uint256 public s_totalInterestFunded;
+    uint256 public s_totalActiveInterestFunded;
     uint256 public s_totalLifetimeFunded;
+    uint256 public s_amountWithdrawnByOwner;
+    uint256 public s_totalLifetimeStraightFunded;
+    uint256 public s_totalLifetimeInterestFunded;
     uint256 public immutable i_lockTime;
 
     // Constants
@@ -53,7 +56,10 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
         s_totalActiveFunded = 0;
-        s_totalInterestFunded = 0;
+        s_totalActiveInterestFunded = 0;
+        s_totalLifetimeInterestFunded = 0;
+        s_totalLifetimeStraightFunded = 0;
+        s_amountWithdrawnByOwner = 0;
         s_totalLifetimeFunded = 0;
     }
 
@@ -82,13 +88,16 @@ contract YieldFundAAVE is IYieldFund, Ownable {
             s_funders[msg.sender].amountWithdrawable =
                 s_funders[msg.sender].amountWithdrawable +
                 amount;
-            s_totalInterestFunded = s_totalInterestFunded + amount;
+            s_totalActiveInterestFunded = s_totalActiveInterestFunded + amount;
+            s_totalLifetimeInterestFunded += amount; //accounting
         } else {
             IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
+            s_totalLifetimeStraightFunded += amount; //accounting
         }
 
         s_totalActiveFunded = s_totalActiveFunded + amount;
         s_funders[msg.sender].amountTotal = s_funders[msg.sender].amountTotal + amount;
+        s_totalLifetimeFunded = s_totalLifetimeFunded + amount;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -128,7 +137,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         s_funders[msg.sender].amountWithdrawable -= amount;
         s_funders[msg.sender].amountTotal -= amount;
         s_totalActiveFunded -= amount;
-        s_totalInterestFunded -= amount;
+        s_totalActiveInterestFunded -= amount;
 
         // Redeem tokens and send them directly to the funder
         IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
@@ -140,10 +149,10 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         // # of aTokens in this contract - s_totalInterestFunded
         uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
         // able to withdraw extra interest
-        uint256 interestAvailableToWithdraw = aTokenBalance - s_totalInterestFunded;
+        uint256 interestAvailableToWithdraw = aTokenBalance - s_totalActiveInterestFunded;
 
         // total funded without interest method
-        uint256 straightAvailableToWithdraw = s_totalActiveFunded - s_totalInterestFunded;
+        uint256 straightAvailableToWithdraw = s_totalActiveFunded - s_totalActiveInterestFunded;
 
         if (interestAvailableToWithdraw + straightAvailableToWithdraw <= 0) {
             revert YieldFundAAVE__NothingToWithdraw();
@@ -164,7 +173,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         if (interestAvailableToWithdraw > 0) {
             IPool(i_poolAddress).withdraw(
                 i_assetAddress,
-                aTokenBalance - s_totalInterestFunded,
+                aTokenBalance - s_totalActiveInterestFunded,
                 msg.sender
             );
         }
@@ -172,7 +181,13 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         //only subtract from totalFunded the amount of straight donations
         s_totalActiveFunded -= straightAvailableToWithdraw;
 
-        emit ProceedsWithdrawn(i_owner, i_assetAddress, interestAvailableToWithdraw + straightAvailableToWithdraw);
+        s_amountWithdrawnByOwner += interestAvailableToWithdraw + straightAvailableToWithdraw;
+
+        emit ProceedsWithdrawn(
+            i_owner,
+            i_assetAddress,
+            interestAvailableToWithdraw + straightAvailableToWithdraw
+        );
     }
 
     /** Getter Functions */
@@ -226,10 +241,46 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         return i_owner;
     }
 
-    /// @notice Get the amount of proceeds that the owner can withdraw
+    /// @notice Get the amount of proceeds in interest that the owner can withdraw
     /// @return The amount of withdrawable proceeds
-    function getWithdrawableProceeds() public view returns (uint256) {
+    function getWithdrawableInterestProceeds() public view returns (uint256) {
         uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
         return aTokenBalance - s_totalActiveFunded;
+    }
+
+    /// @notice Get lifetime funded by both methods
+    /// @return s_totalLifetimeFunded
+    function getLifeTimeFunded() public view returns (uint256) {
+        return s_totalLifetimeFunded;
+    }
+
+    /// @notice Get lifetime withdrawn by Owner
+    /// @return s_amountWithdrawnByOwner
+    function getLifeTimeWithdrawn() public view returns (uint256) {
+        return s_amountWithdrawnByOwner;
+    }
+
+    /// @notice Get lifetime amount straight funded
+    /// @return s_totalLifetimeStraightFunded
+    function getAmountStraightFunded() public view returns (uint256) {
+        return s_totalLifetimeStraightFunded;
+    }
+
+    /// @notice Get lifetime amount funded to interest earning pool
+    /// @return s_totalLifetimeInterestFunded
+    function getAmountInterestFunded() public view returns (uint256) {
+        return s_totalLifetimeInterestFunded;
+    }
+
+    /// @notice Get active amount funded... not withdrawn yet
+    /// @return s_totalActiveFunded
+    function getTotalActiveFunded() public view returns (uint256) {
+        return s_totalActiveFunded;
+    }
+
+    /// @notice Get active amount funded to interest pool
+    /// @return s_totalActiveInterestFunded
+    function getActiveFundedInterest() public view returns (uint256) {
+        return s_totalActiveInterestFunded;
     }
 }
