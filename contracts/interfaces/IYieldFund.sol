@@ -32,7 +32,9 @@ interface IYieldFund {
 
     function withdrawProceeds() external;
 
-    function getFundAmount(address funder) external view returns (uint256);
+    function getFundAmountWithdrawable(address funder) external view returns (uint256);
+
+    function getFundAmountTotal(address funder) external view returns (uint256);
 
     function getTimeLock() external view returns (uint256);
 

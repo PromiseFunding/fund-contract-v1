@@ -195,9 +195,19 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @notice Get the fund amount of a given address
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
-    function getFundAmount(address funder) public view returns (uint256) {
+    function getFundAmountWithdrawable(address funder) public view returns (uint256) {
         if (s_funders[funder].amountWithdrawable != 0) {
             return s_funders[funder].amountWithdrawable;
+        }
+        return 0;
+    }
+
+    /// @notice Get the fund amount of a given address
+    /// @param funder the funder whose balance is being checked
+    /// @return The uint256 amount the funder currently has funded
+    function getFundAmountTotal(address funder) public view returns (uint256) {
+        if (s_funders[funder].amountTotal != 0) {
+            return s_funders[funder].amountTotal;
         }
         return 0;
     }
