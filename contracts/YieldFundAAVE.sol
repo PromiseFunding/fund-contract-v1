@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 error YieldFundAAVE__FundAmountMustBeAboveZero();
 error YieldFundAAVE__WithdrawFundsGreaterThanBalance(uint256 amount, uint256 balance);
 error YieldFundAAVE__NotOwner();
-error YieldFundAAVE__WithdrawProceedsGreaterThanBalance(uint256 amount, uint256 balance);
+error YieldFundAAVE__NothingToWithdraw();
 error YieldFundAAVE__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 
 /// @title YieldFund
@@ -22,7 +22,8 @@ error YieldFundAAVE__FundsStillTimeLocked(uint256 entryTime, uint256 timeLeft);
 contract YieldFundAAVE is IYieldFund, Ownable {
     // Type Declarations
     struct Funder {
-        uint256 amount;
+        uint256 amountWithdrawable;
+        uint256 amountTotal;
         uint256 entryTime;
     }
     // State variables
@@ -31,7 +32,9 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     address public i_aaveTokenAddress;
     address public i_poolAddress;
     mapping(address => Funder) public s_funders;
-    uint256 public s_totalFunded;
+    uint256 public s_totalActiveFunded;
+    uint256 public s_totalInterestFunded;
+    uint256 public s_totalLifetimeFunded;
     uint256 public immutable i_lockTime;
 
     // Constants
@@ -49,30 +52,43 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         i_assetAddress = assetAddress;
         i_aaveTokenAddress = aaveTokenAddress;
         i_poolAddress = poolAddress;
-        s_totalFunded = 0;
+        s_totalActiveFunded = 0;
+        s_totalInterestFunded = 0;
+        s_totalLifetimeFunded = 0;
     }
 
     /// @notice Fund the contract with a token, returns aTokens from LP to contract
     /// @dev Possibly a way to make it more gas efficient with different variables
     /// @param amount the amount to be funded to the contract
-    function fund(uint256 amount) public {
+    /// @param interest true if interest donation, false if straight donation
+    function fund(uint256 amount, bool interest) public {
         if (amount == 0) {
             revert YieldFundAAVE__FundAmountMustBeAboveZero();
         }
-        // Set initial amount for funder
-        IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
-        // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
-        approveTransfer(IERC20(i_assetAddress), i_poolAddress, amount);
-        IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
 
-        //set entryTime if first time depositing
-        if (s_funders[msg.sender].amount == 0) {
-            s_funders[msg.sender].entryTime = block.timestamp;
+        // if interest is true send to lending pool
+        if (interest) {
+            // Set initial amount for funder
+            IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
+            // Whenever you exchange ERC20 tokens, you have to approve the tokens for spend.
+            approveTransfer(IERC20(i_assetAddress), i_poolAddress, amount);
+            IPool(i_poolAddress).supply(i_assetAddress, amount, address(this), 0);
+
+            if (s_funders[msg.sender].amountWithdrawable == 0) {
+                s_funders[msg.sender].entryTime = block.timestamp;
+            }
+
+            //add to total deposits and user deposits
+            s_funders[msg.sender].amountWithdrawable =
+                s_funders[msg.sender].amountWithdrawable +
+                amount;
+            s_totalInterestFunded = s_totalInterestFunded + amount;
+        } else {
+            IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         }
 
-        //add to total deposits and user deposits
-        s_totalFunded = s_totalFunded + amount;
-        s_funders[msg.sender].amount = s_funders[msg.sender].amount + amount;
+        s_totalActiveFunded = s_totalActiveFunded + amount;
+        s_funders[msg.sender].amountTotal = s_funders[msg.sender].amountTotal + amount;
 
         emit FunderAdded(msg.sender, i_owner, i_assetAddress, amount);
     }
@@ -91,10 +107,10 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @notice Funder withdraws tokens up to the amount they supplied from the LP
     /// @param amount The amount being withdrawn
     function withdrawFundsFromPool(uint256 amount) public {
-        if (amount > s_funders[msg.sender].amount) {
+        if (amount > s_funders[msg.sender].amountWithdrawable) {
             revert YieldFundAAVE__WithdrawFundsGreaterThanBalance(
                 amount,
-                s_funders[msg.sender].amount
+                s_funders[msg.sender].amountWithdrawable
             );
         }
 
@@ -109,25 +125,54 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         // Before actual transfer to deter reentrancy (I think)
         // TODO: Make sure this is safe from underflow
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
-        s_funders[msg.sender].amount -= amount;
-        s_totalFunded -= amount;
+        s_funders[msg.sender].amountWithdrawable -= amount;
+        s_funders[msg.sender].amountTotal -= amount;
+        s_totalActiveFunded -= amount;
+        s_totalInterestFunded -= amount;
+
         // Redeem tokens and send them directly to the funder
         IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
         emit FundsWithdrawn(msg.sender, i_owner, i_assetAddress, amount);
     }
 
-    function withdrawProceeds(uint256 amount) public onlyOwner {
-        // # of aTokens in this contract - s_totalFunded
+    // all or none withdraw all straight donations plus any interest accumulated
+    function withdrawProceeds() public onlyOwner {
+        // # of aTokens in this contract - s_totalInterestFunded
         uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
-        uint256 availableToWithdraw = aTokenBalance - s_totalFunded;
+        // able to withdraw extra interest
+        uint256 interestAvailableToWithdraw = aTokenBalance - s_totalInterestFunded;
 
-        if (amount > availableToWithdraw) {
-            revert YieldFundAAVE__WithdrawProceedsGreaterThanBalance(amount, availableToWithdraw);
+        // total funded without interest method
+        uint256 straightAvailableToWithdraw = s_totalActiveFunded - s_totalInterestFunded;
+
+        if (interestAvailableToWithdraw + straightAvailableToWithdraw <= 0) {
+            revert YieldFundAAVE__NothingToWithdraw();
         }
 
+        //first send from contract to owner
+        if (straightAvailableToWithdraw > 0) {
+            approveTransfer(IERC20(i_assetAddress), address(this), straightAvailableToWithdraw);
+            IERC20(i_assetAddress).transferFrom(
+                address(this),
+                msg.sender,
+                straightAvailableToWithdraw
+            );
+        }
+
+        //next get interest accumulated sent to owner
         // Redeem tokens and send them directly to the funder
-        IPool(i_poolAddress).withdraw(i_assetAddress, amount, msg.sender);
-        emit ProceedsWithdrawn(i_owner, i_assetAddress, amount);
+        if (interestAvailableToWithdraw > 0) {
+            IPool(i_poolAddress).withdraw(
+                i_assetAddress,
+                aTokenBalance - s_totalInterestFunded,
+                msg.sender
+            );
+        }
+
+        //only subtract from totalFunded the amount of straight donations
+        s_totalActiveFunded -= straightAvailableToWithdraw;
+
+        emit ProceedsWithdrawn(i_owner, i_assetAddress, interestAvailableToWithdraw + straightAvailableToWithdraw);
     }
 
     /** Getter Functions */
@@ -136,8 +181,8 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @param funder the funder whose balance is being checked
     /// @return The uint256 amount the funder currently has funded
     function getFundAmount(address funder) public view returns (uint256) {
-        if (s_funders[funder].amount != 0) {
-            return s_funders[funder].amount;
+        if (s_funders[funder].amountWithdrawable != 0) {
+            return s_funders[funder].amountWithdrawable;
         }
         return 0;
     }
@@ -185,6 +230,6 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @return The amount of withdrawable proceeds
     function getWithdrawableProceeds() public view returns (uint256) {
         uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
-        return aTokenBalance - s_totalFunded;
+        return aTokenBalance - s_totalActiveFunded;
     }
 }
