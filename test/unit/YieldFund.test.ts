@@ -179,12 +179,6 @@ import * as fs from "fs"
                       "Ownable: caller is not the owner"
                   )
               })
-              it("fails when a non owner tries to withdraw proceeds", async function () {
-                  yieldFund = yieldFundContract.connect(user)
-                  await expect(yieldFund.withdrawProceeds()).to.be.revertedWith(
-                      "Ownable: caller is not the owner"
-                  )
-              })
           })
 
           describe("Event tests", function () {

@@ -79,7 +79,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @param amount the amount to be funded to the contract
     /// @param interest true if interest donation, false if straight donation
     function fund(uint256 amount, bool interest) public {
-        if (amount == 0) {
+        if (amount <= 0) {
             revert YieldFundAAVE__FundAmountMustBeAboveZero();
         }
 

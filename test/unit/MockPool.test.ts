@@ -1,9 +1,14 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { assert } from "chai"
+import { assert, expect } from "chai"
 import { BigNumber } from "ethers"
 import { network, deployments, ethers } from "hardhat"
 import { MockPool, YieldFundAAVE } from "../../typechain-types/"
 import { MockERC20Token } from "../../typechain-types/contracts/test"
+import {
+    networkConfig,
+    DEFAULT_ASSET_ADDRESS,
+    DEFAULT_POOL_ADDRESS,
+} from "../../helper-hardhat-config"
 
 // These tests are built to run on the local hardhat network using the mocks
 !(network.name == "hardhat")
@@ -23,6 +28,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
               originalFundAmount: BigNumber,
               timeLeft: BigNumber
           const chainId = network.config.chainId || 31337
+          const timelock = 360000
 
           beforeEach(async function () {
               accounts = await ethers.getSigners()
@@ -38,7 +44,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
               const aTokenContract = await ethers.getContract("MockAToken")
               aToken = await aTokenContract.connect(deployer)
               const createYieldFundTx = await fundFactory.createYieldFundAAVE(
-                  0,
+                  360000,
                   assetToken.address,
                   aToken.address,
                   mockPoolContract.address
@@ -53,7 +59,91 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
               fundValueWithDecimals = BigNumber.from((fundValue * 10 ** decimals).toString())
           })
 
+          describe("constructor", function () {
+              const assetAddress = networkConfig[chainId].assetAddress || DEFAULT_ASSET_ADDRESS
+              it("initializes the time lock correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getTimeLock()
+                  assert.equal(response.toNumber(), timelock)
+              })
+              it("initializes the asset address correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getAssetAddress()
+                  assert.equal(
+                      response.toString().toLowerCase(),
+                      assetAddress.toString().toLowerCase()
+                  )
+              })
+              it("initializes the pool address correctly", async () => {
+                  yieldFund = await yieldFundContract.connect(user)
+                  const response = await yieldFund.getPoolAddress()
+                  assert.equal(
+                      response.toString().toLowerCase(),
+                      mockPoolContract.address.toString().toLowerCase()
+                  )
+              })
+          })
+
+          describe("Owner Tests", function () {
+              it("fails when a non owner tries to withdraw proceeds", async function () {
+                  yieldFund = yieldFundContract.connect(user)
+                  await expect(yieldFund.withdrawProceeds()).to.be.revertedWith(
+                      "Ownable: caller is not the owner"
+                  )
+              })
+              it("fails when an owner tries to withdraw 0 proceeds", async function () {
+                  yieldFund = yieldFundContract.connect(deployer)
+                  await expect(yieldFund.withdrawProceeds()).to.be.revertedWith(
+                      "YieldFundAAVE__NothingToWithdraw"
+                  )
+              })
+          })
+
           describe("MockAToken Tests", function () {
+              it("fails with a fund value of zero", async function () {
+                  yieldFund = yieldFundContract.connect(user)
+                  await expect(yieldFund.fund(0, true)).to.be.reverted
+              })
+              it("fails when a funder tries to withdraw more than they funded", async function () {
+                  yieldFund = yieldFundContract.connect(user)
+                  fundAmount = await yieldFund.getFundAmountWithdrawable(user.address)
+                  const higherFundAmount = fundAmount.add(1)
+                  await expect(yieldFund.withdrawFundsFromPool(higherFundAmount)).to.be.reverted
+              })
+              it("fails when a funder tries to withdraw before time lock ends", async function () {
+                  yieldFund = await yieldFundContract.connect(user)
+
+                  originalFundAmount = await yieldFund.getFundAmountWithdrawable(user.address)
+
+                  const approveTx1 = await assetToken.approve(
+                      deployer.address,
+                      fundValueWithDecimals
+                  )
+
+                  await approveTx1.wait(1)
+                  const transferTx = await assetToken.transferFrom(
+                      deployer.address,
+                      user.address,
+                      fundValueWithDecimals
+                  )
+                  await transferTx.wait(1)
+
+                  yieldFund = await yieldFundContract.connect(user)
+                  assetToken = await assetTokenContract.connect(user)
+
+                  const approveTx2 = await assetToken.approve(
+                      yieldFund.address,
+                      fundValueWithDecimals
+                  )
+                  await approveTx2.wait(1)
+
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals, true)
+                  await fundTx.wait(1)
+
+                  fundAmount = await yieldFund.getFundAmountWithdrawable(user.address)
+                  //should revert after deploying bc constructor has certain locktime put in it already
+                  await expect(yieldFund.withdrawFundsFromPool(fundAmount)).to.be.reverted
+              })
               it("correctly funds the contracts interest donation", async function () {
                   yieldFund = await yieldFundContract.connect(deployer)
                   originalFundAmount = await yieldFund.getFundAmountWithdrawable(deployer.address)
@@ -181,8 +271,16 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   )
 
                   yieldFund = yieldFundContract.connect(user)
+                  await expect(
+                      yieldFund.withdrawFundsFromPool(fundAmount)
+                  ).to.be.revertedWith("YieldFundAAVE__FundsStillTimeLocked")
+
                   timeLeft = await yieldFund.getTimeLeft(user.address)
                   await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                  await expect(
+                      yieldFund.withdrawFundsFromPool(fundAmount.add(1))
+                  ).to.be.revertedWith("YieldFundAAVE__WithdrawFundsGreaterThanBalance")
 
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(
                       BigNumber.from(fundAmount)
@@ -192,8 +290,8 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   // Ensure the balance in the user is now zero
                   assert.equal(afterFundAmount.toString(), "0")
 
-                //   const fundSummary = await yieldFund.getFundSummary()
-                //   console.log(fundSummary)
+                  //   const fundSummary = await yieldFund.getFundSummary()
+                  //   console.log(fundSummary)
               })
               it("correctly allows the owner to withdraw proceeds from straight donation", async function () {
                   const userFundVal = BigNumber.from((100 * 10 ** decimals).toString())
