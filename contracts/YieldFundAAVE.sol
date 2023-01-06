@@ -183,7 +183,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         if (interestAvailableToWithdraw > 0) {
             IPool(i_poolAddress).withdraw(
                 i_assetAddress,
-                aTokenBalance - s_totalActiveInterestFunded,
+                interestAvailableToWithdraw,
                 msg.sender
             );
         }

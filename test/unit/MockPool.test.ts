@@ -180,8 +180,6 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                       proceeds.toString()
                   )
 
-                  yieldFund = yieldFundContract.connect(user)
-                  const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
               })
               it("correctly allows the owner to withdraw proceeds from straight donation", async function () {
                   const userFundVal = BigNumber.from((100 * 10 ** decimals).toString())
@@ -301,8 +299,6 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   yieldFund = yieldFundContract.connect(user)
                   timeLeft = await yieldFund.getTimeLeft(user.address)
                   await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
-
-                  console.log(fundAmount)
 
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(BigNumber.from("99100000000000000000"))
                 //   await withdrawTx.wait(1)
