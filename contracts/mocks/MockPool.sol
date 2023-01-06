@@ -43,12 +43,8 @@ contract MockPool is IPool, Ownable {
         uint16 /*referralCode*/
     ) external override {
         // transfer ERC20 tokens to contract
-        uint256 balanceAsset = IERC20(asset).balanceOf(address(this));
-        console.log(balanceAsset);
         IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
         // transfer aTokens from contract
-        uint256 balanceAsset1 = IERC20(asset).balanceOf(address(this));
-        console.log(balanceAsset1);
         approveTransfer(IERC20(i_aaveAssetAddress), address(this), amount);
         IERC20(i_aaveAssetAddress).transferFrom(address(this), msg.sender, amount);
         // Alter Mapping
@@ -70,9 +66,6 @@ contract MockPool is IPool, Ownable {
         MockAToken(i_aaveAssetAddress).burnTokens(msg.sender, amount);
         // transfer ERC20 tokens from contract
         approveTransfer(IERC20(asset), address(this), amount);
-        uint256 balanceAsset = IERC20(asset).balanceOf(address(this));
-        console.log(balanceAsset);
-        console.log(amount);
         IERC20(asset).transferFrom(address(this), to, amount);
         // Alter mapping
         s_funders[msg.sender] -= amount;

@@ -128,7 +128,7 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   assert.equal(balance.toString(), fundAmount.add(originalBalance).toString())
               })
               it("correctly allows the owner to withdraw proceeds from interest donation", async function () {
-                  const userFundVal = BigNumber.from((100 * 10 ** decimals).toString())
+                  const userFundVal = BigNumber.from((100).toString())
                   // fund user account
                   const approveTx1 = await assetToken.approve(deployer.address, userFundVal)
 
@@ -180,6 +180,20 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                       proceeds.toString()
                   )
 
+                  yieldFund = yieldFundContract.connect(user)
+                  timeLeft = await yieldFund.getTimeLeft(user.address)
+                  await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
+
+                  const withdrawTx = await yieldFund.withdrawFundsFromPool(
+                      BigNumber.from(fundAmount)
+                  )
+                  await withdrawTx.wait(1)
+                  const afterFundAmount = await yieldFund.getFundAmountWithdrawable(user.address)
+                  // Ensure the balance in the user is now zero
+                  assert.equal(afterFundAmount.toString(), "0")
+
+                //   const fundSummary = await yieldFund.getFundSummary()
+                //   console.log(fundSummary)
               })
               it("correctly allows the owner to withdraw proceeds from straight donation", async function () {
                   const userFundVal = BigNumber.from((100 * 10 ** decimals).toString())
@@ -229,9 +243,9 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   assert.equal("0", fundAmount.toString())
               })
               it("correctly allows the owner to withdraw proceeds from straight donation and interest donation", async function () {
-                  const userFundVal = BigNumber.from((2 * 100 * 10 ** decimals).toString())
-                  const userFundHalfVal = BigNumber.from((100 * 10 ** decimals).toString())
-                  const userFundDoubleVal = BigNumber.from((4 * 100 * 10 ** decimals).toString())
+                  const userFundVal = BigNumber.from((2 * 100).toString())
+                  const userFundHalfVal = BigNumber.from((100).toString())
+                  const userFundDoubleVal = BigNumber.from((4 * 100).toString())
                   // fund user account
                   const approveTx1 = await assetToken.approve(deployer.address, userFundDoubleVal)
 
@@ -249,7 +263,6 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
 
                   const approveTx2 = await assetToken.approve(yieldFund.address, userFundVal)
                   await approveTx2.wait(1)
-
 
                   const fundTx = await yieldFund.fund(userFundHalfVal, true)
                   await fundTx.wait(1)
@@ -300,13 +313,22 @@ import { MockERC20Token } from "../../typechain-types/contracts/test"
                   timeLeft = await yieldFund.getTimeLeft(user.address)
                   await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
 
-                  const withdrawTx = await yieldFund.withdrawFundsFromPool(BigNumber.from("99100000000000000000"))
-                //   await withdrawTx.wait(1)
-                //   const afterFundAmount = await yieldFund.getFundAmountWithdrawable(
-                //       user.address
-                //   )
-                //   // Ensure the balance in the user is now zero
-                //   assert.equal(afterFundAmount.toString(), "0")
+                  const withdrawTx = await yieldFund.withdrawFundsFromPool(
+                      BigNumber.from(fundAmount)
+                  )
+                  await withdrawTx.wait(1)
+                  const afterFundAmount = await yieldFund.getFundAmountWithdrawable(user.address)
+                  // Ensure the balance in the user is now zero
+                  assert.equal(afterFundAmount.toString(), "0")
+
+                  //test fund summary
+                  const fundSummary = await yieldFund.getFundSummary()
+                  assert.equal(BigNumber.from(fundSummary[0]).toString(), "0") //active funded is 0... user withdrew and owner withdrew
+                  assert.equal(BigNumber.from(fundSummary[1]).toString(), "0") //active funded by users in interest method is 0
+                  assert.equal(BigNumber.from(fundSummary[2]).toString(), "200") //lifetime funded is 200... 100 interest and 100 straight
+                  assert.equal(BigNumber.from(fundSummary[3]).toString(), "100") //lifetime straight funded is 100
+                  assert.equal(BigNumber.from(fundSummary[4]).toString(), "100") //lifetime interest funded is 100
+                  assert.equal(BigNumber.from(fundSummary[5]).toString(), "101") //owner withdrew 100 that was straight donated and 1 from interest proceeds
               })
           })
       })
