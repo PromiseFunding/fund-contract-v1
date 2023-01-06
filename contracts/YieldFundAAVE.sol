@@ -26,6 +26,17 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         uint256 amountTotal;
         uint256 entryTime;
     }
+
+    //for getter
+    struct FundSummary {
+        uint256 totalActiveFunded;
+        uint256 totalActiveInterestFunded;
+        uint256 totalLifetimeFunded;
+        uint256 totalLifetimeStraightFunded;
+        uint256 totalLifetimeInterestFunded;
+        uint256 totalWithdrawnByOwner;
+    }
+
     // State variables
     address payable public i_owner;
     address public i_assetAddress;
@@ -135,7 +146,6 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         // TODO: Make sure this is safe from underflow
         // https://medium.com/loom-network/how-to-secure-your-smart-contracts-6-solidity-vulnerabilities-and-how-to-avoid-them-part-1-c33048d4d17d
         s_funders[msg.sender].amountWithdrawable -= amount;
-        s_funders[msg.sender].amountTotal -= amount;
         s_totalActiveFunded -= amount;
         s_totalActiveInterestFunded -= amount;
 
@@ -202,9 +212,9 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         return 0;
     }
 
-    /// @notice Get the fund amount of a given address
+    /// @notice Get the total fund amount of a given address
     /// @param funder the funder whose balance is being checked
-    /// @return The uint256 amount the funder currently has funded
+    /// @return The uint256 amount the funder has ever funded
     function getFundAmountTotal(address funder) public view returns (uint256) {
         if (s_funders[funder].amountTotal != 0) {
             return s_funders[funder].amountTotal;
@@ -255,42 +265,21 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     /// @return The amount of withdrawable proceeds
     function getWithdrawableInterestProceeds() public view returns (uint256) {
         uint256 aTokenBalance = IERC20(i_aaveTokenAddress).balanceOf(address(this));
-        return aTokenBalance - s_totalActiveFunded;
+        return aTokenBalance - s_totalActiveInterestFunded;
     }
 
-    /// @notice Get lifetime funded by both methods
-    /// @return s_totalLifetimeFunded
-    function getLifeTimeFunded() public view returns (uint256) {
-        return s_totalLifetimeFunded;
-    }
 
-    /// @notice Get lifetime withdrawn by Owner
-    /// @return s_amountWithdrawnByOwner
-    function getLifeTimeWithdrawn() public view returns (uint256) {
-        return s_amountWithdrawnByOwner;
-    }
-
-    /// @notice Get lifetime amount straight funded
-    /// @return s_totalLifetimeStraightFunded
-    function getAmountStraightFunded() public view returns (uint256) {
-        return s_totalLifetimeStraightFunded;
-    }
-
-    /// @notice Get lifetime amount funded to interest earning pool
-    /// @return s_totalLifetimeInterestFunded
-    function getAmountInterestFunded() public view returns (uint256) {
-        return s_totalLifetimeInterestFunded;
-    }
-
-    /// @notice Get active amount funded... not withdrawn yet
-    /// @return s_totalActiveFunded
-    function getTotalActiveFunded() public view returns (uint256) {
-        return s_totalActiveFunded;
-    }
-
-    /// @notice Get active amount funded to interest pool
-    /// @return s_totalActiveInterestFunded
-    function getActiveFundedInterest() public view returns (uint256) {
-        return s_totalActiveInterestFunded;
+    /// @notice Get a bunch of fundraiser data organized in one getter function for more efficient calling
+    /// @return Contract data
+    function getFundSummary() public view returns (FundSummary memory) {
+        FundSummary memory summary = FundSummary(
+            s_totalActiveFunded,
+            s_totalActiveInterestFunded,
+            s_totalLifetimeFunded,
+            s_totalLifetimeStraightFunded,
+            s_totalLifetimeInterestFunded,
+            s_amountWithdrawnByOwner
+        );
+        return summary;
     }
 }

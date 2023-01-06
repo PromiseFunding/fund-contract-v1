@@ -30,15 +30,16 @@ import type {
 export interface IYieldFundInterface extends utils.Interface {
   functions: {
     "approveTransfer(address,address,uint256)": FunctionFragment;
-    "fund(uint256)": FunctionFragment;
+    "fund(uint256,bool)": FunctionFragment;
     "getAssetAddress()": FunctionFragment;
-    "getFundAmount(address)": FunctionFragment;
+    "getFundAmountTotal(address)": FunctionFragment;
+    "getFundAmountWithdrawable(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getPoolAddress()": FunctionFragment;
     "getTimeLeft(address)": FunctionFragment;
     "getTimeLock()": FunctionFragment;
     "withdrawFundsFromPool(uint256)": FunctionFragment;
-    "withdrawProceeds(uint256)": FunctionFragment;
+    "withdrawProceeds()": FunctionFragment;
   };
 
   getFunction(
@@ -46,7 +47,8 @@ export interface IYieldFundInterface extends utils.Interface {
       | "approveTransfer"
       | "fund"
       | "getAssetAddress"
-      | "getFundAmount"
+      | "getFundAmountTotal"
+      | "getFundAmountWithdrawable"
       | "getOwner"
       | "getPoolAddress"
       | "getTimeLeft"
@@ -65,14 +67,18 @@ export interface IYieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "fund",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
     functionFragment: "getAssetAddress",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getFundAmount",
+    functionFragment: "getFundAmountTotal",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFundAmountWithdrawable",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
@@ -94,7 +100,7 @@ export interface IYieldFundInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawProceeds",
-    values: [PromiseOrValue<BigNumberish>]
+    values?: undefined
   ): string;
 
   decodeFunctionResult(
@@ -107,7 +113,11 @@ export interface IYieldFundInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getFundAmount",
+    functionFragment: "getFundAmountTotal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFundAmountWithdrawable",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
@@ -218,12 +228,18 @@ export interface IYieldFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      interest: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<[string]>;
 
-    getFundAmount(
+    getFundAmountTotal(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getFundAmountWithdrawable(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
@@ -245,7 +261,6 @@ export interface IYieldFund extends BaseContract {
     ): Promise<ContractTransaction>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -259,12 +274,18 @@ export interface IYieldFund extends BaseContract {
 
   fund(
     amount: PromiseOrValue<BigNumberish>,
+    interest: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
-  getFundAmount(
+  getFundAmountTotal(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getFundAmountWithdrawable(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
@@ -286,7 +307,6 @@ export interface IYieldFund extends BaseContract {
   ): Promise<ContractTransaction>;
 
   withdrawProceeds(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -300,12 +320,18 @@ export interface IYieldFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      interest: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<string>;
 
-    getFundAmount(
+    getFundAmountTotal(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getFundAmountWithdrawable(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -326,10 +352,7 @@ export interface IYieldFund extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawProceeds(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -381,12 +404,18 @@ export interface IYieldFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      interest: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getFundAmount(
+    getFundAmountTotal(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getFundAmountWithdrawable(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -408,7 +437,6 @@ export interface IYieldFund extends BaseContract {
     ): Promise<BigNumber>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -423,12 +451,18 @@ export interface IYieldFund extends BaseContract {
 
     fund(
       amount: PromiseOrValue<BigNumberish>,
+      interest: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getFundAmount(
+    getFundAmountTotal(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getFundAmountWithdrawable(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -450,7 +484,6 @@ export interface IYieldFund extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     withdrawProceeds(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
