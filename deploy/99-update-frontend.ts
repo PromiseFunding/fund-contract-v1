@@ -54,7 +54,7 @@ async function updateContractAddresses() {
     } else {
         contractAddresses1[chainId] = [{ FundFactory: fundFactory.address }]
     }
-    fs.writeFileSync(frontEndContractsFile1, JSON.stringify(contractAddresses1))
+    fs.writeFileSync(frontEndContractsFile2, JSON.stringify(contractAddresses1))
 
     const contractAddresses2 = JSON.parse(fs.readFileSync(frontEndContractsFile2, "utf8"))
     if (chainId in contractAddresses2) {
