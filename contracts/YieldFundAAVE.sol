@@ -37,6 +37,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         uint256 totalWithdrawnByOwner;
         address owner;
         address assetAddress;
+        uint256 i_lockTime;
     }
 
     // State variables
@@ -277,10 +278,20 @@ contract YieldFundAAVE is IYieldFund, Ownable {
             s_totalLifetimeInterestFunded,
             s_amountWithdrawnByOwner,
             i_owner,
-            i_assetAddress
+            i_assetAddress,
+            i_lockTime
         );
         return summary;
     }
 
-    //add funder summary next
+    /// @notice Get all of the funder data organized in one getter function for more efficient calling
+    /// @return Contract data
+    function getFunderSummary(address funder) public view returns (Funder memory) {
+        Funder memory summary = Funder(
+            s_funders[funder].amountWithdrawable,
+            s_funders[funder].amountTotal,
+            s_funders[funder].entryTime
+        );
+        return summary;
+    }
 }

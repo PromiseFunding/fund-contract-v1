@@ -35,6 +35,9 @@ export declare namespace YieldFundAAVE {
     totalLifetimeStraightFunded: PromiseOrValue<BigNumberish>;
     totalLifetimeInterestFunded: PromiseOrValue<BigNumberish>;
     totalWithdrawnByOwner: PromiseOrValue<BigNumberish>;
+    owner: PromiseOrValue<string>;
+    assetAddress: PromiseOrValue<string>;
+    i_lockTime: PromiseOrValue<BigNumberish>;
   };
 
   export type FundSummaryStructOutput = [
@@ -43,6 +46,9 @@ export declare namespace YieldFundAAVE {
     BigNumber,
     BigNumber,
     BigNumber,
+    BigNumber,
+    string,
+    string,
     BigNumber
   ] & {
     totalActiveFunded: BigNumber;
@@ -51,6 +57,21 @@ export declare namespace YieldFundAAVE {
     totalLifetimeStraightFunded: BigNumber;
     totalLifetimeInterestFunded: BigNumber;
     totalWithdrawnByOwner: BigNumber;
+    owner: string;
+    assetAddress: string;
+    i_lockTime: BigNumber;
+  };
+
+  export type FunderStruct = {
+    amountWithdrawable: PromiseOrValue<BigNumberish>;
+    amountTotal: PromiseOrValue<BigNumberish>;
+    entryTime: PromiseOrValue<BigNumberish>;
+  };
+
+  export type FunderStructOutput = [BigNumber, BigNumber, BigNumber] & {
+    amountWithdrawable: BigNumber;
+    amountTotal: BigNumber;
+    entryTime: BigNumber;
   };
 }
 
@@ -63,6 +84,7 @@ export interface YieldFundAAVEInterface extends utils.Interface {
     "getFundAmountTotal(address)": FunctionFragment;
     "getFundAmountWithdrawable(address)": FunctionFragment;
     "getFundSummary()": FunctionFragment;
+    "getFunderSummary(address)": FunctionFragment;
     "getOwner()": FunctionFragment;
     "getPoolAddress()": FunctionFragment;
     "getTimeLeft(address)": FunctionFragment;
@@ -96,6 +118,7 @@ export interface YieldFundAAVEInterface extends utils.Interface {
       | "getFundAmountTotal"
       | "getFundAmountWithdrawable"
       | "getFundSummary"
+      | "getFunderSummary"
       | "getOwner"
       | "getPoolAddress"
       | "getTimeLeft"
@@ -151,6 +174,10 @@ export interface YieldFundAAVEInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getFundSummary",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getFunderSummary",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "getOwner", values?: undefined): string;
   encodeFunctionData(
@@ -255,6 +282,10 @@ export interface YieldFundAAVEInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFundSummary",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getFunderSummary",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getOwner", data: BytesLike): Result;
@@ -453,6 +484,11 @@ export interface YieldFundAAVE extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[YieldFundAAVE.FundSummaryStructOutput]>;
 
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[YieldFundAAVE.FunderStructOutput]>;
+
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
     getPoolAddress(overrides?: CallOverrides): Promise<[string]>;
@@ -559,6 +595,11 @@ export interface YieldFundAAVE extends BaseContract {
     overrides?: CallOverrides
   ): Promise<YieldFundAAVE.FundSummaryStructOutput>;
 
+  getFunderSummary(
+    funder: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<YieldFundAAVE.FunderStructOutput>;
+
   getOwner(overrides?: CallOverrides): Promise<string>;
 
   getPoolAddress(overrides?: CallOverrides): Promise<string>;
@@ -658,6 +699,11 @@ export interface YieldFundAAVE extends BaseContract {
     getFundSummary(
       overrides?: CallOverrides
     ): Promise<YieldFundAAVE.FundSummaryStructOutput>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<YieldFundAAVE.FunderStructOutput>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -806,6 +852,11 @@ export interface YieldFundAAVE extends BaseContract {
 
     getFundSummary(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     getPoolAddress(overrides?: CallOverrides): Promise<BigNumber>;
@@ -902,6 +953,11 @@ export interface YieldFundAAVE extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getFundSummary(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getFunderSummary(
+      funder: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
