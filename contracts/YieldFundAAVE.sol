@@ -35,6 +35,8 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         uint256 totalLifetimeStraightFunded;
         uint256 totalLifetimeInterestFunded;
         uint256 totalWithdrawnByOwner;
+        address owner;
+        address assetAddress;
     }
 
     // State variables
@@ -181,11 +183,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         //next get interest accumulated sent to owner
         // Redeem tokens and send them directly to the funder
         if (interestAvailableToWithdraw > 0) {
-            IPool(i_poolAddress).withdraw(
-                i_assetAddress,
-                interestAvailableToWithdraw,
-                msg.sender
-            );
+            IPool(i_poolAddress).withdraw(i_assetAddress, interestAvailableToWithdraw, msg.sender);
         }
 
         //only subtract from totalFunded the amount of straight donations
@@ -268,7 +266,6 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         return aTokenBalance - s_totalActiveInterestFunded;
     }
 
-
     /// @notice Get a bunch of fundraiser data organized in one getter function for more efficient calling
     /// @return Contract data
     function getFundSummary() public view returns (FundSummary memory) {
@@ -278,8 +275,12 @@ contract YieldFundAAVE is IYieldFund, Ownable {
             s_totalLifetimeFunded,
             s_totalLifetimeStraightFunded,
             s_totalLifetimeInterestFunded,
-            s_amountWithdrawnByOwner
+            s_amountWithdrawnByOwner,
+            i_owner,
+            i_assetAddress
         );
         return summary;
     }
+
+    //add funder summary next
 }
