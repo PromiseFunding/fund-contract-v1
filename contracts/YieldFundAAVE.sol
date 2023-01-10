@@ -28,6 +28,14 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     }
 
     //for getter
+    struct FunderSummary {
+        uint256 amountWithdrawable;
+        uint256 amountTotal;
+        uint256 entryTime;
+        uint256 timeLeftLock;
+    }
+
+    //for getter
     struct FundSummary {
         uint256 totalActiveFunded;
         uint256 totalActiveInterestFunded;
@@ -38,6 +46,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         address owner;
         address assetAddress;
         uint256 i_lockTime;
+        uint256 withdrawableInterestProceeds;
     }
 
     // State variables
@@ -279,18 +288,20 @@ contract YieldFundAAVE is IYieldFund, Ownable {
             s_amountWithdrawnByOwner,
             i_owner,
             i_assetAddress,
-            i_lockTime
+            i_lockTime,
+            getWithdrawableInterestProceeds()
         );
         return summary;
     }
 
     /// @notice Get all of the funder data organized in one getter function for more efficient calling
     /// @return Contract data
-    function getFunderSummary(address funder) public view returns (Funder memory) {
-        Funder memory summary = Funder(
+    function getFunderSummary(address funder) public view returns (FunderSummary memory) {
+        FunderSummary memory summary = FunderSummary(
             s_funders[funder].amountWithdrawable,
             s_funders[funder].amountTotal,
-            s_funders[funder].entryTime
+            s_funders[funder].entryTime,
+            getTimeLeft(funder)
         );
         return summary;
     }
