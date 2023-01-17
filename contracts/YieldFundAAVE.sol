@@ -23,6 +23,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     // Type Declarations
     struct Funder {
         uint256 amountWithdrawable;
+        uint256 amountStraightTotal;
         uint256 amountTotal;
         uint256 entryTime;
     }
@@ -30,6 +31,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     //for getter
     struct FunderSummary {
         uint256 amountWithdrawable;
+        uint256 amountStraightTotal;
         uint256 amountTotal;
         uint256 entryTime;
         uint256 timeLeftLock;
@@ -116,6 +118,9 @@ contract YieldFundAAVE is IYieldFund, Ownable {
         } else {
             IERC20(i_assetAddress).transferFrom(msg.sender, address(this), amount);
             s_totalLifetimeStraightFunded += amount; //accounting
+            s_funders[msg.sender].amountStraightTotal =
+                s_funders[msg.sender].amountStraightTotal +
+                amount; //accounting
         }
 
         s_totalActiveFunded = s_totalActiveFunded + amount;
@@ -299,6 +304,7 @@ contract YieldFundAAVE is IYieldFund, Ownable {
     function getFunderSummary(address funder) public view returns (FunderSummary memory) {
         FunderSummary memory summary = FunderSummary(
             s_funders[funder].amountWithdrawable,
+            s_funders[funder].amountStraightTotal,
             s_funders[funder].amountTotal,
             s_funders[funder].entryTime,
             getTimeLeft(funder)

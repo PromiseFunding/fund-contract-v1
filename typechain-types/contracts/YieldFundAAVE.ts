@@ -38,6 +38,7 @@ export declare namespace YieldFundAAVE {
     owner: PromiseOrValue<string>;
     assetAddress: PromiseOrValue<string>;
     i_lockTime: PromiseOrValue<BigNumberish>;
+    withdrawableInterestProceeds: PromiseOrValue<BigNumberish>;
   };
 
   export type FundSummaryStructOutput = [
@@ -49,6 +50,7 @@ export declare namespace YieldFundAAVE {
     BigNumber,
     string,
     string,
+    BigNumber,
     BigNumber
   ] & {
     totalActiveFunded: BigNumber;
@@ -60,18 +62,29 @@ export declare namespace YieldFundAAVE {
     owner: string;
     assetAddress: string;
     i_lockTime: BigNumber;
+    withdrawableInterestProceeds: BigNumber;
   };
 
-  export type FunderStruct = {
+  export type FunderSummaryStruct = {
     amountWithdrawable: PromiseOrValue<BigNumberish>;
+    amountStraightTotal: PromiseOrValue<BigNumberish>;
     amountTotal: PromiseOrValue<BigNumberish>;
     entryTime: PromiseOrValue<BigNumberish>;
+    timeLeftLock: PromiseOrValue<BigNumberish>;
   };
 
-  export type FunderStructOutput = [BigNumber, BigNumber, BigNumber] & {
+  export type FunderSummaryStructOutput = [
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
     amountWithdrawable: BigNumber;
+    amountStraightTotal: BigNumber;
     amountTotal: BigNumber;
     entryTime: BigNumber;
+    timeLeftLock: BigNumber;
   };
 }
 
@@ -487,7 +500,7 @@ export interface YieldFundAAVE extends BaseContract {
     getFunderSummary(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[YieldFundAAVE.FunderStructOutput]>;
+    ): Promise<[YieldFundAAVE.FunderSummaryStructOutput]>;
 
     getOwner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -526,8 +539,9 @@ export interface YieldFundAAVE extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amountWithdrawable: BigNumber;
+        amountStraightTotal: BigNumber;
         amountTotal: BigNumber;
         entryTime: BigNumber;
       }
@@ -598,7 +612,7 @@ export interface YieldFundAAVE extends BaseContract {
   getFunderSummary(
     funder: PromiseOrValue<string>,
     overrides?: CallOverrides
-  ): Promise<YieldFundAAVE.FunderStructOutput>;
+  ): Promise<YieldFundAAVE.FunderSummaryStructOutput>;
 
   getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -637,8 +651,9 @@ export interface YieldFundAAVE extends BaseContract {
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber] & {
       amountWithdrawable: BigNumber;
+      amountStraightTotal: BigNumber;
       amountTotal: BigNumber;
       entryTime: BigNumber;
     }
@@ -703,7 +718,7 @@ export interface YieldFundAAVE extends BaseContract {
     getFunderSummary(
       funder: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<YieldFundAAVE.FunderStructOutput>;
+    ): Promise<YieldFundAAVE.FunderSummaryStructOutput>;
 
     getOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -740,8 +755,9 @@ export interface YieldFundAAVE extends BaseContract {
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
         amountWithdrawable: BigNumber;
+        amountStraightTotal: BigNumber;
         amountTotal: BigNumber;
         entryTime: BigNumber;
       }

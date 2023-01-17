@@ -271,9 +271,9 @@ import {
                   )
 
                   yieldFund = yieldFundContract.connect(user)
-                  await expect(
-                      yieldFund.withdrawFundsFromPool(fundAmount)
-                  ).to.be.revertedWith("YieldFundAAVE__FundsStillTimeLocked")
+                  await expect(yieldFund.withdrawFundsFromPool(fundAmount)).to.be.revertedWith(
+                      "YieldFundAAVE__FundsStillTimeLocked"
+                  )
 
                   timeLeft = await yieldFund.getTimeLeft(user.address)
                   await network.provider.send("evm_increaseTime", [timeLeft.toNumber() + 1])
