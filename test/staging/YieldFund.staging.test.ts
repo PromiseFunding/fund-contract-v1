@@ -53,7 +53,7 @@ developmentChains.includes(network.name)
               it("correctly fund adds a funder and correctly gets aTokens back", async function () {
                   yieldFund = await yieldFundContract.connect(deployer)
 
-                  originalFundAmount = await yieldFund.getFundAmount(deployer.address)
+                  originalFundAmount = await yieldFund.getFundAmountWithdrawable(deployer.address)
 
                   const approveTx = await assetToken.approve(
                       yieldFund.address,
@@ -61,10 +61,10 @@ developmentChains.includes(network.name)
                   )
                   await approveTx.wait(1)
 
-                  const fundTx = await yieldFund.fund(fundValueWithDecimals)
+                  const fundTx = await yieldFund.fund(fundValueWithDecimals, true)
                   await fundTx.wait(1)
 
-                  fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  fundAmount = await yieldFund.getFundAmountWithdrawable(deployer.address)
                   console.log(
                       `| initial funds: ${originalFundAmount} | fund value: ${fundValueWithDecimals} | final funds: ${fundAmount} |`
                   )
@@ -75,13 +75,15 @@ developmentChains.includes(network.name)
               })
               it("correctly withdraws the funders tokens", async function () {
                   yieldFund = yieldFundContract.connect(deployer)
-                  fundAmount = await yieldFund.getFundAmount(deployer.address)
+                  fundAmount = await yieldFund.getFundAmountWithdrawable(deployer.address)
                   const originalBalance = (
                       await assetToken.balanceOf(await deployer.address)
                   ).toNumber()
                   const withdrawTx = await yieldFund.withdrawFundsFromPool(fundAmount)
                   await withdrawTx.wait(1)
-                  const afterFundAmount = await yieldFund.getFundAmount(deployer.address)
+                  const afterFundAmount = await yieldFund.getFundAmountWithdrawable(
+                      deployer.address
+                  )
                   const balance = (await assetToken.balanceOf(await deployer.address)).toNumber()
                   // Ensure the balance in the contract is now zero
                   assert.equal(afterFundAmount.toNumber(), 0)

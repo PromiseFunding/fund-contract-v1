@@ -127,6 +127,11 @@ const _abi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        internalType: "bool",
+        name: "interest",
+        type: "bool",
+      },
     ],
     name: "fund",
     outputs: [],
@@ -154,7 +159,26 @@ const _abi = [
         type: "address",
       },
     ],
-    name: "getFundAmount",
+    name: "getFundAmountTotal",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "funder",
+        type: "address",
+      },
+    ],
+    name: "getFundAmountWithdrawable",
     outputs: [
       {
         internalType: "uint256",
@@ -237,13 +261,7 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
+    inputs: [],
     name: "withdrawProceeds",
     outputs: [],
     stateMutability: "nonpayable",

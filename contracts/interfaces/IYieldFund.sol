@@ -20,7 +20,7 @@ interface IYieldFund {
 
     event ProceedsWithdrawn(address indexed owner, address indexed assetAddress, uint256 amount);
 
-    function fund(uint256 amount) external;
+    function fund(uint256 amount, bool interest) external;
 
     function approveTransfer(
         IERC20 token,
@@ -30,9 +30,11 @@ interface IYieldFund {
 
     function withdrawFundsFromPool(uint256 amount) external;
 
-    function withdrawProceeds(uint256 amount) external;
+    function withdrawProceeds() external;
 
-    function getFundAmount(address funder) external view returns (uint256);
+    function getFundAmountWithdrawable(address funder) external view returns (uint256);
+
+    function getFundAmountTotal(address funder) external view returns (uint256);
 
     function getTimeLock() external view returns (uint256);
 

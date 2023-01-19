@@ -19,10 +19,17 @@ async function updateAbi() {
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
     const promiseFundAddress = await promiseFactory.getPromiseFund(0)
     const promiseFund = await ethers.getContractAt("PromiseFund", promiseFundAddress)
+    const yieldFundAddress = await fundFactory.getYieldFundAAVE(0)
+    const yieldFund = await ethers.getContractAt("YieldFundAAVE", yieldFundAddress)
 
     fs.writeFileSync(
-        `${frontEndAbiLocation1}FundFactory.json`,
+        `${frontEndAbiLocation2}YieldFundFactory.json`,
         fundFactory.interface.format(ethers.utils.FormatTypes.json).toString()
+    )
+
+    fs.writeFileSync(
+        `${frontEndAbiLocation2}YieldFund.json`,
+        yieldFund.interface.format(ethers.utils.FormatTypes.json).toString()
     )
 
     fs.writeFileSync(
@@ -41,13 +48,13 @@ async function updateContractAddresses() {
     const fundFactory = await ethers.getContract("FundFactory")
     const promiseFactory = await ethers.getContract("PromiseFundFactory")
 
-    const contractAddresses1 = JSON.parse(fs.readFileSync(frontEndContractsFile1, "utf8"))
+    const contractAddresses1 = JSON.parse(fs.readFileSync(frontEndContractsFile2, "utf8"))
     if (chainId in contractAddresses1) {
         contractAddresses1[chainId]["FundFactory"] = [fundFactory.address]
     } else {
         contractAddresses1[chainId] = [{ FundFactory: fundFactory.address }]
     }
-    fs.writeFileSync(frontEndContractsFile1, JSON.stringify(contractAddresses1))
+    fs.writeFileSync(frontEndContractsFile2, JSON.stringify(contractAddresses1))
 
     const contractAddresses2 = JSON.parse(fs.readFileSync(frontEndContractsFile2, "utf8"))
     if (chainId in contractAddresses2) {
